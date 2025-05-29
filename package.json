@@ -1,0 +1,35 @@
+{
+  "name": "minimaz",
+  "version": "0.0.1",
+  "description": "Minimal project initializer and builder CLI",
+  "author": "MrZeller",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"No tests yet\"",
+    "build": "node build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeller-dev/minimaz.git"
+  },
+  "bin": {
+    "minimaz": "./bin/cli.js"
+  },
+  "keywords": [
+    "cli",
+    "minimize",
+    "build",
+    "init"
+  ],
+  "homepage": "https://github.com/zeller-dev/minimaz#readme",
+  "bugs": {
+    "url": "https://github.com/zeller-dev/minimaz/issues"
+  },
+  "dependencies": {
+    "clean-css": "^5.3.3",
+    "fs-extra": "^11.3.0",
+    "html-minifier-terser": "^7.2.0",
+    "terser": "^5.39.2"
+  }
+}
