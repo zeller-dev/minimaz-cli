@@ -5,6 +5,13 @@
   "author": "MrZeller",
   "license": "MIT",
   "type": "module",
+  "files": [
+    "bin/",
+    "src/",
+    "LICENSE",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
     "test": "echo \"No tests yet\"",
     "build": "node build.js"
