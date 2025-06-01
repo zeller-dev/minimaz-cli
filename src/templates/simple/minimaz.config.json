@@ -1,0 +1,13 @@
+{
+    "src": "src",
+    "dist": "dist",
+    "public": "public",
+    "minify": {
+        "html": true,
+        "css": true,
+        "js": true
+    },
+    "replace": {
+        "../public/": "public/"
+    }
+}

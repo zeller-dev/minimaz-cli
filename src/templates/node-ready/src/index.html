@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Minimaz</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="public/favicon.ico" type="image/x-icon" />
+</head>
+
+<body>
+  <header>
+    <nav>
+      <a class="btn active" href="#">Home</a>
+      <a class="btn" href="pages/about.html">About</a>
+      <a class="btn" href="https://github.com/zeller-dev/minimaz" target="_blank">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>🚀 Welcome to Minimaz</h1>
+    <p>
+      <strong>Minimaz</strong> is a minimal static site builder designed for speed and simplicity. It helps you:
+    </p>
+    <ul>
+      <li>💡 Organize your files with a simple structure</li>
+      <li>⚙️ Automatically build and minify HTML, CSS, and JS</li>
+      <li>🔄 Use a flexible <code>minimaz.config.json</code> file for configuration</li>
+    </ul>
+
+    <h2>🔧 Getting Started</h2>
+    <p>Install Minimaz and create your first project:</p>
+    <pre><code># create a new project
+npx minimaz init my-site
+
+# build the site
+npx minimaz build</code></pre>
+
+    <h2>📁 Project Structure</h2>
+    <pre><code>my-site/
+├── src/               # HTML, CSS, JS files
+├── public/            # Static assets (images, fonts, etc.)
+├── dist/              # Output folder (generated)
+├── minimaz.config.json
+└── ...</code></pre>
+
+    <h2>⚙️ Configuration</h2>
+    <p>The <code>minimaz.config.json</code> file lets you control the build process:</p>
+    <pre><code>{
+  "src": "src",
+  "dist": "dist",
+  "public": "public",
+  "minify": {
+    "html": true,
+    "css": true,
+    "js": true
+  },
+  "replace": {
+    "../public/": "public/"
+  }
+}</code></pre>
+
+    <h2>❓ Help Command</h2>
+    <p>Show the help menu with:</p>
+    <pre><code>npx minimaz help</code></pre>
+
+    <p>You're ready to build fast and clean static sites. Happy coding! 🛠️</p>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Minimaz. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

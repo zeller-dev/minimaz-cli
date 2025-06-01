@@ -2,25 +2,31 @@
 
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-import minimist from 'minimist'
+import dotenv from 'dotenv'
+
 import { build } from '../src/commands/build.js'
 import { init } from '../src/commands/init.js'
 import { help } from '../src/commands/help.js'
+import { run } from '../src/commands/run.js'
 import { log } from '../src/utils/logService.js'
+import { parseArgs } from '../src/utils/functions.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+// Load .env file from root
+dotenv.config({ path: new URL('../.env', import.meta.url).pathname })
+
 async function main() {
-    const args = minimist(process.argv.slice(2))
+    const args = parseArgs(process.argv.slice(2))
     const cmd = (args._[0] || '').toLowerCase()
 
     try {
         switch (cmd) {
             case 'init':
             case 'i': {
-                const projectName = args._[1] || 'minimaz-site'
-                const template = args.template || args.t || 'default'
+                const projectName = args._[1] || process.env.DEFAULT_PROJECT_NAME || 'project'
+                const template = args.template || args.t || process.env.DEFAULT_TEMPLATE || 'default'
                 await init(projectName, { template })
                 break
             }
@@ -33,6 +39,11 @@ async function main() {
             case 'help':
             case 'h':
                 await help()
+                break
+
+            case 'run':
+            case 'r':
+                await run()
                 break
 
             default:
