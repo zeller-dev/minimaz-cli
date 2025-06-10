@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+import { dirname, resolve } from 'path'
 import dotenv from 'dotenv'
 
 import { build } from '../src/commands/build.js'
@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 // Load .env file from root
-dotenv.config({ path: new URL('../.env', import.meta.url).pathname })
+dotenv.config({ path: resolve(__dirname, '../.env') })
 
 async function main() {
     const args = parseArgs(process.argv.slice(2))
@@ -48,9 +48,10 @@ async function main() {
 
             default:
                 log('❌', 'error', `Unknown command '${cmd}'. Use 'minimaz help' to see available commands.`)
+                process.exit(1)
         }
     } catch (err) {
-        log('❌', 'error', err)
+        log('❌', 'error', err instanceof Error ? err.message : err)
         process.exit(1)
     }
 }

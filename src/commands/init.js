@@ -15,8 +15,10 @@ const __dirname = dirname(__filename)
  */
 export async function init(projectName, options = {}) {
   try {
+    console.log(options.template)
     const targetDir = path.resolve(process.cwd(), projectName)
     const templateDir = path.resolve(__dirname, '..', 'templates', options.template)
+    console.log(templateDir)
 
     if (!await fs.pathExists(templateDir)) {
       log('', 'error', `❌ Template "${template}" not found.`)
@@ -25,7 +27,7 @@ export async function init(projectName, options = {}) {
 
     await fs.copy(templateDir, targetDir)
 
-    switch (template) {
+    switch (options.template) {
       case 'node-ready': {
         log('📦', 'info', 'Running npm init...')
         const proc = spawn('npm', ['init'], { cwd: targetDir, stdio: 'inherit', shell: true })
