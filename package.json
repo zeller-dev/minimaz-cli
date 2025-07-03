@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zeller-dev/minimaz.git"
+    "url": "git+https://github.com/zeller-dev/minimaz-cli.git"
   },
   "bin": {
     "minimaz": "./bin/cli.js"
@@ -29,9 +29,9 @@
     "build",
     "init"
   ],
-  "homepage": "https://github.com/zeller-dev/minimaz#readme",
+  "homepage": "https://github.com/zeller-dev/minimaz-cli#readme",
   "bugs": {
-    "url": "https://github.com/zeller-dev/minimaz/issues"
+    "url": "https://github.com/zeller-dev/minimaz-cli/issues"
   },
   "dependencies": {
     "clean-css": "^5.3.3",
