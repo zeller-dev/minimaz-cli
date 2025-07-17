@@ -1,6 +1,5 @@
 import fs from 'fs-extra'
 import path from 'path'
-
 import { log } from './logService.js'
 
 const defaultConfig = {
@@ -11,7 +10,28 @@ const defaultConfig = {
     html: true,
     css: true,
     js: true
+  },
+  replace: {}
+}
+
+/**
+ * Deep merge two objects (simple implementation)
+ * @param {Object} target
+ * @param {Object} source
+ * @returns {Object} merged object
+ */
+function deepMerge(target, source) {
+  const result = { ...target }
+
+  for (const key in source) {
+    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      result[key] = deepMerge(target[key] || {}, source[key])
+    } else if (source[key] !== undefined) {
+      result[key] = source[key]
+    }
   }
+
+  return result
 }
 
 /**
@@ -25,22 +45,19 @@ export async function loadConfig() {
   if (await fs.pathExists(configPath)) {
     try {
       userConfig = await fs.readJson(configPath)
-    } catch (err) {
-      log('', 'warning', `Warning: failed to parse minimaz.config.json - using defaults. Error: ${err.message}`)
-      userConfig = {}
+      log('info', 'Loaded config from minimaz.config.json')
+    } catch (e) {
+      log('warning', `Failed to parse minimaz.config.json. Using defaults. Error: ${e.message}`)
     }
+  } else {
+    log('info', 'No minimaz.config.json found. Using default config')
   }
 
-  // Merge user config with defaults
-  const config = {
-    src: userConfig.src || defaultConfig.src,
-    dist: userConfig.dist || defaultConfig.dist,
-    public: userConfig.public || defaultConfig.public,
-    minify: {
-      html: userConfig.minify?.html ?? defaultConfig.minify.html,
-      css: userConfig.minify?.css ?? defaultConfig.minify.css,
-      js: userConfig.minify?.js ?? defaultConfig.minify.js
-    }
+  const config = deepMerge(defaultConfig, userConfig)
+
+  if (!config.src || !config.dist) {
+    log('error', 'Invalid configuration: src and dist are required')
+    process.exit(1)
   }
 
   return config

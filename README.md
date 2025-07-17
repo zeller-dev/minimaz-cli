@@ -1,18 +1,21 @@
 # Minimaz ⚡
 
-**Minimaz** is a minimal, zero-dependency static site builder focused on speed, simplicity, and clean output.
+**Minimaz** is a minimal, zero-dependency static site builder and project initializer focused on speed, simplicity, and clean output.
 
 ## 🚀 Features
 
-- 📁 Simple and intuitive file structure
-- 🧹 Minifies HTML, CSS, and JavaScript
+- 📁 Initialize projects from global templates
+- 🧩 Save, list, and delete custom templates
+- 📝 Supports HTML, CSS, JS, and TypeScript (.ts → .js)
+- 🧹 Minifies HTML, CSS, JS, and TS (compiled & minified)
 - ⚙️ Configurable with a `minimaz.config.json` file
 - 🪄 Optional path replacements for asset links
-- 🪶 Lightweight and fast — ideal for small static projects
+- 🪶 Lightweight and fast — ideal for small static or utility projects
+- 🔥 Usable with `minimaz` or alias `mz`
 
 ## 📦 Installation
 
-Use `npx` to run Minimaz without installing globally:
+Run directly with `npx` without global install:
 
 ```bash
 npx minimaz init my-site
@@ -20,11 +23,18 @@ cd my-site
 npx minimaz build
 ```
 
+Or using the alias:
+
+```bash
+npx mz init my-site
+npx mz build
+```
+
 ## 📁 Project Structure
 
 ```txt
 my-site/
-├── src/               # HTML, CSS, JS files
+├── src/               # HTML, CSS, JS, TS files
 ├── public/            # Static assets (images, fonts, etc.)
 ├── dist/              # Output folder (generated)
 ├── minimaz.config.json
@@ -33,7 +43,7 @@ my-site/
 
 ## ⚙️ Configuration
 
-Customize your build using a `minimaz.config.json` file in the root directory:
+Customize your build using a `minimaz.config.json` file:
 
 ```json
 {
@@ -43,7 +53,8 @@ Customize your build using a `minimaz.config.json` file in the root directory:
   "minify": {
     "html": true,
     "css": true,
-    "js": true
+    "js": true,
+    "ts": true
   },
   "replace": {
     "../public/": "public/"
@@ -54,10 +65,19 @@ Customize your build using a `minimaz.config.json` file in the root directory:
 ## 🛠 Commands
 
 ```bash
-minimaz init <project-name>   # Create a new project
-minimaz build                 # Build and minify the site
-minimaz help                  # Show help message
+minimaz init <project-name>       # Create a new project using global templates
+minimaz build                     # Build and minify the site
+minimaz template -l               # List available templates
+minimaz template <path>           # Save a new template from specified path (or current dir)
+minimaz template -d <name>        # Delete a saved template
+minimaz help                      # Show help message
 ```
+
+_All commands also work with the alias `mz`._
+
+## 📂 Templates
+
+Minimaz supports global templates stored in `~/.minimaz/templates`. Use them to quickly initialize consistent projects across environments.
 
 ## 📄 License
 

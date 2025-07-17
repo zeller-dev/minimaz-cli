@@ -5,7 +5,8 @@
     "minify": {
         "html": true,
         "css": true,
-        "js": true
+        "js": true,
+        "ts": true
     },
     "replace": {
         "../public/": "public/"

@@ -1,19 +1,12 @@
-export function log(icon = '🚀', type = '', message) {
-    switch (type) {
-        case 'error':
-            icon = '❌'
-            console.error(icon, message)
-            break
-        case 'warning':
-            icon = '⚠️'
-            console.warn(icon, message)
-            break
-        case 'success':
-            icon = '✅'
-            console.log(icon, message)
-            break
-        default:
-            console.log(icon, message)
-            break
+export function log(type = '', message) {
+    const icons = {
+        error: '❌',
+        warning: '⚠️',
+        success: '✅',
+        info: 'ℹ️',
+        default: '📁'
     }
+    const icon = icons[type] || icons.default
+    const method = type === 'error' ? 'error' : type === 'warning' ? 'warn' : 'log'
+    console[method](icon, message)
 }

@@ -1,46 +1,22 @@
 import fs from 'fs-extra'
 import path from 'path'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-import { spawn } from 'child_process'
+import os from 'os'
 import { log } from '../utils/logService.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-/**
- * Initialize a new project by copying template files
- * @param {string} projectName - Name of the new project folder
- * @param {Object} options - Options including the template name
- */
 export async function init(projectName, options = {}) {
+  const templateDir = path.join(os.homedir(), '.minimaz', 'templates', options.template)
+  const targetDir = path.resolve(process.cwd(), projectName)
+
+  if (!await fs.pathExists(templateDir)) {
+    log('error', `Template '${options.template}' not found.`)
+    process.exit(1)
+  }
+
   try {
-    console.log(options.template)
-    const targetDir = path.resolve(process.cwd(), projectName)
-    const templateDir = path.resolve(__dirname, '..', 'templates', options.template)
-    console.log(templateDir)
-
-    if (!await fs.pathExists(templateDir)) {
-      log('', 'error', `❌ Template "${template}" not found.`)
-      process.exit(1)
-    }
-
     await fs.copy(templateDir, targetDir)
-
-    switch (options.template) {
-      case 'node-ready': {
-        log('📦', 'info', 'Running npm init...')
-        const proc = spawn('npm', ['init'], { cwd: targetDir, stdio: 'inherit', shell: true })
-        proc.on('error', err => log('❌', 'error', `Failed to run npm init: ${err.message}`))
-        break
-      }
-      default:
-        break
-    }
-
-    log('', 'success', `🎉 Project '${projectName}' created successfully.`)
+    log('success', `Project '${projectName}' created using template '${options.template}'.`)
   } catch (e) {
-    log('', 'error', `❌ Error while creating project: ${e.message}`)
+    log('error', `Failed to create project: ${e.message}`)
     process.exit(1)
   }
 }

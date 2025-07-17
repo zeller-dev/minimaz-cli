@@ -13,21 +13,23 @@
     "README.md"
   ],
   "scripts": {
-    "test": "echo \"No tests yet\"",
-    "build": "node build.js"
+    "postinstall": "node ./src/utils/postInstall.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zeller-dev/minimaz-cli.git"
+    "url": "https://github.com/zeller-dev/minimaz-cli.git"
   },
   "bin": {
-    "minimaz": "./bin/cli.js"
+    "minimaz": "./bin/cli.js",
+    "mz": "./bin/cli.js"
   },
   "keywords": [
     "cli",
-    "minimize",
+    "minimal",
     "build",
-    "init"
+    "init",
+    "project",
+    "starter"
   ],
   "homepage": "https://github.com/zeller-dev/minimaz-cli#readme",
   "bugs": {
@@ -36,6 +38,7 @@
   "dependencies": {
     "clean-css": "^5.3.3",
     "dotenv": "^16.5.0",
+    "esbuild": "^0.25.6",
     "fs-extra": "^11.3.0",
     "html-minifier-terser": "^7.2.0",
     "terser": "^5.39.2",
