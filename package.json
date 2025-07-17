@@ -1,6 +1,6 @@
 {
   "name": "minimaz",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Minimal project initializer and builder CLI",
   "author": "MrZeller",
   "license": "MIT",
@@ -41,7 +41,6 @@
     "esbuild": "^0.25.6",
     "fs-extra": "^11.3.0",
     "html-minifier-terser": "^7.2.0",
-    "terser": "^5.39.2",
-    "vite": "^6.3.5"
+    "terser": "^5.39.2"
   }
 }
