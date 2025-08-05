@@ -9,6 +9,7 @@
 - 📝 Supports HTML, CSS, JS, and TypeScript (.ts → .js)
 - 🧹 Minifies HTML, CSS, JS, and TS (compiled & minified)
 - ⚙️ Configurable with a `minimaz.config.json` file
+- ➕ Supports concatenation of additional scripts and styles
 - 🪄 Optional path replacements for asset links
 - 🪶 Lightweight and fast — ideal for small static or utility projects
 - 🔥 Usable with `minimaz` or alias `mz`
@@ -58,15 +59,27 @@ Customize your build using a `minimaz.config.json` file:
   },
   "replace": {
     "../public/": "public/"
-  }
+  },
+  "styles": [
+    "style.css",
+    "theme.css"
+  ],
+  "scripts": [
+    "lib.js",
+    "script.js"
+  ]
 }
 ```
+
+- `styles` (optional): array of `.css` files to concatenate and minify into a single `style.css`
+- `scripts` (optional): array of `.js` files to concatenate and minify into a single `script.js`
+- If omitted, fallback defaults are `style.css` and `script.js`
 
 ## 🛠 Commands
 
 ```bash
 minimaz init <project-name>       # Create a new project using global templates
-minimaz build                     # Build and minify the site
+minimaz build                     # Build and minify the site (uses config or defaults)
 minimaz template -l               # List available templates
 minimaz template <path>           # Save a new template from specified path (or current dir)
 minimaz template -d <name>        # Delete a saved template
@@ -77,7 +90,13 @@ _All commands also work with the alias `mz`._
 
 ## 📂 Templates
 
-Minimaz supports global templates stored in `~/.minimaz/templates`. Use them to quickly initialize consistent projects across environments.
+Minimaz supports global templates stored in:
+
+```bash
+~/.minimaz/templates
+```
+
+Use them to quickly initialize consistent projects across environments.
 
 ## 📄 License
 

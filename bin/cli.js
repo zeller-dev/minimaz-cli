@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
-import { dirname, resolve } from 'path'
+import { dirname } from 'path'
 
 import { build } from '../src/commands/build.js'
 import { init } from '../src/commands/init.js'
@@ -15,16 +14,14 @@ import { parseArgs } from '../src/utils/functions.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-dotenv.config({ path: resolve(__dirname, '../.env') })
-
 async function main() {
   const args = parseArgs(process.argv.slice(2))
   const cmd = (args._[0] || '').toLowerCase()
 
   const commands = {
     init: async () => {
-      const projectName = args._[1] || process.env.DEFAULT_PROJECT_NAME || 'project'
-      const templateName = args.template || args.t || process.env.DEFAULT_TEMPLATE || 'default'
+      const projectName = args._[1] || 'minimaz-project'
+      const templateName = args.template || args.t || 'default'
       await init(projectName, { template: templateName })
     },
     i: () => commands.init(),
