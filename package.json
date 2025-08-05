@@ -1,6 +1,6 @@
 {
   "name": "minimaz",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Minimal project initializer and builder CLI",
   "author": "MrZeller",
   "license": "MIT",
@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "clean-css": "^5.3.3",
-    "dotenv": "^16.5.0",
     "esbuild": "^0.25.6",
     "fs-extra": "^11.3.0",
     "html-minifier-terser": "^7.2.0",

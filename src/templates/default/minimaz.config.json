@@ -10,5 +10,13 @@
     },
     "replace": {
         "../public/": "public/"
-    }
+    },
+    "styles": [
+        "style.css",
+        "style-2.css"
+    ],
+    "scripts": [
+        "script.js",
+        "script-2.js"
+    ]
 }
