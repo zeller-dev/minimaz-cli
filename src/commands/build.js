@@ -2,9 +2,9 @@ import fs from 'fs-extra'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-import CleanCSS from 'clean-css'
 import { minify as minifyHtml } from 'html-minifier-terser'
 import { minify as minifyJs } from 'terser'
+import CleanCSS from 'clean-css'
 import esbuild from 'esbuild'
 
 import { loadConfig } from '../utils/loadConfig.js'
@@ -20,19 +20,13 @@ const __dirname = dirname(__filename)
 export async function build() {
   const config = await loadConfig()
 
-  const srcDir = path.resolve(process.cwd(), config.src)
-  const distDir = path.resolve(process.cwd(), config.dist)
+  const srcDir = path.resolve(process.cwd(), config.src || 'src')
+  const distDir = path.resolve(process.cwd(), config.dist || 'dist')
   const publicDir = path.resolve(process.cwd(), config.public || 'public')
 
   // Cleanup previous dist folder
   await fs.remove(distDir)
   await fs.ensureDir(distDir)
-
-  // Copy public/ folder if exists
-  if (await fs.pathExists(publicDir)) {
-    await fs.copy(publicDir, path.join(distDir, path.basename(publicDir)))
-    log('success', `Copied public/ to /${config.dist}`)
-  }
 
   // --- CSS Processing ---
   const cssMinifier = new CleanCSS()
@@ -74,7 +68,7 @@ export async function build() {
 
   await fs.outputFile(path.join(distDir, 'script.js'), finalJs)
 
-  // --- Process each file based on extension ---
+  // --- Walk and process files ---
   async function processFile(srcPath, destPath, ext, item) {
     try {
       switch (ext) {
@@ -89,9 +83,7 @@ export async function build() {
               minifyCSS: config.minify?.css
             })
             await fs.outputFile(destPath, minified)
-
           } else { await fs.outputFile(destPath, content) }
-
           break
         }
 
@@ -120,13 +112,12 @@ export async function build() {
           await fs.copy(srcPath, destPath)
           break
       }
-    } catch (error) { log('error', `Failed processing ${item}: ${error.message}`) }
+    } catch (error) {
+      log('error', `Failed processing ${item}: ${error.message}`)
+    }
   }
 
-  /**
-   * Recursively walk through the source directory
-   * and process all files except those already handled.
-   */
+  // Recursively walk srcDir and copy everything (except css/js already handled)
   async function walk(src, dest) {
     await fs.ensureDir(dest)
 
@@ -134,23 +125,37 @@ export async function build() {
       const srcPath = path.join(src, item)
       const destPath = path.join(dest, item)
       const stat = await fs.stat(srcPath)
+      const ext = path.extname(item).toLowerCase()
 
       if (stat.isDirectory()) {
         await walk(srcPath, destPath)
-        continue
+
+      } else {
+        console.log(item)
+        if (ext === '.css' || ext === '.js') continue // skip already merged
+        await processFile(srcPath, destPath, ext, item)
       }
-
-      const ext = path.extname(item).toLowerCase()
-
-      // Skip already processed files
-      if (cssFiles.includes(item) || jsFiles.includes(item)) continue
-
-      await processFile(srcPath, destPath, ext, item)
     }
   }
 
-  // Start recursive file processing
-  await walk(srcDir, distDir)
+  // --- Run build logic ---
+  // Case 1: user defined folders
+  if (config.folders && Object.keys(config.folders).length > 0) {
+    for (const [srcPathRel, destName] of Object.entries(config.folders)) {
+      const fullSrc = path.resolve(process.cwd(), srcPathRel)
+      const fullDest = path.join(distDir, destName)
+
+      if (await fs.pathExists(fullSrc)) {
+        await walk(fullSrc, fullDest)
+        log('success', `Copied folder: ${srcPathRel} -> /${destName}`)
+      } else {
+        log('warn', `Folder not found: ${srcPathRel}`)
+      }
+    }
+  } else {
+    // Case 2: default copy from srcDir
+    await walk(srcDir, distDir)
+  }
 
   log('success', `Build completed. Output saved in /${config.dist}`)
 }
