@@ -31,9 +31,8 @@ async function setupDefaultTemplates() {
     }
 
     log('success', 'Default templates setup completed.')
-  } catch (e) {
-    log('error', `Setup error: ${e.message}`)
-  }
+
+  } catch (e) { log('error', `Setup error: ${e.message}`) }
 }
 
 setupDefaultTemplates()

@@ -55,9 +55,8 @@ export async function build() {
         const stat = await fs.stat(srcPath)
         const ext = path.extname(item).toLowerCase()
 
-        if (stat.isDirectory()) {
-          await walk(srcPath, destPath)
-        } else {
+        if (stat.isDirectory()) { await walk(srcPath, destPath) }
+        else {
           switch (ext) {
             case '.html': {
               let content = await fs.readFile(srcPath, 'utf-8')
@@ -150,7 +149,6 @@ export async function build() {
       }
       await fs.outputFile(path.join(fullDest, 'script.js'), finalJs)
     }
-
     log('success', `Processed folder: ${srcPathRel} -> /${destName}`)
   }
 
@@ -159,8 +157,6 @@ export async function build() {
     for (const [srcPathRel, destName] of Object.entries(config.folders)) {
       await processFolder(srcPathRel, destName)
     }
-  } else {
-    log('warn', 'No folders defined in config. Nothing to build.')
-  }
+  } else { log('warn', 'No folders defined in config. Nothing to build.') }
   log('success', `Build completed. Output saved in /${config.dist}`)
 }
