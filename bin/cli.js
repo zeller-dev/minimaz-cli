@@ -16,42 +16,50 @@ const __dirname = dirname(__filename)
 
 async function main() {
   const args = parseArgs(process.argv.slice(2))
-  const cmd = (args._[0] || '').toLowerCase()
+  const cmd = (args._[0]).toLowerCase()
 
   const commands = {
+    // Init Command
     init: async () => {
-      const projectName = args._[1] || 'minimaz-project'
-      const templateName = args.template || args.t || 'default'
-      await init(projectName, { template: templateName })
+      await init(
+        args._[1] || 'minimaz-project',
+        { template: args.template || args.t || 'default' }
+      )
     },
-    i: () => commands.init(),
 
-    build: () => build(),
-    b: () => commands.build(),
+    // Build Command
+    build: async () => build(),
 
+    // Help Command
     help: () => help(),
-    h: () => commands.help(),
 
+    // Template Command
     template: async () => {
-      const targetPath = args._[1]
-      const options = {
-        list: args.l || args.list,
-        delete: args.d || args.delete
-      }
-      await template(targetPath, options)
+      await template(
+        args._[1],
+        { list: args.l || args.list, delete: args.d || args.delete }
+      )
     },
+
+    // Aliases
+    i: () => commands.init(),
+    b: () => commands.build(),
+    h: () => commands.help(),
     t: () => commands.template()
   }
 
   try {
-    if (commands[cmd]) {
-      await commands[cmd]()
-    } else {
+    if (commands[cmd]) { await commands[cmd]() }
+    else {
       log('error', `Unknown command '${cmd}'. Use 'minimaz help' to see available commands.`)
-      process.exit(1)
+      commands['help']()
     }
   } catch (e) {
-    log('error', e instanceof Error ? e.message : e)
+    log(
+      'error', e instanceof Error
+      ? process.env.DEBUG ? e.stack : e.message
+      : e
+    )
     process.exit(1)
   }
 }

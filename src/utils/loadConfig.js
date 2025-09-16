@@ -47,18 +47,14 @@ export async function loadConfig() {
       userConfig = await fs.readJson(configPath)
       log('info', 'Loaded config from minimaz.config.json')
     } catch (e) {
-      log('warning', `Failed to parse minimaz.config.json. Using defaults. Error: ${e.message}`)
+      throw new Error(`Failed to parse minimaz.config.json: ${e.message}`)
     }
-  } else {
-    log('info', 'No minimaz.config.json found. Using default config')
-  }
+  } else { log('info', 'No minimaz.config.json found. Using default config') }
 
   const config = deepMerge(defaultConfig, userConfig)
 
   if (!config.src || !config.dist) {
-    log('error', 'Invalid configuration: src and dist are required')
-    process.exit(1)
+    throw new Error('Invalid configuration: src and dist are required')
   }
-
   return config
 }

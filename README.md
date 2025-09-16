@@ -80,8 +80,8 @@ Customize your build using a `minimaz.config.json` file:
 ```bash
 minimaz init <project-name>       # Create a new project using global templates
 minimaz build                     # Build and minify the site (uses config or defaults)
-minimaz template -l               # List available templates
 minimaz template <path>           # Save a new template from specified path (or current dir)
+minimaz template -l               # List available templates
 minimaz template -d <name>        # Delete a saved template
 minimaz help                      # Show help message
 ```

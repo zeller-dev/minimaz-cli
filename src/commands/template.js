@@ -7,24 +7,18 @@ import { askQuestion, listTemplates } from '../utils/functions.js'
 export async function template(targetPath, options = {}) {
   const templatesDir = path.join(os.homedir(), '.minimaz', 'templates')
   const deleteName = options.delete || options.d
-  const list = options.list || options.l
 
   if (deleteName) return await deleteTemplate(templatesDir, deleteName)
-  if (list) return await listTemplates(templatesDir)
+  if (options.list || options.l) return await listTemplates(templatesDir)
   await saveTemplate(templatesDir, targetPath)
 }
 
 async function deleteTemplate(dir, name) {
-  if (!name) {
-    log('error', 'No template name specified to delete.')
-    process.exit(1)
-  }
+  if (!name) throw new Error('No template name specified to delete.')
 
   const target = path.join(dir, name)
-  if (!await fs.pathExists(target)) {
-    log('warn', `Template not found: ${name}`)
-    process.exit(1)
-  }
+  if (!await fs.pathExists(target)) throw new Error(`Template not found: ${name}`)
+
 
   const confirm = await askQuestion(`❓ Confirm delete '${name}'? (Y/N) `)
   if (confirm.toLowerCase() !== 'y') {
@@ -36,8 +30,7 @@ async function deleteTemplate(dir, name) {
     await fs.remove(target)
     log('success', `Template '${name}' deleted.`)
   } catch (e) {
-    log('error', `Delete error: ${e.message}`)
-    process.exit(1)
+    throw new Error(`Delete error: ${e.message}`)
   }
 }
 
@@ -49,10 +42,7 @@ async function saveTemplate(dir, targetPath) {
   if (!await fs.pathExists(source)) {
     log('warn', `Path not found: ${source}`)
     const answer = await askQuestion('❓ Use current directory instead? (Y/N) ')
-    if (answer.toLowerCase() !== 'y') {
-      log('error', 'Operation cancelled.')
-      process.exit(1)
-    }
+    if (answer.toLowerCase() !== 'y') throw new Error('Operation cancelled.')
     source = process.cwd()
   }
 
@@ -62,7 +52,6 @@ async function saveTemplate(dir, targetPath) {
     await fs.copy(source, dest)
     log('success', `Template saved to ${dest}`)
   } catch (e) {
-    log('error', `Copy error: ${e.message}`)
-    process.exit(1)
+    throw new Error(`Failed to create project: ${e.message}`)
   }
 }

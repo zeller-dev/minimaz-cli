@@ -1,12 +1,14 @@
-export function log(type = '', message) {
+export function log(type = 'log', message) {
     const icons = {
         error: '❌',
-        warning: '⚠️',
+        warn: '⚠️ ',
         success: '✅',
-        info: 'ℹ️',
+        info: 'ℹ️ ',
         default: '📁'
     }
-    const icon = icons[type] || icons.default
-    const method = type === 'error' ? 'error' : type === 'warning' ? 'warn' : 'log'
-    console[method](icon, message)
+
+    console[(type === 'error' && type === 'warn') ? type : 'log'](
+        icons[type] || icons.default,
+        message
+    )
 }

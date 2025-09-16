@@ -18,5 +18,9 @@
     "scripts": [
         "script.js",
         "script-2.js"
-    ]
+    ],
+    "folders": {
+        "src": "",
+        "public": "public"
+    }
 }

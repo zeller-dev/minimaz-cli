@@ -12,9 +12,7 @@ export function parseArgs(rawArgs) {
       const hasValue = next && !next.startsWith('-')
       args[key] = hasValue ? next : true
       if (hasValue) i++
-    } else {
-      args._.push(arg)
-    }
+    } else { args._.push(arg) }
   }
   return args
 }
@@ -35,9 +33,8 @@ export async function listTemplates(dir) {
     return
   }
   const templates = await fs.readdir(dir)
-  if (templates.length === 0) {
-    log('info', 'No global templates available.')
-  } else {
+  if (templates.length === 0) { log('info', 'No global templates available.') }
+  else {
     log('info', 'Available global templates:')
     templates.forEach(t => log('info', `- ${t}`))
   }

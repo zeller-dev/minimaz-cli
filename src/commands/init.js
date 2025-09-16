@@ -7,16 +7,12 @@ export async function init(projectName, options = {}) {
   const templateDir = path.join(os.homedir(), '.minimaz', 'templates', options.template)
   const targetDir = path.resolve(process.cwd(), projectName)
 
-  if (!await fs.pathExists(templateDir)) {
-    log('error', `Template '${options.template}' not found.`)
-    process.exit(1)
-  }
+  if (!await fs.pathExists(templateDir)) throw new Error(`Template '${options.template}' not found.`)
 
   try {
     await fs.copy(templateDir, targetDir)
     log('success', `Project '${projectName}' created using template '${options.template}'.`)
   } catch (e) {
-    log('error', `Failed to create project: ${e.message}`)
-    process.exit(1)
+    throw new Error(`Failed to create project: ${e.message}`)
   }
 }
