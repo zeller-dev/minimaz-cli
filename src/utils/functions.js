@@ -46,3 +46,14 @@ export function applyReplacements(content, replacements = {}) {
   }
   return content
 }
+
+export async function getFile(srcPath, replace) {
+  try {
+    let file = await fs.readFile(srcPath, 'utf-8')
+    file = applyReplacements(file, replace)
+    return file
+  } catch (err) {
+    log('error', `Failed to read file ${srcPath}: ${err.message}`)
+    return null
+  }
+}
