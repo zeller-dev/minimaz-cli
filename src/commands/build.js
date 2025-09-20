@@ -55,7 +55,8 @@ export async function build() {
         const stat = await fs.stat(srcPath)
         const ext = path.extname(item).toLowerCase()
 
-        if (stat.isDirectory()) { await walk(srcPath, destPath) }
+        if (stat.isDirectory()) await walk(srcPath, destPath)
+
         else {
           switch (ext) {
             case '.html': {
@@ -92,7 +93,7 @@ export async function build() {
               const result = await esbuild.build({
                 entryPoints: [srcPath],
                 bundle: false,
-                minify: !!config.minify?.ts,
+                minify: !!config.minify?.ts, // esbuild minifica se true
                 platform: 'browser',
                 format: 'esm',
                 write: false
@@ -100,6 +101,8 @@ export async function build() {
 
               let compiled = result.outputFiles[0].text
               compiled = applyReplacements(compiled, config.replace)
+
+              // Se hai minificato con esbuild, non passare a terser
               jsChunks.push(compiled)
               break
             }
@@ -116,22 +119,33 @@ export async function build() {
     // Walk through the folder
     await walk(fullSrc, fullDest)
 
-    if (srcPathRel === srcDir) {
-      if (config.styles && config.styles.length > 0) {
-        for (const style of config.styles) {
-          let css = await fs.readFile(style, 'utf-8')
+    // Merge CSS/JS globali dal config, sempre
+    if (config.styles && config.styles.length > 0) {
+      for (const style of config.styles) {
+        const fullPath = path.resolve(process.cwd(), style)
+        if (await fs.pathExists(fullPath)) {
+          let css = await fs.readFile(fullPath, 'utf-8')
           css = applyReplacements(css, config.replace)
           cssChunks.push(css)
-        }
-      }
-      if (config.script && config.script.length > 0) {
-        for (const script of config.script) {
-          let script = await fs.readFile(script, 'utf-8')
-          script = applyReplacements(script, config.replace)
-          cssChunks.push(script)
+        } else {
+          log('warn', `Style file not found: ${style}`)
         }
       }
     }
+
+    if (config.scripts && config.scripts.length > 0) {
+      for (const script of config.scripts) {
+        const fullPath = path.resolve(process.cwd(), script)
+        if (await fs.pathExists(fullPath)) {
+          let js = await fs.readFile(fullPath, 'utf-8')
+          js = applyReplacements(js, config.replace)
+          jsChunks.push(js)
+        } else {
+          log('warn', `Script file not found: ${script}`)
+        }
+      }
+    }
+
 
     // Merge and write CSS
     if (cssChunks.length > 0) {
