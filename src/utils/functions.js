@@ -1,5 +1,6 @@
 import readline from 'readline'
 import fs from 'fs-extra'
+import path from 'path'
 import { log } from './logService.js'
 
 export function parseArgs(rawArgs) {
@@ -33,7 +34,7 @@ export async function listTemplates(dir) {
     return
   }
   const templates = await fs.readdir(dir)
-  if (templates.length === 0) { log('info', 'No global templates available.') }
+  if (templates.length === 0) log('info', 'No global templates available.') 
   else {
     log('info', 'Available global templates:')
     templates.forEach(t => log('info', `- ${t}`))
@@ -55,5 +56,41 @@ export async function getFile(srcPath, replace) {
   } catch (err) {
     log('error', `Failed to read file ${srcPath}: ${err.message}`)
     return null
+  }
+}
+
+export function getGlobalNodeModulesPath() {
+  return process.platform === 'win32'
+    ? path.join(process.env.APPDATA, 'npm', 'node_modules')
+    : '/usr/local/lib/node_modules'
+}
+
+export async function createGlobalDir() {
+  const globalDir = path.join(os.homedir(), '.minimaz', 'templates')
+  const defaultDir = path.resolve(__dirname, '..', 'templates')
+
+  try {
+    const exists = await fs.pathExists(globalDir)
+    const isEmpty = exists ? (await fs.readdir(globalDir)).length === 0 : true
+
+    if (!exists) {
+      await fs.ensureDir(globalDir)
+      log('success', 'Created global templates directory.')
+    }
+
+    if (!isEmpty) {
+      log('info', 'Global templates directory not empty. Skipping copy.')
+      return
+    }
+
+    for (const name of await fs.readdir(defaultDir)) {
+      await fs.copy(path.join(defaultDir, name), path.join(globalDir, name))
+      log('success', `Copied template '${name}'.`)
+    }
+
+    log('success', 'Default templates setup completed.')
+  } catch (e) {
+    log('error', `Failed to create global templates directory: ${e.message}`)
+    throw e
   }
 }

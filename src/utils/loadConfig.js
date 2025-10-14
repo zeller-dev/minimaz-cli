@@ -53,8 +53,6 @@ export async function loadConfig() {
 
   const config = deepMerge(defaultConfig, userConfig)
 
-  if (!config.src || !config.dist) {
-    throw new Error('Invalid configuration: src and dist are required')
-  }
+  if (!config.src || !config.dist) throw new Error('Invalid configuration: src and dist are required')
   return config
 }

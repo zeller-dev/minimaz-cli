@@ -37,7 +37,11 @@ async function main() {
     template: async () => {
       await template(
         args._[1],
-        { list: args.l || args.list, delete: args.d || args.delete }
+        { 
+          list: args.l || args.list, 
+          delete: args.d || args.delete, 
+          update: args.u || args.update
+        }
       )
     },
 
