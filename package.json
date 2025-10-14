@@ -6,13 +6,11 @@
   "license": "MIT",
   "type": "module",
   "files": [
-    "bin/",
-    "src/",
-    "LICENSE",
-    "package.json",
-    "README.md"
+    "dist/"
   ],
   "scripts": {
+    "dev": "ts-node bin/cli.ts",
+    "build": "node builder.js",
     "postinstall": "node ./src/utils/postInstall.js"
   },
   "repository": {
@@ -20,8 +18,8 @@
     "url": "https://github.com/zeller-dev/minimaz-cli.git"
   },
   "bin": {
-    "minimaz": "./bin/cli.js",
-    "mz": "./bin/cli.js"
+    "minimaz": "./dist/bin/cli.js",
+    "mz": "./dist/bin/cli.js"
   },
   "keywords": [
     "cli",
@@ -37,9 +35,17 @@
   },
   "dependencies": {
     "clean-css": "^5.3.3",
-    "esbuild": "^0.25.6",
     "fs-extra": "^11.3.0",
     "html-minifier-terser": "^7.2.0",
-    "terser": "^5.39.2"
+    "terser": "^5.44.0"
+  },
+  "devDependencies": {
+    "@types/clean-css": "^4.2.11",
+    "@types/fs-extra": "^11.0.4",
+    "@types/html-minifier-terser": "^7.0.2",
+    "@types/node": "^24.7.2",
+    "esbuild": "^0.25.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

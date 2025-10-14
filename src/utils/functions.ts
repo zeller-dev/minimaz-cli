@@ -1,10 +1,18 @@
 import readline from 'readline'
 import fs from 'fs-extra'
 import path from 'path'
+import os from 'os'
 import { log } from './logService.js'
 
-export function parseArgs(rawArgs) {
-  const args = { _: [] }
+// ----- Types -----
+interface Args {
+  _: string[]
+  [key: string]: string | boolean | string[]
+}
+
+// ----- Parse CLI Arguments -----
+export function parseArgs(rawArgs: string[]): Args {
+  const args: Args = { _: [] }
   for (let i = 0; i < rawArgs.length; i++) {
     const arg = rawArgs[i]
     if (arg.startsWith('-')) {
@@ -13,12 +21,15 @@ export function parseArgs(rawArgs) {
       const hasValue = next && !next.startsWith('-')
       args[key] = hasValue ? next : true
       if (hasValue) i++
-    } else { args._.push(arg) }
+    } else {
+      args._.push(arg)
+    }
   }
   return args
 }
 
-export function askQuestion(query) {
+// ----- Ask Question from CLI -----
+export function askQuestion(query: string): Promise<string> {
   return new Promise(resolve => {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
     rl.question(query, answer => {
@@ -28,11 +39,13 @@ export function askQuestion(query) {
   })
 }
 
-export async function listTemplates(dir) {
+// ----- List Templates -----
+export async function listTemplates(dir: string): Promise<void> {
   if (!await fs.pathExists(dir)) {
     log('info', 'No global templates found.')
     return
   }
+
   const templates = await fs.readdir(dir)
   if (templates.length === 0) log('info', 'No global templates available.') 
   else {
@@ -41,33 +54,37 @@ export async function listTemplates(dir) {
   }
 }
 
-export function applyReplacements(content, replacements = {}) {
+// ----- Apply Replacements in File Content -----
+export function applyReplacements(content: string, replacements: Record<string, string> = {}): string {
   for (const [from, to] of Object.entries(replacements)) {
     content = content.split(from).join(to)
   }
   return content
 }
 
-export async function getFile(srcPath, replace) {
+// ----- Read File with Replacements -----
+export async function getFile(srcPath: string, replace?: Record<string, string>): Promise<string | null> {
   try {
     let file = await fs.readFile(srcPath, 'utf-8')
-    file = applyReplacements(file, replace)
+    if (replace) file = applyReplacements(file, replace)
     return file
-  } catch (err) {
+  } catch (err: any) {
     log('error', `Failed to read file ${srcPath}: ${err.message}`)
     return null
   }
 }
 
-export function getGlobalNodeModulesPath() {
+// ----- Global Node Modules Path -----
+export function getGlobalNodeModulesPath(): string {
   return process.platform === 'win32'
-    ? path.join(process.env.APPDATA, 'npm', 'node_modules')
+    ? path.join(process.env.APPDATA || '', 'npm', 'node_modules')
     : '/usr/local/lib/node_modules'
 }
 
-export async function createGlobalDir() {
+// ----- Create Global Templates Folder -----
+export async function createGlobalDir(): Promise<void> {
   const globalDir = path.join(os.homedir(), '.minimaz', 'templates')
-  const defaultDir = path.resolve(__dirname, '..', 'templates')
+  const defaultDir = path.resolve(new URL('.', import.meta.url).pathname, '..', 'templates')
 
   try {
     const exists = await fs.pathExists(globalDir)
@@ -89,7 +106,7 @@ export async function createGlobalDir() {
     }
 
     log('success', 'Default templates setup completed.')
-  } catch (e) {
+  } catch (e: any) {
     log('error', `Failed to create global templates directory: ${e.message}`)
     throw e
   }

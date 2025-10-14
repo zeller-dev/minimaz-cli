@@ -15,13 +15,32 @@ import { applyReplacements, getFile } from '../utils/functions.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+interface FolderConfig {
+  [key: string]: string
+}
+
+interface BuildConfig {
+  src: string
+  dist: string
+  public?: string
+  minify?: {
+    html?: boolean
+    css?: boolean
+    js?: boolean
+    ts?: boolean
+  }
+  replace?: Record<string, string>
+  styles?: string[]
+  scripts?: string[]
+  folders?: FolderConfig
+}
+
 /**
  * Build project according to configuration.
- * Each folder in config.folders is processed independently.
  */
-export async function build() {
+export async function build(): Promise<void> {
   try {
-    const config = await loadConfig()
+    const config: BuildConfig = await loadConfig()
     const distDir = path.resolve(process.cwd(), config.dist || 'dist')
 
     // Remove previous dist folder and recreate
@@ -29,11 +48,11 @@ export async function build() {
     await fs.ensureDir(distDir)
 
     /**
-     * Process a single folder block
-     * @param {string} srcPathRel - relative source folder path
-     * @param {string} destName - destination folder name inside dist
+     * Process a single folder
+     * @param srcPathRel Relative source folder path
+     * @param destName Destination folder name inside dist
      */
-    async function processFolder(srcPathRel, destName) {
+    async function processFolder(srcPathRel: string, destName: string): Promise<void> {
       const fullSrc = path.resolve(process.cwd(), srcPathRel)
       const fullDest = path.join(distDir, destName)
 
@@ -42,12 +61,13 @@ export async function build() {
         return
       }
 
-      const cssChunks = []
-      const jsChunks = []
+      const cssChunks: string[] = []
+      const jsChunks: string[] = []
 
-      // Recursively process all files inside the folder
-      async function walk(src, dest) {
+      // Recursive walk function
+      async function walk(src: string, dest: string): Promise<void> {
         await fs.ensureDir(dest)
+
         for (const item of await fs.readdir(src)) {
           const srcPath = path.join(src, item)
           const destPath = path.join(dest, item)
@@ -63,11 +83,12 @@ export async function build() {
             switch (ext) {
               case '.html': {
                 let content = await getFile(srcPath, config.replace)
+                if (!content) break
                 if (config.minify?.html) {
                   content = await minifyHtml(content, {
                     collapseWhitespace: true,
                     removeComments: true,
-                    minifyJS: config.minify?.js,
+                    minifyJS: config.minify?.ts,
                     minifyCSS: config.minify?.css
                   })
                 }
@@ -76,37 +97,37 @@ export async function build() {
               }
 
               case '.css': {
-                let content = await getFile(srcPath, config.replace)
+                const content = await getFile(srcPath, config.replace)
                 if (content) cssChunks.push(content)
                 break
               }
-
-              case '.js': {
-                let content = await getFile(srcPath, config.replace)
-                if (content) jsChunks.push(content)
-                break
-              }
-
-              case '.ts': {
-                const result = await esbuild.build({
-                  entryPoints: [srcPath],
-                  bundle: false,
-                  minify: !!config.minify?.ts,
-                  platform: 'browser',
-                  format: 'esm',
-                  write: false
-                })
-                let compiled = result.outputFiles[0].text
-                compiled = applyReplacements(compiled, config.replace)
-                if (srcPathRel === config.src) jsChunks.push(compiled)
-                break
-              }
-
+              /*
+                            case '.ts': {
+                              const content = await getFile(srcPath, config.replace)
+                              if (content) jsChunks.push(content)
+                              break
+                            }
+              
+                            case '.ts': {
+                              const result = await esbuild.build({
+                                entryPoints: [srcPath],
+                                bundle: false,
+                                minify: !!config.minify?.ts,
+                                platform: 'browser',
+                                format: 'esm',
+                                write: false
+                              })
+                              let compiled = result.outputFiles[0].text
+                              compiled = applyReplacements(compiled, config.replace)
+                              if (srcPathRel === config.src) jsChunks.push(compiled)
+                              break
+                            }
+              */
               default:
                 await fs.copy(srcPath, destPath)
                 break
             }
-          } catch (err) {
+          } catch (err: any) {
             log('error', `Failed to process file: ${srcPath} - ${err.message}`)
           }
         }
@@ -114,11 +135,10 @@ export async function build() {
 
       await walk(fullSrc, fullDest)
 
-      // Only merge CSS/JS for root source folder
+      // Merge CSS/JS only for root source folder
       if (srcPathRel === config.src) {
         try {
-          // Merge additional CSS files from config
-          if (config.styles && config.styles.length > 0) {
+          if (config.styles?.length) {
             for (const style of config.styles) {
               const fullPath = path.resolve(process.cwd(), style)
               if (await fs.pathExists(fullPath)) {
@@ -131,8 +151,7 @@ export async function build() {
             }
           }
 
-          // Merge additional JS files from config
-          if (config.scripts && config.scripts.length > 0) {
+          if (config.scripts?.length) {
             for (const script of config.scripts) {
               const fullPath = path.resolve(process.cwd(), script)
               if (await fs.pathExists(fullPath)) {
@@ -155,13 +174,13 @@ export async function build() {
           // Write final JS bundle
           if (jsChunks.length > 0) {
             let finalJs = jsChunks.join('\n')
-            if (config.minify?.js) {
+            if (config.minify?.ts) {
               const minified = await minifyJs(finalJs)
-              finalJs = minified.code
+              finalJs = minified.code ?? ''
             }
-            await fs.outputFile(path.join(distDir, 'script.js'), finalJs)
+            await fs.outputFile(path.join(distDir, 'script.ts'), finalJs)
           }
-        } catch (err) {
+        } catch (err: any) {
           log('error', `Failed to merge CSS/JS: ${err.message}`)
         }
       }
@@ -169,7 +188,7 @@ export async function build() {
       log('success', `Processed folder: ${srcPathRel} -> /${destName}`)
     }
 
-    // Run build logic for each folder defined in config
+    // Process all folders from config
     if (config.folders && Object.keys(config.folders).length > 0) {
       for (const [srcPathRel, destName] of Object.entries(config.folders)) {
         await processFolder(srcPathRel, destName)
@@ -179,7 +198,7 @@ export async function build() {
     }
 
     log('success', `Build completed. Output saved in /${config.dist}`)
-  } catch (err) {
+  } catch (err: any) {
     log('error', `Build failed: ${err.message}`)
   }
 }

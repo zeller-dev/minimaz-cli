@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 
@@ -14,11 +12,14 @@ import { parseArgs } from '../src/utils/functions.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-async function main() {
-  const args = parseArgs(process.argv.slice(2))
-  const cmd = (args._[0]).toLowerCase()
+async function main(): Promise<void> {
+  const args: any = parseArgs(process.argv.slice(2))
+  const cmd = (args._[0] || '').toLowerCase()
 
-  const commands = {
+  // Tipi per i comandi
+  type CommandFn = () => Promise<void> | void
+
+  const commands: Record<string, CommandFn> = {
     // Init Command
     init: async () => {
       await init(
@@ -37,11 +38,11 @@ async function main() {
     template: async () => {
       await template(
         args._[1],
-        { 
-          list: args.l || args.list, 
-          delete: args.d || args.delete, 
+        {
+          list: args.l || args.list,
+          delete: args.d || args.delete,
           update: args.u || args.update
-        }
+        } as any
       )
     },
 
@@ -53,17 +54,20 @@ async function main() {
   }
 
   try {
-    if (commands[cmd]) { await commands[cmd]() }
-    else {
+    if (commands[cmd]) {
+      await commands[cmd]()
+    } else {
       log('error', `Unknown command '${cmd}'. Use 'minimaz help' to see available commands.`)
       commands['help']()
     }
   } catch (e) {
     log(
-      'error', e instanceof Error
-      ? process.env.DEBUG ? e.stack : e.message
-      : e
+      'error',
+      e instanceof Error
+        ? process.env.DEBUG ? e.stack ?? e.message : e.message
+        : String(e)
     )
+
     process.exit(1)
   }
 }
