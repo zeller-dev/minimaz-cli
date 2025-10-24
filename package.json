@@ -6,7 +6,8 @@
   "license": "MIT",
   "type": "module",
   "files": [
-    "dist/",
+    "bin",
+    "src",
     "LICENSE",
     "README.md",
     "package.json"
