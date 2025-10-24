@@ -6,6 +6,7 @@ on:
 
 jobs:
   publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,15 +22,11 @@ jobs:
           node-version: 22
           registry-url: 'https://registry.npmjs.org/'
 
-      - name: Install dependencies
-        run: npm ci
-
       - name: Build project
         run: node builder.js
 
       - name: Publish dist/ to npm
-        run: |
-          cd dist
-          npm publish --access public
+        working-directory: dist
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

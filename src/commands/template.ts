@@ -4,22 +4,20 @@ import path from 'path'
 import { log } from '../utils/logService.js'
 import { askQuestion, listTemplates, getGlobalNodeModulesPath } from '../utils/functions.js'
 
-interface TemplateOptions {
-  list?: boolean
-  l?: boolean
-  delete?: string
-  d?: string
-  update?: string
-  u?: string
-}
-
 /**
- * Gestisce i template: salvataggio, aggiornamento e cancellazione
+ * Handles all template-related operations:
+ * - Save current folder as a global template
+ * - Update existing templates
+ * - Delete templates
+ * - Sync templates from node_modules
+ *
+ * @param targetPath - Optional path of the folder to save as template
+ * @param options - CLI flags (--list, --delete, --update, etc.)
  */
-export async function template(targetPath?: string, options: TemplateOptions = {}): Promise<void> {
-  const templatesDir = path.join(os.homedir(), '.minimaz', 'templates')
-  const deleteName = options.delete || options.d
-  const updateName = options.update || options.u
+export async function template(targetPath?: string, options: any = {}): Promise<void> {
+  const templatesDir: string = path.join(os.homedir(), '.minimaz', 'templates')
+  const deleteName: string | undefined = options.delete || options.d
+  const updateName: string | undefined = options.update || options.u
 
   if (deleteName) return await deleteTemplate(templatesDir, deleteName)
   if (options.list || options.l) return await listTemplates(templatesDir)
@@ -33,19 +31,25 @@ export async function template(targetPath?: string, options: TemplateOptions = {
     }
   }
 
+  // Default action: save current folder as a template
   await saveTemplate(templatesDir, targetPath)
 }
 
-/** Aggiorna un singolo template dalla cartella corrente */
+/**
+ * Updates a single template with files from the current working directory.
+ *
+ * @param templatesDir - Global templates directory (~/.minimaz/templates)
+ * @param templateName - Name of the template to update
+ */
 async function updateSingleTemplate(templatesDir: string, templateName: string): Promise<void> {
-  const sourceDir = path.resolve(process.cwd())
-  const targetDir = path.join(templatesDir, templateName)
+  const sourceDir: string = path.resolve(process.cwd())
+  const targetDir: string = path.join(templatesDir, templateName)
 
   if (!await fs.pathExists(targetDir))
     throw new Error(`Template '${templateName}' not found in ~/.minimaz/templates`)
 
-  const confirm = await askQuestion(`❓ Update template '${templateName}' with current directory? (Y/N) `)
-  if (confirm.toLowerCase() !== 'y') {
+  const answer: string = await askQuestion(`❓ Update template '${templateName}' with current directory? (Y/N) `)
+  if (answer !== 'y' && answer !== '') {
     log('info', 'Update cancelled.')
     return
   }
@@ -53,21 +57,25 @@ async function updateSingleTemplate(templatesDir: string, templateName: string):
   try {
     await fs.copy(sourceDir, targetDir, { overwrite: true })
     log('success', `Template '${templateName}' updated from current directory.`)
-  } catch (e: any) {
-    throw new Error(`Failed to update '${templateName}': ${e.message}`)
+  } catch (error: any) {
+    throw new Error(`Failed to update '${templateName}': ${error.message}`)
   }
 }
 
-/** Aggiorna tutti i template e file da node_modules/minimaz/src/templates */
+/**
+ * Updates all templates from the global node_modules/minimaz/src/templates folder.
+ * This ensures the local templates are synced with the installed package.
+ *
+ * @param templatesDir - Global templates directory (~/.minimaz/templates)
+ */
 async function updateFromNodeModules(templatesDir: string): Promise<void> {
-  const nodeModulesPath = path.join(getGlobalNodeModulesPath(), 'minimaz', 'src', 'templates')
+  const nodeModulesPath: string = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
 
-  if (!await fs.pathExists(nodeModulesPath))
-    throw new Error(`'node_modules/minimaz/src/templates' not found.`)
+  if (!await fs.pathExists(nodeModulesPath)) throw new Error(`'node_modules/minimaz/src/templates' not found.`)
 
-  const items = await fs.readdir(nodeModulesPath)
+  const items: string[] = await fs.readdir(nodeModulesPath)
 
-  const answer = await askQuestion(`⚠️ Update local templates and files from node_modules? (Y/N): `)
+  const answer: string = await askQuestion(`⚠️ Update local templates overwriting them with defaults? (Y/N): `)
   if (answer !== 'y' && answer !== '') {
     log('info', 'Update cancelled.')
     return
@@ -75,21 +83,26 @@ async function updateFromNodeModules(templatesDir: string): Promise<void> {
 
   try {
     for (const item of items) {
-      const src = path.join(nodeModulesPath, item)
-      const dest = path.join(templatesDir, item)
+      const src: string = path.join(nodeModulesPath, item)
+      const dest: string = path.join(templatesDir, item)
       await fs.copy(src, dest, { overwrite: true })
       log('success', `Updated '${item}'`)
     }
     log('info', `✨ All templates and files updated successfully.`)
-  } catch (e: any) {
-    throw new Error(`Update failed: ${e.message}`)
+  } catch (error: any) {
+    throw new Error(`Update failed: ${error.message}`)
   }
 }
 
-/** Cancella un template globale */
+/**
+ * Deletes a global template by name from ~/.minimaz/templates.
+ *
+ * @param dir - Global templates directory
+ * @param name - Template name to delete
+ */
 async function deleteTemplate(dir: string, name: string): Promise<void> {
   if (!name) throw new Error('No template name specified to delete.')
-  const target = path.join(dir, name)
+  const target: string = path.join(dir, name)
   if (!await fs.pathExists(target)) throw new Error(`Template not found: ${name}`)
 
   const confirm = await askQuestion(`❓ Confirm delete '${name}'? (Y/N) `)
@@ -101,28 +114,33 @@ async function deleteTemplate(dir: string, name: string): Promise<void> {
   try {
     await fs.remove(target)
     log('success', `Template '${name}' deleted.`)
-  } catch (e: any) {
-    throw new Error(`Delete error: ${e.message}`)
+  } catch (error: any) {
+    throw new Error(`Delete error: ${error.message}`)
   }
 }
 
-/** Salva la cartella corrente o specificata come nuovo template globale */
+/**
+ * Saves a folder (current or specified) as a new global template.
+ *
+ * @param dir - Global templates directory (~/.minimaz/templates)
+ * @param targetPath - Optional path to save as a template
+ */
 async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
-  let source = targetPath ? path.resolve(process.cwd(), targetPath) : process.cwd()
+  let source: string = targetPath ? path.resolve(process.cwd(), targetPath) : process.cwd()
 
   if (!await fs.pathExists(source)) {
     log('warn', `Path not found: ${source}`)
-    const answer = (await askQuestion('❓ Use current directory instead? (Y/N) ')).trim().toLowerCase()
+    const answer: string = (await askQuestion('❓ Use current directory instead? (Y/N):\t')).trim().toLowerCase()
     if (answer !== 'y' && answer !== '') throw new Error('Operation cancelled.')
     source = process.cwd()
   }
 
   try {
     await fs.ensureDir(dir)
-    const dest = path.join(dir, path.basename(source))
+    const dest: string = path.join(dir, path.basename(source))
     await fs.copy(source, dest)
     log('success', `Template saved to ${dest}`)
-  } catch (e: any) {
-    throw new Error(`Failed to save template: ${e.message}`)
+  } catch (error: any) {
+    throw new Error(`Failed to save template: ${error.message}`)
   }
 }

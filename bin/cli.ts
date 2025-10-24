@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 
@@ -9,18 +10,18 @@ import { template } from '../src/commands/template.js'
 import { log } from '../src/utils/logService.js'
 import { parseArgs } from '../src/utils/functions.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+//const __filename = fileURLToPath(import.meta.url)
+//const __dirname = dirname(__filename)
 
 async function main(): Promise<void> {
   const args: any = parseArgs(process.argv.slice(2))
-  const cmd = (args._[0] || '').toLowerCase()
+  const cmd: string = (args._[0] || '').toLowerCase()
 
-  // Tipi per i comandi
+  // Types for command functions
   type CommandFn = () => Promise<void> | void
 
   const commands: Record<string, CommandFn> = {
-    // Init Command
+    // Init Command: create a new project
     init: async () => {
       await init(
         args._[1] || 'minimaz-project',
@@ -28,13 +29,13 @@ async function main(): Promise<void> {
       )
     },
 
-    // Build Command
+    // Build Command: build and minify files
     build: async () => build(),
 
-    // Help Command
+    // Help Command: show help message
     help: () => help(),
 
-    // Template Command
+    // Template Command: manage global templates
     template: async () => {
       await template(
         args._[1],
@@ -45,6 +46,9 @@ async function main(): Promise<void> {
         } as any
       )
     },
+
+    // @TODO add version command
+    // @TODO add analyze command
 
     // Aliases
     i: () => commands.init(),

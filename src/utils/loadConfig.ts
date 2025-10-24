@@ -2,24 +2,9 @@ import fs from 'fs-extra'
 import path from 'path'
 import { log } from './logService.js'
 
-// ----- Types -----
-interface MinifyOptions {
-  html?: boolean
-  css?: boolean
-  js?: boolean
-}
-
-export interface MinimazConfig {
-  src: string
-  dist: string
-  public?: string
-  minify?: MinifyOptions
-  replace?: Record<string, string>
-  [key: string]: any
-}
-
 // ----- Default Config -----
-const defaultConfig: MinimazConfig = {
+// Provides default values for project build and minification
+const defaultConfig: any = {
   src: 'src',
   dist: 'dist',
   public: 'public',
@@ -32,8 +17,9 @@ const defaultConfig: MinimazConfig = {
 }
 
 // ----- Deep Merge Function -----
+// Recursively merges user config into default config
 function deepMerge(target: any, source: any): any {
-  const result = { ...target }
+  const result: any = { ...target }
 
   for (const key in source) {
     if (
@@ -51,22 +37,23 @@ function deepMerge(target: any, source: any): any {
 }
 
 // ----- Load User Config -----
-export async function loadConfig(): Promise<MinimazConfig> {
-  const configPath = path.resolve(process.cwd(), 'minimaz.config.tson')
+// Loads minimaz.config.tson if present and merges it with default config
+export async function loadConfig(): Promise<any> {
+  const configPath: string = path.resolve(process.cwd(), 'minimaz.config.json')
 
-  let userConfig: Partial<MinimazConfig> = {}
+  let userConfig: Partial<any> = {}
   if (await fs.pathExists(configPath)) {
     try {
       userConfig = await fs.readJson(configPath)
       log('info', 'Loaded config from minimaz.config.tson')
-    } catch (e: any) {
-      throw new Error(`Failed to parse minimaz.config.tson: ${e.message}`)
+    } catch (error: any) {
+      throw new Error(`Failed to parse minimaz.config.tson: ${error.message}`)
     }
   } else {
     log('info', 'No minimaz.config.tson found. Using default config')
   }
 
-  const config: MinimazConfig = deepMerge(defaultConfig, userConfig)
+  const config: any = deepMerge(defaultConfig, userConfig)
 
   if (!config.src || !config.dist) throw new Error('Invalid configuration: src and dist are required')
 

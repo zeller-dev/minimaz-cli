@@ -1,17 +1,22 @@
 {
-  "name": "minimaz",
-  "version": "0.0.8",
+  "name": "minimaz-cli",
+  "version": "0.1.0",
   "description": "Minimal project initializer and builder CLI",
   "author": "MrZeller",
   "license": "MIT",
   "type": "module",
   "files": [
-    "dist/"
+    "bin/",
+    "src/",
+    "LICENSE",
+    "README.md",
+    "package.json"
   ],
   "scripts": {
-    "dev": "ts-node bin/cli.ts",
+    "dev": "node --loader ts-node/esm bin/cli.ts",
     "build": "node builder.js",
-    "postinstall": "node ./src/utils/postInstall.js"
+    "postinstall:dev": "node --loader ts-node/esm ./src/utils/postInstall.ts",
+    "postinstall:prod": "node ./dist/src/utils/postInstall.js"
   },
   "repository": {
     "type": "git",
@@ -47,5 +52,6 @@
     "esbuild": "^0.25.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
-  }
+  },
+  "postinstall": "node ./dist/src/utils/postInstall.js"
 }
