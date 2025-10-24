@@ -4,15 +4,16 @@
 
 ## 🚀 Features
 
-- 📁 Initialize projects from global templates
-- 🧩 Save, list, and delete custom templates
-- 📝 Supports HTML, CSS, JS, and TypeScript (.ts → .js)
-- 🧹 Minifies HTML, CSS, JS, and TS (compiled & minified)
-- ⚙️ Configurable with a `minimaz.config.json` file
-- ➕ Supports concatenation of additional scripts and styles
-- 🪄 Optional path replacements for asset links
-- 🪶 Lightweight and fast — ideal for small static or utility projects
-- 🔥 Usable with `minimaz` or alias `mz`
+* 📁 Initialize projects from global templates
+* 🧩 Save, list, and delete custom templates
+* 📝 Supports HTML, CSS, JS, and TypeScript (.ts → .js)
+* 🧹 Minifies HTML, CSS, JS, and TS (compiled & minified)
+* ⚙️ Configurable with a `minimaz.config.json` file
+* ➕ Supports concatenation of additional scripts and styles
+* 🪄 Optional path replacements for asset links
+* 🪶 Lightweight and fast — ideal for small static or utility projects
+* 🔥 Usable with `minimaz` or alias `mz`
+* 🆕 Display version with `minimaz version`
 
 ## 📦 Installation
 
@@ -22,6 +23,7 @@ Run directly with `npx` without global install:
 npx minimaz init my-site
 cd my-site
 npx minimaz build
+npx minimaz version
 ```
 
 Or using the alias:
@@ -29,6 +31,7 @@ Or using the alias:
 ```bash
 npx mz init my-site
 npx mz build
+npx mz version
 ```
 
 ## 📁 Project Structure
@@ -71,9 +74,9 @@ Customize your build using a `minimaz.config.json` file:
 }
 ```
 
-- `styles` (optional): array of `.css` files to concatenate and minify into a single `style.css`
-- `scripts` (optional): array of `.js` files to concatenate and minify into a single `script.js`
-- If omitted, fallback defaults are `style.css` and `script.js`
+* `styles` (optional): array of `.css` files to concatenate and minify into a single `style.css`
+* `scripts` (optional): array of `.js` files to concatenate and minify into a single `script.js`
+* If omitted, fallback defaults are `style.css` and `script.js`
 
 ## 🛠 Commands
 
@@ -84,9 +87,10 @@ minimaz template <path>           # Save a new template from specified path (or 
 minimaz template -l               # List available templates
 minimaz template -d <name>        # Delete a saved template
 minimaz help                      # Show help message
+minimaz version                   # Display Minimaz version
 ```
 
-_All commands also work with the alias `mz`._
+*All commands also work with the alias `mz`.*
 
 ## 📂 Templates
 
