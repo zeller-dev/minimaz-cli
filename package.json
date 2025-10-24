@@ -20,11 +20,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/zeller-dev/minimaz-cli.git"
+    "url": "git+https://github.com/zeller-dev/minimaz-cli.git"
   },
   "bin": {
-    "minimaz": "./dist/bin/cli.js",
-    "mz": "./dist/bin/cli.js"
+    "minimaz": "dist/bin/cli.js",
+    "mz": "dist/bin/cli.js"
   },
   "keywords": [
     "cli",
