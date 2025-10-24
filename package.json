@@ -16,7 +16,7 @@
     "dev": "node --loader ts-node/esm bin/cli.ts",
     "build": "node builder.js",
     "postinstall:dev": "node --loader ts-node/esm ./src/utils/postInstall.ts",
-    "postinstall:prod": "node ./dist/src/utils/postInstall.js"
+    "postinstall:prod": "node dist/src/utils/postInstall.js"
   },
   "repository": {
     "type": "git",
@@ -53,5 +53,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
-  "postinstall": "node ./dist/src/utils/postInstall.js"
+  "postinstall": "node dist/src/utils/postInstall.js"
 }

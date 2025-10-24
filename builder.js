@@ -17,7 +17,7 @@ async function getTSFiles(dir) {
 
 // ----- Remove ./dist from a path for production -----
 function removeDist(string) {
-  return string.replace(/^\.\/dist\//, "./")
+  return string.replace("dist\/", "./")
 }
 
 async function build() {
