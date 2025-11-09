@@ -1,0 +1,11 @@
+{
+    "dist": "dist",
+    "minify": {
+        "html": true,
+        "css": true,
+        "js": true
+    },
+    "folders": {
+        "src": ""
+    }
+}

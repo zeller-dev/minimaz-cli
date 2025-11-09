@@ -1,0 +1,36 @@
+name: Build and Deploy Minimaz Docs to GitHub Pages
+
+on:
+    push:
+        branches:
+            - github-pages
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "22"
+
+            - name: Install dependencies
+              working-directory: ./docs
+              run: npm ci
+
+            - name: Build docs
+              working-directory: ./docs
+              run: npm run build
+
+            - name: Deploy /docs/dist to /minimaz
+              uses: peaceiris/actions-gh-pages@v6
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  publish_dir: ./docs/dist
+                  destination_dir: minimaz
+                  keep_files: true
+                  publish_branch: github-pages

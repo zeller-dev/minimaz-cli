@@ -1,0 +1,13 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npx mz b"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bootstrap-icons": "^1.13.1",
+    "minimaz-cli": "^0.1.3"
+  }
+}
