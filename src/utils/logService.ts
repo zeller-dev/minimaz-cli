@@ -13,7 +13,7 @@ export function log(type: LogType = 'log', message: string): void {
   }
 
   // Use console.error/console.warn only for error and warn
-  if (type === 'error') console.error(icons[type], message)
-  else if (type === 'warn') console.warn(icons[type], message)
-  else console.log(icons[type] || icons.log, message)
+  if (type === 'error') console.error(icons[type], '\t', message)
+  else if (type === 'warn') console.warn(icons[type], '\t', message)
+  else console.log(icons[type] || icons.log, '\t', message)
 }

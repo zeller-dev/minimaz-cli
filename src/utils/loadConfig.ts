@@ -37,7 +37,7 @@ function deepMerge(target: any, source: any): any {
 }
 
 // ----- Load User Config -----
-// Loads minimaz.config.tson if present and merges it with default config
+// Loads minimaz.config.json if present and merges it with default config
 export async function loadConfig(): Promise<any> {
   const configPath: string = path.resolve(process.cwd(), 'minimaz.config.json')
 
@@ -45,12 +45,12 @@ export async function loadConfig(): Promise<any> {
   if (await fs.pathExists(configPath)) {
     try {
       userConfig = await fs.readJson(configPath)
-      log('info', 'Loaded config from minimaz.config.tson')
+      log('info', 'Loaded config from minimaz.config.json')
     } catch (error: any) {
-      throw new Error(`Failed to parse minimaz.config.tson: ${error.message}`)
+      throw new Error(`Failed to parse minimaz.config.json: ${error.message}`)
     }
   } else {
-    log('info', 'No minimaz.config.tson found. Using default config')
+    log('info', 'No minimaz.config.json found. Using default config')
   }
 
   const config: any = deepMerge(defaultConfig, userConfig)

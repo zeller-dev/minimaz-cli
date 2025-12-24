@@ -10,6 +10,7 @@ import { template } from '../src/commands/template.js'
 
 import { log } from '../src/utils/logService.js'
 import { parseArgs } from '../src/utils/functions.js'
+import { clear } from '../src/commands/clear.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -35,6 +36,9 @@ async function main(): Promise<void> {
 
     // Build Command
     build: async () => build(),
+
+    // Clear Command
+    clear:  () => clear(),
 
     // Help Command
     help: () => help(),
