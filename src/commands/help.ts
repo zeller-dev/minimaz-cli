@@ -26,7 +26,13 @@ export function help(): void {
     '\t\t\t--delete | -d <template-name>\tDelete a global template',
     '',
     '\tminimaz help | h',
-    '\t\tShow this help message'
+    '\t\tShow this help message',
+    '',
+    '\tminimaz clear | c',
+    '\t\tClear the dist folder',
+    '',
+    '\tminimaz version | v',
+    '\t\tShow Minimaz version'
   ].join('\n'));
 }
 
