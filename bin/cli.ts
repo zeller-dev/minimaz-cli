@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
-import fs from 'fs-extra'
+import { dirname } from 'path'
 
 import { build } from '../src/commands/build.js'
 import { init } from '../src/commands/init.js'
@@ -11,14 +10,10 @@ import { template } from '../src/commands/template.js'
 import { log } from '../src/utils/logService.js'
 import { parseArgs } from '../src/utils/functions.js'
 import { clear } from '../src/commands/clear.js'
+import { version } from '../src/commands/version.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-
-// Read version from package.json dynamically
-const pkgPath = join(__dirname, '../package.json')
-const pkgJson = await fs.readJson(pkgPath)
-const version = pkgJson.version as string
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2))
@@ -27,21 +22,22 @@ async function main(): Promise<void> {
   type CommandFn = () => Promise<void> | void
 
   const commands: Record<string, CommandFn> = {
+
+    // Build Command
+    build: async () => build(),
+
+    // Clear Command
+    clear: () => clear(),
+
+    // Help Command
+    help: () => help(),
+
     // Init Command
     init: async () => {
       await init(args._[1] || 'minimaz-project', {
         template: args.template || args.t || 'default'
       })
     },
-
-    // Build Command
-    build: async () => build(),
-
-    // Clear Command
-    clear:  () => clear(),
-
-    // Help Command
-    help: () => help(),
 
     // Template Command
     template: async () => {
@@ -53,12 +49,13 @@ async function main(): Promise<void> {
     },
 
     // Version
-    version: () => console.log(version),
+    version: () => version(),
 
     // Aliases
-    i: () => commands.init(),
     b: () => commands.build(),
+    c: () => commands.clear(),
     h: () => commands.help(),
+    i: () => commands.init(),
     t: () => commands.template(),
     v: () => commands.version()
   }
