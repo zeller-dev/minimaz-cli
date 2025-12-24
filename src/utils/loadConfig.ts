@@ -11,9 +11,16 @@ const defaultConfig: any = {
   minify: {
     html: true,
     css: true,
-    js: true
+    js: true,
+    ts: true
   },
-  replace: {}
+  replace: {
+    '../public/': "public/"
+  },
+  folders: {
+    'src': '',
+    'public': 'public'
+  }
 }
 
 // ----- Deep Merge Function -----
