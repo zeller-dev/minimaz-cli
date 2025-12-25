@@ -54,3 +54,5 @@ export async function init(projectName: string, options: any = {}): Promise<void
     throw new Error(`Failed to create project: ${error.message}`)
   }
 }
+
+// @TODO choose to init nmp

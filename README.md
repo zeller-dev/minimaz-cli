@@ -1,10 +1,10 @@
-# Minimaz ⚡
+# Minimaz, a Christmas Version 🎄
 
-**Minimaz** is a minimal, zero-dependency static site builder and project initializer focused on speed, simplicity, and clean output.
+**Minimaz** is a minimal, low-dependency static site builder and project initializer focused on speed, simplicity, and clean output.
 
 ## 🚀 Features
 
-* 📁 Initialize projects from global templates
+* 📁 Initialize projects from templates
 * 🧩 Save, list, and delete custom templates
 * 📝 Supports HTML, CSS, JS, and TypeScript (.ts → .js)
 * 🧹 Minifies HTML, CSS, JS, and TS (compiled & minified)
@@ -12,8 +12,7 @@
 * ➕ Supports concatenation of additional scripts and styles
 * 🪄 Optional path replacements for asset links
 * 🪶 Lightweight and fast — ideal for small static or utility projects
-* 🔥 Usable with `minimaz` or alias `mz`
-* 🆕 Display version with `minimaz version`
+* 🔥 Usable with `minimaz` or its alias `mz`
 
 ## 📦 Installation
 
@@ -38,9 +37,9 @@ npx mz version
 
 ```txt
 my-site/
-├── src/               # HTML, CSS, JS, TS files
-├── public/            # Static assets (images, fonts, etc.)
 ├── dist/              # Output folder (generated)
+├── public/            # Static assets (images, fonts, etc.)
+├── src/               # HTML, CSS, JS, TS files
 ├── minimaz.config.json
 └── ...
 ```
@@ -63,6 +62,10 @@ Customize your build using a `minimaz.config.json` file:
   "replace": {
     "../public/": "public/"
   },
+  "folders": {
+    "src": "",
+    "public": "public"
+  }
   "styles": [
     "style.css",
     "theme.css"
@@ -81,16 +84,27 @@ Customize your build using a `minimaz.config.json` file:
 ## 🛠 Commands
 
 ```bash
-minimaz init <project-name>       # Create a new project using global templates
 minimaz build                     # Build and minify the site (uses config or defaults)
-minimaz template <path>           # Save a new template from specified path (or current dir)
-minimaz template -l               # List available templates
-minimaz template -d <name>        # Delete a saved template
+minimaz clear                     # Clears dist folder
+minimaz init <project-name>       # Create a new project using global templates
 minimaz help                      # Show help message
+minimaz template <path>           # Save a new template from specified path (or current dir)
+minimaz template -list               # List available templates
+minimaz template -delete <name>        # Delete a saved template
 minimaz version                   # Display Minimaz version
 ```
 
-*All commands also work with the alias `mz`.*
+### Commands Aliases
+```bash
+mz b                      # Build and minify the site (uses config or defaults)
+mz c                      # Clears dist folder
+mz i <project-name>       # Create a new project using global templates
+mz h                      # Show help message
+mz t <path>               # Save a new template from specified path (or current dir)
+mz t -l                   # List available templates
+mz t -d <name>            # Delete a saved template
+mz v                      # Display Minimaz version
+```
 
 ## 📂 Templates
 
