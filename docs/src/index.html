@@ -8,14 +8,14 @@
 
     <!-- SEO -->
     <meta name="description"
-        content="Minimaz CLI is a minimal, zero-dependency static site builder for developers and designers. Build, minify, and deploy static websites easily with Node.js.">
+        content="Minimaz CLI is a minimal, fast static site builder and project initializer. Build and minify HTML, CSS, JS, and TypeScript with a simple CLI.">
     <meta name="keywords"
-        content="minimaz, nodejs, cli, static site builder, site generator, web development, open source, zeller, build, init, project, minimal">
+        content="minimaz-cli, minimaz, cli, static site builder, nodejs, html css js, typescript, minimal build tool">
     <meta name="author" content="MrZeller">
     <meta name="robots" content="index, follow">
     <meta property="og:title" content="Minimaz CLI – Minimal Static Site Builder">
     <meta property="og:description"
-        content="A minimal, fast, and open-source CLI tool to initialize and build static websites.">
+        content="A lightweight CLI tool to initialize and build clean static websites.">
     <meta property="og:url" content="https://github.com/zeller-dev/minimaz-cli">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#0d0d0d">
@@ -25,80 +25,87 @@
 </head>
 
 <body>
-    <header role="banner">
+
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header>
         <h1>Minimaz CLI</h1>
-        <p id="tagline">Minimal development, maximum result ⚡</p>
+        <p id="tagline">Minimal input, clean output ⚡</p>
     </header>
 
-    <main role="main">
-        <section id="about">
-            <h2>About</h2>
-            <p><strong>Minimaz</strong> is an open-source command-line tool built on Node.js. It reduces front-end
-                complexity and makes static site publishing faster and cleaner. Ideal for portfolios, business pages,
-                landing pages, and technical documentation. <br /><em>This very page was generated with Minimaz!</em>
+    <main id="main-content">
+        <section id="about" aria-labelledby="about-title">
+            <h2 id="about-title">About</h2>
+            <p>
+                <strong>Minimaz</strong> is a minimal, low-dependency static site builder and project initializer focused
+                on speed, simplicity, and clean output. It works with plain HTML, CSS, JavaScript, and TypeScript —
+                no framework, no runtime, no lock-in.
             </p>
-
         </section>
 
-        <section id="use-cases">
-            <h2>Use Cases</h2>
+        <section id="use-cases" aria-labelledby="use-cases-title">
+            <h2 id="use-cases-title">Use Cases</h2>
             <ul>
-                <li>Developers who need a simple static site workflow.</li>
-                <li>Designers who want to create and deploy clean websites fast.</li>
-                <li>Teams aiming for reproducible and minimal build systems.</li>
-                <li>Anyone who prefers zero-dependency, fast CLI tools.</li>
+                <li>Small static websites and landing pages</li>
+                <li>Utility projects and internal tools</li>
+                <li>Portfolios and documentation sites</li>
+                <li>Teams that want reproducible, minimal build systems</li>
             </ul>
         </section>
 
-        <section id="requirements">
-            <h2>Requirements</h2>
+        <section id="requirements" aria-labelledby="requirements-title">
+            <h2 id="requirements-title">Requirements</h2>
             <ul>
                 <li>Node.js ≥ 22</li>
-                <li>npm ≥ 11</li>
+                <li>npm (recent version)</li>
             </ul>
         </section>
 
-        <section id="installation">
-            <h2>Installation</h2>
-            <pre><code aria-label="Terminal commands for installation">npm install -g minimaz-cli
-minimaz version
-# or using alias
-mz v</code></pre>
-            <p>The installer creates a <code>~/.minimaz</code> directory containing templates and settings used by the
-                CLI.</p>
+        <section id="installation" aria-labelledby="installation-title">
+            <h2 id="installation-title">Installation</h2>
+            <p>Designed to run without a global install.</p>
+
+            <pre role="region" aria-labelledby="install-code" tabindex="0">
+<code id="install-code">npx minimaz init my-site
+cd my-site
+npx minimaz build
+npx minimaz version</code>
+            </pre>
+
+            <p>Alias:</p>
+
+            <pre role="region" aria-labelledby="alias-code" tabindex="0">
+<code id="alias-code">npx mz init my-site
+npx mz build
+npx mz version</code>
+            </pre>
         </section>
 
-        <section id="workflow">
-            <h2>Basic Workflow</h2>
+        <section id="workflow" aria-labelledby="workflow-title">
+            <h2 id="workflow-title">Basic Workflow</h2>
 
-            <article>
-                <h3>Step 1 – Initialize</h3>
-                <pre><code aria-label="Initialization commands">minimaz init my-project -template default
+            <article aria-labelledby="workflow-init">
+                <h3 id="workflow-init">1. Initialize</h3>
+                <pre role="region" tabindex="0"><code>npx minimaz init my-site
 # or
-mz i my-project -t default</code></pre>
-                <p>Creates a new static site structure using the default or a custom global template.</p>
+npx mz i my-site</code></pre>
+                <p>Creates a new project using a global template.</p>
             </article>
 
-            <article>
-                <h3>Step 2 – Manage Templates</h3>
-                <pre><code aria-label="Template management commands">mz template               # Save current folder as a template
-mz template -update       # Update built-in templates
-mz template -delete name  # Remove a specific template</code></pre>
-            </article>
-
-            <article>
-                <h3>Step 3 – Build</h3>
-                <pre><code aria-label="Build commands">minimaz build
+            <article aria-labelledby="workflow-build">
+                <h3 id="workflow-build">2. Build</h3>
+                <pre role="region" tabindex="0"><code>npx minimaz build
 # or
-mz b</code></pre>
-                <p>Generates the <code>dist/</code> folder with minified HTML, CSS, and JS. Best used in CI/CD pipelines
-                    for automatic deploys.</p>
+npx mz b</code></pre>
+                <p>Generates the optimized <code>dist/</code> folder with minified assets.</p>
             </article>
         </section>
 
-        <section id="commands">
-            <h2>Command Summary</h2>
+        <section id="commands" aria-labelledby="commands-title">
+            <h2 id="commands-title">Command Summary</h2>
+
             <table>
+                <caption>Available Minimaz CLI commands and aliases</caption>
                 <thead>
                     <tr>
                         <th scope="col">Command</th>
@@ -108,19 +115,24 @@ mz b</code></pre>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>minimaz init &lt;project&gt;</td>
+                        <td>minimaz init &lt;name&gt;</td>
                         <td>mz i</td>
-                        <td>Initialize a new project from template</td>
+                        <td>Create a new project from a template</td>
                     </tr>
                     <tr>
                         <td>minimaz build</td>
                         <td>mz b</td>
-                        <td>Build and optimize the project</td>
+                        <td>Build and minify the site</td>
+                    </tr>
+                    <tr>
+                        <td>minimaz clear</td>
+                        <td>mz c</td>
+                        <td>Clear the dist folder</td>
                     </tr>
                     <tr>
                         <td>minimaz template &lt;path&gt;</td>
                         <td>mz t</td>
-                        <td>Save a folder as template</td>
+                        <td>Save a folder as a template</td>
                     </tr>
                     <tr>
                         <td>minimaz template -l</td>
@@ -133,11 +145,6 @@ mz b</code></pre>
                         <td>Delete a template</td>
                     </tr>
                     <tr>
-                        <td>minimaz help</td>
-                        <td>mz h</td>
-                        <td>Display help</td>
-                    </tr>
-                    <tr>
                         <td>minimaz version</td>
                         <td>mz v</td>
                         <td>Show version</td>
@@ -146,56 +153,31 @@ mz b</code></pre>
             </table>
         </section>
 
-        <section id="configuration">
-            <h2>Configuration Example</h2>
-            <pre><code aria-label="Example minimaz.config.json file">{
-  "src": "src",
-  "dist": "dist",
-  "public": "public",
-  "minify": { "html": true, "css": true, "js": true },
-  "replace": { "../public/": "public/" },
-  "styles": [ "style.css" ],
-  "scripts": [ "script.js" ]
-}</code></pre>
-            <p>The configuration file <code>minimaz.config.json</code> controls the build behavior and file handling.
-            </p>
-        </section>
-
-        <section id="future">
-            <h2>Roadmap</h2>
-            <ul>
-                <li><code>minimaz analyze</code> – project analysis and optimization report.</li>
-                <li><code>template -pull</code> – download templates from remote sources.</li>
-                <li>Git integration for auto-deploy.</li>
-                <li>Support for SCSS, SASS, and TypeScript pipelines.</li>
-            </ul>
-        </section>
-
-        <section id="package-info">
-            <h2>Package Information</h2>
+        <section id="package-info" aria-labelledby="package-info-title">
+            <h2 id="package-info-title">Package Information</h2>
             <ul>
                 <li><strong>Name:</strong> minimaz-cli</li>
-                <li><strong>Version:</strong> 0.1.3</li>
                 <li><strong>License:</strong> MIT</li>
                 <li><strong>Author:</strong> MrZeller</li>
-                <li><strong>Repository:</strong> <a href="https://github.com/zeller-dev/minimaz-cli"
-                        aria-label="Minimaz CLI GitHub repository">GitHub</a></li>
-                <li><strong>Homepage:</strong> <a href="https://github.com/zeller-dev/minimaz-cli#readme"
-                        aria-label="Minimaz CLI npm page">npm Package Page</a></li>
-                <li><strong>Issue Tracker:</strong> <a href="https://github.com/zeller-dev/minimaz-cli/issues"
-                        aria-label="Report a bug on GitHub">Report a Bug</a></li>
+                <li><strong>Repository:</strong>
+                    <a href="https://github.com/zeller-dev/minimaz-cli"
+                        aria-label="Minimaz CLI source code on GitHub">GitHub</a>
+                </li>
+                <li><strong>npm:</strong>
+                    <a href="https://www.npmjs.com/package/minimaz-cli"
+                        aria-label="Minimaz CLI package on npm">Package Page</a>
+                </li>
             </ul>
         </section>
     </main>
 
-    <footer role="contentinfo">
+    <footer>
         <p>© 2025 MrZeller — MIT License</p>
         <p>
-            <a href="https://github.com/zeller-dev/minimaz-cli" aria-label="View Minimaz CLI repository on GitHub">
-                View on GitHub
-            </a> - <a href="https://www.npmjs.com/package/minimaz-cli" aria-label="View Minimaz CLI on npm">
-                View on npm
-            </a>
+            <a href="https://github.com/zeller-dev/minimaz-cli"
+                aria-label="Minimaz CLI GitHub repository">GitHub</a> —
+            <a href="https://www.npmjs.com/package/minimaz-cli"
+                aria-label="Minimaz CLI npm package">npm</a>
         </p>
     </footer>
 </body>
