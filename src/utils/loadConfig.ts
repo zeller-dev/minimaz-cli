@@ -27,21 +27,20 @@ const defaultConfig: any = {
 // Recursively merges user config into default config
 function deepMerge(target: any, source: any): any {
   const result: any = { ...target }
-
-  for (const key in source) {
+  for (const key of Object.keys(source)) {
     if (
       source[key] &&
       typeof source[key] === 'object' &&
       !Array.isArray(source[key])
     ) {
-      result[key] = deepMerge(target[key] || {}, source[key])
-    } else if (source[key] !== undefined) {
+      result[key] = target[key] ? deepMerge(target[key], source[key]) : source[key]
+    } else if (!(key in target)) {
       result[key] = source[key]
     }
   }
-
   return result
 }
+
 
 // ----- Load User Config -----
 // Loads minimaz.config.json if present and merges it with default config
@@ -60,9 +59,7 @@ export async function loadConfig(): Promise<any> {
     log('info', 'No minimaz.config.json found. Using default config')
   }
 
-  const config: any = deepMerge(defaultConfig, userConfig)
-
-  if (!config.src || !config.dist) throw new Error('Invalid configuration: src and dist are required')
+  const config: any = deepMerge(userConfig, defaultConfig)
 
   return config
 }

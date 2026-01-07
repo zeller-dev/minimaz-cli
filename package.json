@@ -1,6 +1,6 @@
 {
   "name": "minimaz-cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Minimal project initializer and builder CLI",
   "author": "MrZeller",
   "license": "MIT",
