@@ -1,8 +1,9 @@
 import path from 'path'
 import fs from 'fs-extra'
 
-import { loadConfig } from '../utils/loadConfig.js'
-import { log } from '../utils/logService.js'
+import {
+    loadConfig, log
+} from '../index.js'
 
 export async function clear(): Promise<void> {
     const config: any = await loadConfig()

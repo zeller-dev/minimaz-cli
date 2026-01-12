@@ -2,11 +2,10 @@
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 
-import { build, init, help, template, clear, version } from '../src/commands/index.js';
-
-import { log } from '../src/utils/logService.js'
-import { parseArgs } from '../src/utils/functions.js'
-import { CommandFn } from '../src/utils/types.js'
+import {
+  build, init, help, template, clear, version,
+  log, parseArgs, CommandFn
+} from '../src/index.js'
 
 // Resolve the current filename and directory
 const __filename = fileURLToPath(import.meta.url)
@@ -29,15 +28,9 @@ async function main(): Promise<void> {
    * =============================
    */
 
-  // Pattern: minimaz help <command>
-  if (cmd === 'help') {
-    subArg ? help(subArg) : help()
-    return
-  }
-
-  // Pattern: minimaz <command> -h | --help
-  if (args.h || args.help) {
-    cmd ? help(cmd) : help()
+  // Show help if requested
+  if (cmd === 'help' || args.h || args.help) {
+    help(subArg || (args.h || args.help ? cmd : undefined))
     return
   }
 

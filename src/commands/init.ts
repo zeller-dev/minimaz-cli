@@ -1,8 +1,9 @@
 import fs from 'fs-extra'
 import path from 'path'
 import os from 'os'
-import { log } from '../utils/logService.js'
-import { createGlobalDir } from '../utils/functions.js'
+import {
+  log, createGlobalDir
+} from '../index.js'
 
 /**
  * Initializes a new Minimaz project by copying a predefined template

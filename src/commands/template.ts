@@ -1,8 +1,10 @@
 import fs from 'fs-extra'
 import os from 'os'
 import path from 'path'
-import { log } from '../utils/logService.js'
-import { askQuestion, listTemplates, getGlobalNodeModulesPath } from '../utils/functions.js'
+
+import {
+  askQuestion, listTemplates, getGlobalNodeModulesPath, log
+} from '../index.js'
 
 /**
  * Handles all template-related operations:

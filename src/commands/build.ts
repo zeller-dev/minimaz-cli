@@ -4,10 +4,9 @@ import CleanCSS from 'clean-css'
 import { minify as minifyHtml } from 'html-minifier-terser'
 import { minify as minifyJs, MinifyOutput } from 'terser'
 
-import { loadConfig } from '../utils/loadConfig.js'
-import { log } from '../utils/logService.js'
-import { applyReplacements, getFile } from '../utils/functions.js'
-import { MinimazConfig } from '../utils/types.js'
+import {
+  loadConfig, log, applyReplacements, getFile, MinimazConfig
+} from '../index.js'
 
 /**
  * Build the project according to configuration.
@@ -80,22 +79,9 @@ export async function build(): Promise<void> {
                 jsChunks.push(content)
                 break
               }
-              /*
-              case '.ts': {
-                const result = await esbuild.build({
-                  entryPoints: [srcPath],
-                  bundle: false,
-                  minify: !!config.minify?.ts,
-                  platform: 'browser',
-                  format: 'esm',
-                  write: false
-                })
-                let compiled = result.outputFiles[0].text
-                compiled = applyReplacements(compiled, config.replace)
-                if (srcPathRel === config.src) jsChunks.push(compiled)
-                break
-              }
-              */
+
+              /* TODO Add more file types */
+
               default:
                 await fs.copy(srcPath, destPath)
                 break

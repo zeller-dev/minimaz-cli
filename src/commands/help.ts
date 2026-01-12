@@ -1,4 +1,4 @@
-import { CommandHelp } from "../utils/types.js"
+import { CommandHelp } from "../index.js"
 
 const commands: Record<string, CommandHelp> = {
   init: {

@@ -60,7 +60,7 @@ export async function loadConfig(): Promise<any> {
     log('info', 'No minimaz.config.json found. Using default config')
   }
 
-  const config: any = deepMerge(userConfig, defaultConfig)
+  const config: MinimazConfig = deepMerge(userConfig, defaultConfig)
 
   return config
 }

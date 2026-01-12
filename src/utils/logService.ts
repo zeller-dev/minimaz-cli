@@ -1,4 +1,4 @@
-import { LogType } from "./types.js"
+import { LogType } from "../index.js"
 
 // ----- Log Function -----
 // Prints a message to console with icon based on type

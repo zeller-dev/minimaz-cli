@@ -2,14 +2,11 @@ import readline from 'readline'
 import fs from 'fs-extra'
 import path from 'path'
 import os from 'os'
-import { log } from './logService.js'
 import { execSync } from 'child_process'
 
-// ----- Types -----
-interface Args {
-  _: string[]
-  [key: string]: string | boolean | string[]
-}
+import {
+  log, Args
+} from '../index.js'
 
 // ----- Parse CLI Arguments -----
 // Converts raw process arguments into structured key-value pairs
@@ -110,8 +107,6 @@ export async function createGlobalDir(): Promise<void> {
   const defaultTemplatesDir = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
   const settingsPath = path.join(minimazDir, 'settings.json')
 
-  console.log(defaultTemplatesDir)
-
   // ----- Ensure node_modules path exists (fallback for portable setups) -----
 
   try {
@@ -146,7 +141,6 @@ export async function createGlobalDir(): Promise<void> {
 
     const templates: string[] = await fs.readdir(defaultTemplatesDir)
 
-    console.log(templates)
     // ----- Copy default templates -----
     for (const name of await fs.readdir(defaultTemplatesDir)) {
       await fs.copy(path.join(defaultTemplatesDir, name), path.join(globalTemplatesDir, name))

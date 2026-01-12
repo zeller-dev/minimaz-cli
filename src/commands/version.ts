@@ -1,6 +1,7 @@
 import path from "path"
 import fs from "fs-extra"
-import { log } from "../utils/logService.js"
+
+import { log } from "../index.js"
 
 export async function version(): Promise<void> {
     try {
@@ -9,7 +10,7 @@ export async function version(): Promise<void> {
 
         if (typeof version !== 'string') throw new Error('Invalid or missing version in package.json')
 
-        console.log(version)
+        log('info', version)
     } catch (error: any) {
         log('error', `Unable to read package.json: ${error}`)
         process.exit(1)

@@ -1,5 +1,6 @@
-import { createGlobalDir } from './functions.js'
-import { log } from './logService.js'
+import {
+  createGlobalDir, log
+} from '../index.js'
 
 // ----- Setup Default Templates -----
 // Runs after install to ensure global templates exist
