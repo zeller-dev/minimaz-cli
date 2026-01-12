@@ -1,39 +1,79 @@
-/**
- * Displays CLI usage information for Minimaz.
- * Lists all available commands and their options.
- *
- * Example:
- *   minimaz init my-site -t default
- *   minimaz build
- *   minimaz template --list
- */
-export function help(): void {
-  console.log([
-    'Usage:',
-    '',
-    '\tminimaz init | i <project-name>',
-    '\t\tCreate a new project (default: "minimaz-site")',
-    '\t\tOptions:',
-    '\t\t\t--template | -t <template-name>\tUse a global template (default: "default")',
-    '',
-    '\tminimaz build | b',
-    '\t\tBuild and minify files into the dist folder',
-    '',
-    '\tminimaz template | t [path]',
-    '\t\tSave current folder as a template (no path = current folder)',
-    '\t\tOptions:',
-    '\t\t\t--list | -l\tList available global templates',
-    '\t\t\t--delete | -d <template-name>\tDelete a global template',
-    '',
-    '\tminimaz help | h',
-    '\t\tShow this help message',
-    '',
-    '\tminimaz clear | c',
-    '\t\tClear the dist folder',
-    '',
-    '\tminimaz version | v',
-    '\t\tShow Minimaz version'
-  ].join('\n'));
-}
+type CommandHelp = {
+  usage: string;
+  description: string;
+  options?: Record<string, string>;
+};
 
-// @TODO add help for each command
+const commands: Record<string, CommandHelp> = {
+  init: {
+    usage: 'minimaz init | i <project-name>',
+    description: 'Create a new project (default: "minimaz-site")',
+    options: {
+      '--template | -t <template-name>': 'Use a global template (default: "default")'
+    }
+  },
+  build: {
+    usage: 'minimaz build | b',
+    description: 'Build and minify files into the dist folder'
+  },
+  template: {
+    usage: 'minimaz template | t [path]',
+    description: 'Save current folder as a template (no path = current folder)',
+    options: {
+      '--list | -l': 'List available global templates',
+      '--delete | -d <template-name>': 'Delete a global template'
+    }
+  },
+  help: {
+    usage: 'minimaz help | h',
+    description: 'Show this help message'
+  },
+  clear: {
+    usage: 'minimaz clear | c',
+    description: 'Clear the dist folder'
+  },
+  version: {
+    usage: 'minimaz version | v',
+    description: 'Show Minimaz version'
+  }
+};
+
+/**
+ * Display help message.
+ * If `cmdName` is provided, show help only for that command.
+ * Otherwise, show full help.
+ */
+export function help(cmdName?: string): void {
+  // If specific command requested
+  if (cmdName) {
+    const cmd = commands[cmdName];
+    if (!cmd) {
+      console.log(`No help found for command: ${cmdName}\n`);
+      return;
+    }
+    console.log(cmd.usage);
+    console.log(`\t${cmd.description}`);
+    if (cmd.options) {
+      console.log('\tOptions:');
+      for (const [opt, desc] of Object.entries(cmd.options)) {
+        console.log(`\t\t${opt}\t${desc}`);
+      }
+    }
+    console.log('');
+    return;
+  }
+
+  // Otherwise, show general help
+  console.log('Usage:\n');
+  for (const cmd of Object.values(commands)) {
+    console.log(cmd.usage);
+    console.log(`\t${cmd.description}`);
+    if (cmd.options) {
+      console.log('\tOptions:');
+      for (const [opt, desc] of Object.entries(cmd.options)) {
+        console.log(`\t\t${opt}\t${desc}`);
+      }
+    }
+    console.log('');
+  }
+}

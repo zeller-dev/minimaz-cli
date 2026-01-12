@@ -55,4 +55,4 @@ export async function init(projectName: string, options: any = {}): Promise<void
   }
 }
 
-// @TODO choose to init nmp
+// @TODO choose to init npm
