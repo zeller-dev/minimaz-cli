@@ -1,8 +1,4 @@
-type CommandHelp = {
-  usage: string;
-  description: string;
-  options?: Record<string, string>;
-};
+import { CommandHelp } from "../utils/types.js"
 
 const commands: Record<string, CommandHelp> = {
   init: {
@@ -36,7 +32,7 @@ const commands: Record<string, CommandHelp> = {
     usage: 'minimaz version | v',
     description: 'Show Minimaz version'
   }
-};
+}
 
 /**
  * Display help message.
@@ -46,34 +42,34 @@ const commands: Record<string, CommandHelp> = {
 export function help(cmdName?: string): void {
   // If specific command requested
   if (cmdName) {
-    const cmd = commands[cmdName];
+    const cmd = commands[cmdName]
     if (!cmd) {
-      console.log(`No help found for command: ${cmdName}\n`);
-      return;
+      console.log(`No help found for command: ${cmdName}\n`)
+      return
     }
-    console.log(cmd.usage);
-    console.log(`\t${cmd.description}`);
+    console.log(cmd.usage)
+    console.log(`\t${cmd.description}`)
     if (cmd.options) {
-      console.log('\tOptions:');
+      console.log('\tOptions:')
       for (const [opt, desc] of Object.entries(cmd.options)) {
-        console.log(`\t\t${opt}\t${desc}`);
+        console.log(`\t\t${opt}\t${desc}`)
       }
     }
-    console.log('');
-    return;
+    console.log('')
+    return
   }
 
   // Otherwise, show general help
-  console.log('Usage:\n');
+  console.log('Usage:\n')
   for (const cmd of Object.values(commands)) {
-    console.log(cmd.usage);
-    console.log(`\t${cmd.description}`);
+    console.log(cmd.usage)
+    console.log(`\t${cmd.description}`)
     if (cmd.options) {
-      console.log('\tOptions:');
+      console.log('\tOptions:')
       for (const [opt, desc] of Object.entries(cmd.options)) {
-        console.log(`\t\t${opt}\t${desc}`);
+        console.log(`\t\t${opt}\t${desc}`)
       }
     }
-    console.log('');
+    console.log('')
   }
 }

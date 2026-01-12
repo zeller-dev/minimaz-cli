@@ -10,8 +10,8 @@ export async function version(): Promise<void> {
         if (typeof version !== 'string') throw new Error('Invalid or missing version in package.json')
 
         console.log(version)
-    } catch (e: any) {
-        log('error', `Unable to read package.json: ${e}`)
+    } catch (error: any) {
+        log('error', `Unable to read package.json: ${error}`)
         process.exit(1)
     }
 }

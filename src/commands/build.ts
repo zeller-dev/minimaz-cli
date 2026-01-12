@@ -7,13 +7,14 @@ import { minify as minifyJs, MinifyOutput } from 'terser'
 import { loadConfig } from '../utils/loadConfig.js'
 import { log } from '../utils/logService.js'
 import { applyReplacements, getFile } from '../utils/functions.js'
+import { MinimazConfig } from '../utils/types.js'
 
 /**
  * Build the project according to configuration.
  */
 export async function build(): Promise<void> {
   try {
-    const config: any = await loadConfig()
+    const config: MinimazConfig = await loadConfig()
     const distDir: string = path.resolve(process.cwd(), config.dist || 'dist')
 
     // Remove previous dist folder and recreate it

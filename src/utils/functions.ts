@@ -88,16 +88,16 @@ export async function getFile(srcPath: string, replace?: Record<string, string>)
 
 export function getGlobalNodeModulesPath(): string {
   try {
-    const prefix = execSync('npm config get prefix', { encoding: 'utf-8' }).trim();
-    if (!prefix) throw new Error('Empty prefix');
+    const prefix = execSync('npm config get prefix', { encoding: 'utf-8' }).trim()
+    if (!prefix) throw new Error('Empty prefix')
     return process.platform === 'win32'
       ? path.join(prefix, 'node_modules', 'minimaz-cli')
-      : path.join(prefix, 'lib', 'node_modules', 'minimaz-cli');
+      : path.join(prefix, 'lib', 'node_modules', 'minimaz-cli')
   } catch {
     // fallback
     return process.platform === 'win32'
       ? path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'minimaz-cli')
-      : '/usr/local/lib/node_modules/minimaz-cli';
+      : '/usr/local/lib/node_modules/minimaz-cli'
   }
 }
 

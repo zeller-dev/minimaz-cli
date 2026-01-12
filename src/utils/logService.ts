@@ -1,5 +1,4 @@
-// ----- Log Types -----
-type LogType = 'error' | 'warn' | 'success' | 'info' | 'log'
+import { LogType } from "./types.js"
 
 // ----- Log Function -----
 // Prints a message to console with icon based on type
@@ -12,8 +11,15 @@ export function log(type: LogType = 'log', message: string): void {
     log: '📁' // default icon
   }
 
-  // Use console.error/console.warn only for error and warn
-  if (type === 'error') console.error(icons[type], '\t', message)
-  else if (type === 'warn') console.warn(icons[type], '\t', message)
-  else console.log(icons[type] || icons.log, '\t', message)
+  switch (type) {
+    case 'error':
+      console.error(icons[type], '\t', message)
+      break
+    case 'warn':
+      console.warn(icons[type], '\t', message)
+      break
+    default:
+      console.log(icons[type] || icons.log, '\t', message)
+      break
+  }
 }

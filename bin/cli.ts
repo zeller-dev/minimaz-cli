@@ -2,15 +2,11 @@
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 
-import { build } from '../src/commands/build.js'
-import { init } from '../src/commands/init.js'
-import { help } from '../src/commands/help.js'
-import { template } from '../src/commands/template.js'
-import { clear } from '../src/commands/clear.js'
-import { version } from '../src/commands/version.js'
+import { build, init, help, template, clear, version } from '../src/commands/index.js';
 
 import { log } from '../src/utils/logService.js'
 import { parseArgs } from '../src/utils/functions.js'
+import { CommandFn } from '../src/utils/types.js'
 
 // Resolve the current filename and directory
 const __filename = fileURLToPath(import.meta.url)
@@ -50,8 +46,6 @@ async function main(): Promise<void> {
    * COMMAND DISPATCH
    * =============================
    */
-
-  type CommandFn = () => Promise<void> | void
 
   const commands: Record<string, CommandFn> = {
     // Build command
@@ -104,15 +98,15 @@ async function main(): Promise<void> {
       log('error', `Unknown command '${cmd}'. Use 'minimaz help' to see available commands.`)
       help()
     }
-  } catch (e: any) {
+  } catch (error: any) {
     // Catch any runtime error and log it
     log(
       'error',
-      e instanceof Error
+      error instanceof Error
         ? process.env.DEBUG
-          ? e.stack ?? e.message
-          : e.message
-        : String(e)
+          ? error.stack ?? error.message
+          : error.message
+        : String(error)
     )
     process.exit(1)
   }

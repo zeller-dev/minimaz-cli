@@ -1,10 +1,11 @@
 import fs from 'fs-extra'
 import path from 'path'
 import { log } from './logService.js'
+import { MinimazConfig } from './types.js'
 
 // ----- Default Config -----
 // Provides default values for project build and minification
-const defaultConfig: any = {
+const defaultConfig: MinimazConfig = {
   src: 'src',
   dist: 'dist',
   public: 'public',
