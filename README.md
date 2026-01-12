@@ -65,7 +65,7 @@ Customize your build using a `minimaz.config.json` file:
   "folders": {
     "src": "",
     "public": "public"
-  }
+  },
   "styles": [
     "style.css",
     "theme.css"
@@ -84,26 +84,35 @@ Customize your build using a `minimaz.config.json` file:
 ## 🛠 Commands
 
 ```bash
-minimaz build                     # Build and minify the site (uses config or defaults)
-minimaz clear                     # Clears dist folder
-minimaz init <project-name>       # Create a new project using global templates
-minimaz help                      # Show help message
-minimaz template <path>           # Save a new template from specified path (or current dir)
-minimaz template -list               # List available templates
-minimaz template -delete <name>        # Delete a saved template
-minimaz version                   # Display Minimaz version
-```
+# Build Command - Build and minify the project
+minimaz build
+mz b            # alias
 
-### Commands Aliases
-```bash
-mz b                      # Build and minify the site (uses config or defaults)
-mz c                      # Clears dist folder
-mz i <project-name>       # Create a new project using global templates
-mz h                      # Show help message
-mz t <path>               # Save a new template from specified path (or current dir)
-mz t -l                   # List available templates
-mz t -d <name>            # Delete a saved template
-mz v                      # Display Minimaz version
+# Clears dist folder
+minimaz clear
+mz c            # alias
+
+# Create a new project
+minimaz init <project-name>                             # uses default template
+mz i <project-name>                                     # alias
+minimaz init <project-name> -template <template-name>   # uses specified template
+mz i <project-name> -t <template-name>                  # alias
+
+# Show help message
+minimaz help
+mz h # alias
+
+# Manages templates
+minimaz template <template-path>          # Save template
+minimaz t <template-path>                 # alias
+minimaz template -list                    # List saved templates
+minimaz t -l                              # alias
+minimaz template -delete <template-name>  # Delete a saved template
+minimaz t -d <template-name>              # alias
+
+# Display Minimaz version
+minimaz version
+mz v              # alias
 ```
 
 ## 📂 Templates
