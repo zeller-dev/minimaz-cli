@@ -22,7 +22,7 @@ export async function template(targetPath?: string, options: any = {}): Promise<
   const updateName: string | undefined = options.update || options.u
 
   if (deleteName) return await deleteTemplate(templatesDir, deleteName)
-  if (options.list || options.l) return await listTemplates(templatesDir)
+  if (options.list || options.l) return await listTemplates()
 
   // --- UPDATE MODE ---
   if (updateName !== undefined) {
@@ -51,7 +51,7 @@ async function updateSingleTemplate(templatesDir: string, templateName: string):
     throw new Error(`Template '${templateName}' not found in ~/.minimaz/templates`)
 
   if (
-    (await askQuestion(`Update template '${templateName}' with current directory? [y/n]:`)).startsWith('y')
+    (await askQuestion(`Update template '${templateName}' with current directory? [y/n]:`, 'y')).startsWith('y')
   ) {
     log('info', 'Update cancelled.')
     return
@@ -79,7 +79,7 @@ async function updateFromNodeModules(templatesDir: string): Promise<void> {
   const items: string[] = await fs.readdir(nodeModulesPath)
 
   if (
-    (await askQuestion(`Update local templates overwriting them with defaults? [y/n]:`)).startsWith('y')
+    (await askQuestion('Update local templates overwriting them with defaults? [y/n]:', 'y')).startsWith('y')
   ) {
     log('info', 'Update cancelled.')
     return
@@ -110,7 +110,7 @@ async function deleteTemplate(dir: string, name: string): Promise<void> {
   if (!await fs.pathExists(target)) throw new Error(`Template not found: ${name}`)
 
   if (
-    (await askQuestion(`Confirm delete '${name}'? [y/n]`)).startsWith('y')
+    (await askQuestion(`Confirm delete '${name}'? [y/n]`, 'y')).startsWith('y')
   ) {
     log('info', 'Delete cancelled.')
     return
@@ -136,7 +136,7 @@ async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
   if (!await fs.pathExists(source)) {
     log('warn', `Path not found: ${source}`)
     if (
-      (await askQuestion('Use current directory instead? [y/n]:')).startsWith('y')
+      (await askQuestion('Use current directory instead? [y/n]:', 'y')).startsWith('y')
     ) throw new Error('Operation cancelled.')
     source = process.cwd()
   }

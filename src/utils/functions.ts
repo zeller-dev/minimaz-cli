@@ -6,7 +6,8 @@ import { execSync, spawn } from 'child_process'
 
 import {
   log,
-  Args
+  Args,
+  GitRepo
 } from '../index.js'
 
 // @TODO add cache manager?
@@ -23,7 +24,6 @@ import {
  * @returns Parsed arguments object
  */
 export function parseArgs(rawArgs: string[]): Args {
-  console.log("rawArgs:", rawArgs)
   const args: Args = { _: [] }
 
   for (let i = 0; i < rawArgs.length; i++) {
@@ -62,19 +62,29 @@ export function parseArgs(rawArgs: string[]): Args {
  * @param query - Question displayed to the user
  * @returns User input as a trimmed string
  */
-export function askQuestion(query: string): Promise<string> {
+export function askQuestion(
+  query: string,
+  defaultAnswer = ''
+): Promise<string> {
   return new Promise(resolve => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     })
 
-    rl.question(`❓\t${query}\t`, answer => {
+    const timer = setTimeout(() => {
       rl.close()
-      resolve(answer.trim().toLocaleLowerCase())
+      resolve(defaultAnswer)
+    }, 60000)
+
+    rl.question(`❓ ${query} `, answer => {
+      clearTimeout(timer)
+      rl.close()
+      resolve(answer.trim() || defaultAnswer)
     })
 
     rl.on('SIGINT', () => {
+      clearTimeout(timer)
       rl.close()
       process.exit(130)
     })
@@ -86,7 +96,8 @@ export function askQuestion(query: string): Promise<string> {
  *
  * @param dir - Templates directory path
  */
-export async function listTemplates(dir: string): Promise<void> {
+export async function listTemplates(): Promise<void> {
+  const dir: string = path.join(os.homedir(), '.minimaz', 'templates');
   if (!await fs.pathExists(dir)) {
     log('info', 'No templates directory found.')
     return
@@ -285,44 +296,37 @@ export async function createFileFromTemplate(
  * Initializes a Git repository in the given directory.
  *
  * @param targetDir - Directory to initialize Git
- * @param options - Git options, including remote configuration
+ * @param remoteUrl - Optional remote URL
+ * @param provider - Optional provider ('github' | 'gitlab')
  */
 export async function initGit(
   targetDir: string,
-  options: any
+  remoteUrl?: string,
+  provider?: 'github' | 'gitlab',
+  name: string = 'origin'
 ): Promise<void> {
   log('info', 'Initializing Git repository...')
   await executeCommand('git', ['init'], targetDir)
 
-  if (options.remote) {
-    await setupGitRemote(targetDir, options.remote)
+  // costruisco l'oggetto GitRemote se è stato passato almeno un parametro
+  if (remoteUrl || provider) {
+    if (remoteUrl) {
+      log('info', `Adding git remote '${name}' -> ${remoteUrl}`)
+      await executeCommand('git', ['remote', 'add', name, remoteUrl], targetDir)
+      return
+    }
+
+    if (provider) {
+      await createProviderRepo(targetDir, provider, name)
+      return
+    }
+
+    throw new Error('Git remote configuration is invalid.')
   }
 
   log('success', 'Git repository initialized.')
 }
 
-/**
- * Sets up a Git remote for a repository.
- *
- * @param targetDir - Repository directory
- * @param remote - Remote configuration (url or provider)
- */
-async function setupGitRemote(targetDir: string, remote: any): Promise<void> {
-  const name = remote?.name ?? 'origin'
-
-  if (remote?.url) {
-    log('info', `Adding git remote '${name}'`)
-    await executeCommand('git', ['remote', 'add', name, remote.url], targetDir)
-    return
-  }
-
-  if (remote?.provider) {
-    await createProviderRepo(targetDir, remote.provider, name)
-    return
-  }
-
-  throw new Error('Git remote configuration is invalid.')
-}
 
 /**
  * Creates a repository on a provider (GitHub or GitLab) and adds it as a remote.
@@ -333,13 +337,14 @@ async function setupGitRemote(targetDir: string, remote: any): Promise<void> {
  */
 async function createProviderRepo(
   targetDir: string,
-  provider: 'github' | 'gitlab',
+  provider: 'github' | 'gitlab' | undefined,
   remoteName: string
 ): Promise<void> {
   const repoName = path.basename(targetDir)
 
   switch (provider) {
     case 'github':
+      log('info', `Creating GitHub repo '${repoName}'`)
       await executeCommand(
         'gh',
         ['repo', 'create', repoName, '--source=.', '--remote', remoteName],
@@ -348,9 +353,16 @@ async function createProviderRepo(
       break
 
     case 'gitlab':
+      log('info', `Creating GitLab repo '${repoName}'`)
       await executeCommand(
         'glab',
         ['repo', 'create', repoName, '--source=.'],
+        targetDir
+      )
+      // aggiunge il remote "origin" manualmente
+      await executeCommand(
+        'git',
+        ['remote', 'add', remoteName, `git@gitlab.com:<username>/${repoName}.git`],
         targetDir
       )
       break

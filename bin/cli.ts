@@ -52,7 +52,9 @@ async function main(): Promise<void> {
       await init(subArg || 'minimaz-project', {
         template: args.template || args.t || 'default',
         npm: args.npm,
-        git: args.git
+        git: args.git,
+        gitremote: args.gitremote,
+        gitprovider: args.gitprovider
       })
     },
 

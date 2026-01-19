@@ -50,3 +50,9 @@ export interface Args {
     _: string[]
     [key: string]: string | boolean | string[]
 }
+
+export type GitRepo = {
+    url: string
+    provider?: 'github' | 'gitlab'
+    name?: string
+}

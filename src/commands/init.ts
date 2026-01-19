@@ -55,11 +55,11 @@ export async function init(
 
   const initNpm: boolean =
     options.npm
-    ?? (await askQuestion('Init NPM? [y/n]')).startsWith('y')
+    ?? (await askQuestion('Init NPM? [y/n]:', 'y')).startsWith('y')
 
   const initGitRepo: boolean =
     options.git
-    ?? (await askQuestion('Init Git repository? [y/n]')).startsWith('y')
+    ?? (await askQuestion('Init Git repository? [y/n]:', 'y')).startsWith('y')
 
   try {
     /**
@@ -93,7 +93,7 @@ export async function init(
 
     if (initGitRepo) {
       log('info', 'Initializing GIT...')
-      await initGit(targetDir, options)
+      await initGit(targetDir, options.gitremote, options.gitprovider)
     }
 
     log(
