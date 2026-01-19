@@ -6,8 +6,7 @@ import { execSync, spawn } from 'child_process'
 
 import {
   log,
-  Args,
-  GitRepo
+  Args
 } from '../index.js'
 
 // @TODO add cache manager?

@@ -1,7 +1,6 @@
 import { CommandHelp, MinimazConfig, PkgTemplate } from "./types.js"
 
 export const pkgTemplate: PkgTemplate = {
-    name: '{{name}}',
     version: '0.0.1',
     license: 'ISC',
     type: 'commonjs',

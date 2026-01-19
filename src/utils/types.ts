@@ -37,7 +37,6 @@ export type MinimazConfig = {
 
 // ----- Package Template Types -----
 export type PkgTemplate = {
-    name: string
     version: string
     license: string
     type: 'commonjs' | 'module'
