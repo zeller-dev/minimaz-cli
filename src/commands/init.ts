@@ -9,7 +9,8 @@ import {
   createFileFromTemplate,
   pkgTemplate,
   gitIgnoreTemplate,
-  initGit
+  initGit,
+  getGlobarDirPath
 } from '../index.js'
 
 /**
@@ -32,7 +33,7 @@ export async function init(
 ): Promise<void> {
 
   // Resolve global and local paths
-  const minimazDir: string = path.join(os.homedir(), '.minimaz')
+  const minimazDir: string = getGlobarDirPath()
   const templateName: string = options.template ?? 'default'
   const templateDir: string = path.join(minimazDir, 'templates', templateName)
   const targetDir: string = path.resolve(process.cwd(), projectName)

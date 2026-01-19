@@ -97,7 +97,7 @@ export function askQuestion(
  * @param dir - Templates directory path
  */
 export async function listTemplates(): Promise<void> {
-  const dir: string = path.join(os.homedir(), '.minimaz', 'templates');
+  const dir: string = getGlobarDirPath()
   if (!await fs.pathExists(dir)) {
     log('info', 'No templates directory found.')
     return
@@ -182,6 +182,13 @@ export function getGlobalNodeModulesPath(): string {
 }
 
 /**
+ * Returns the global directory's path.
+ */
+export function getGlobarDirPath(): string {
+  return path.join(os.homedir(), '.minimaz')
+}
+
+/**
  * Ensures the global Minimaz directory structure exists.
  *
  * Creates:
@@ -192,10 +199,10 @@ export function getGlobalNodeModulesPath(): string {
  * Copies default templates if the templates folder is empty.
  */
 export async function createGlobalDir(): Promise<void> {
-  const minimazDir = path.join(os.homedir(), '.minimaz')
-  const globalTemplatesDir = path.join(minimazDir, 'templates')
-  const defaultTemplatesDir = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
-  const settingsPath = path.join(minimazDir, 'settings.json')
+  const minimazDir: string = getGlobarDirPath()
+  const globalTemplatesDir: string = path.join(minimazDir, 'templates')
+  const defaultTemplatesDir: string = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
+  const settingsPath: string = path.join(minimazDir, 'settings.json')
 
   try {
     await fs.ensureDir(minimazDir)
