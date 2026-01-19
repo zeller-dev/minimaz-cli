@@ -35,6 +35,16 @@ export type MinimazConfig = {
     scripts?: string[]
 }
 
+// ----- Package Template Types -----
+export type PkgTemplate = {
+    name: string
+    version: string
+    license: string
+    type: 'commonjs' | 'module'
+    scripts: Record<string, string>
+    devDependencies: Record<string, string>
+}
+
 // ----- Args Types -----
 export interface Args {
     _: string[]

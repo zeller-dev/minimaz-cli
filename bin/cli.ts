@@ -50,7 +50,9 @@ async function main(): Promise<void> {
     // Init command with optional template
     init: async () => {
       await init(subArg || 'minimaz-project', {
-        template: args.template || args.t || 'default'
+        template: args.template || args.t || 'default',
+        npm: args.npm,
+        git: args.git
       })
     },
 
