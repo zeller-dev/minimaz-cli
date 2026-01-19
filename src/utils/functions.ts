@@ -52,7 +52,6 @@ export function parseArgs(rawArgs: string[]): Args {
       args[key] = true
     }
   }
-
   return args
 }
 
@@ -97,7 +96,7 @@ export function askQuestion(
  * @param dir - Templates directory path
  */
 export async function listTemplates(): Promise<void> {
-  const dir: string = getGlobarDirPath()
+  const dir = path.join(getGlobalDirPath(), 'templates')
   if (!await fs.pathExists(dir)) {
     log('info', 'No templates directory found.')
     return
@@ -132,7 +131,7 @@ export function applyReplacements(
     }
 
     const escaped = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const pattern = new RegExp(escaped, 'g')
+    const pattern = new RegExp(escaped, 'gi')
 
     return acc.replace(pattern, to)
   }, content)
@@ -184,7 +183,7 @@ export function getGlobalNodeModulesPath(): string {
 /**
  * Returns the global directory's path.
  */
-export function getGlobarDirPath(): string {
+export function getGlobalDirPath(): string {
   return path.join(os.homedir(), '.minimaz')
 }
 
@@ -199,7 +198,7 @@ export function getGlobarDirPath(): string {
  * Copies default templates if the templates folder is empty.
  */
 export async function createGlobalDir(): Promise<void> {
-  const minimazDir: string = getGlobarDirPath()
+  const minimazDir: string = getGlobalDirPath()
   const globalTemplatesDir: string = path.join(minimazDir, 'templates')
   const defaultTemplatesDir: string = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
   const settingsPath: string = path.join(minimazDir, 'settings.json')
@@ -307,6 +306,7 @@ export async function createFileFromTemplate(
  * @param provider - Optional provider ('github' | 'gitlab')
  */
 export async function initGit(
+  projectName: string,
   targetDir: string,
   remoteUrl?: string,
   provider?: 'github' | 'gitlab',
@@ -324,16 +324,14 @@ export async function initGit(
     }
 
     if (provider) {
-      await createProviderRepo(targetDir, provider, name)
+      await createRemoteRepo(projectName, targetDir, provider, name)
       return
     }
-
     throw new Error('Git remote configuration is invalid.')
   }
 
   log('success', 'Git repository initialized.')
 }
-
 
 /**
  * Creates a repository on a provider (GitHub or GitLab) and adds it as a remote.
@@ -342,13 +340,12 @@ export async function initGit(
  * @param provider - 'github' or 'gitlab'
  * @param remoteName - Name of the remote to add
  */
-async function createProviderRepo(
+async function createRemoteRepo(
+  repoName: string,
   targetDir: string,
   provider: 'github' | 'gitlab' | undefined,
   remoteName: string
 ): Promise<void> {
-  const repoName = path.basename(targetDir)
-
   switch (provider) {
     case 'github':
       log('info', `Creating GitHub repo '${repoName}'`)
@@ -361,15 +358,16 @@ async function createProviderRepo(
 
     case 'gitlab':
       log('info', `Creating GitLab repo '${repoName}'`)
+      const gitlabUser = process.env.GITLAB_USER
+      if (!gitlabUser) throw new Error('GITLAB_USER env variable not set')
       await executeCommand(
         'glab',
         ['repo', 'create', repoName, '--source=.'],
         targetDir
       )
-      // aggiunge il remote "origin" manualmente
       await executeCommand(
         'git',
-        ['remote', 'add', remoteName, `git@gitlab.com:<username>/${repoName}.git`],
+        ['remote', 'add', remoteName, `git@gitlab.com:${gitlabUser}/${repoName}.git`],
         targetDir
       )
       break

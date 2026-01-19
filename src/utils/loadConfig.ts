@@ -42,10 +42,9 @@ function deepMerge(target: any, source: any): any {
   return result
 }
 
-
 // ----- Load User Config -----
 // Loads minimaz.config.json if present and merges it with default config
-export async function loadConfig(): Promise<any> {
+export async function loadConfig(): Promise<MinimazConfig> {
   const configPath: string = path.resolve(process.cwd(), 'minimaz.config.json')
 
   let userConfig: Partial<any> = {}
@@ -61,6 +60,5 @@ export async function loadConfig(): Promise<any> {
   }
 
   const config: MinimazConfig = deepMerge(userConfig, defaultConfig)
-
   return config
 }

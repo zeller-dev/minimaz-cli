@@ -31,7 +31,7 @@ async function main(): Promise<void> {
   // Show help if requested
   if (cmd === 'help' || args.h || args.help) {
     help(subArg || (args.h || args.help ? cmd : undefined))
-    return
+    process.exit(0)
   }
 
   /**

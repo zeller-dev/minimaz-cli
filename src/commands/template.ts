@@ -1,9 +1,9 @@
 import fs from 'fs-extra'
-import os from 'os'
 import path from 'path'
 
 import {
-  askQuestion, listTemplates, getGlobalNodeModulesPath, log
+  askQuestion, listTemplates, getGlobalNodeModulesPath, log,
+  getGlobalDirPath
 } from '../index.js'
 
 /**
@@ -17,7 +17,7 @@ import {
  * @param options - CLI flags (--list, --delete, --update, etc.)
  */
 export async function template(targetPath?: string, options: any = {}): Promise<void> {
-  const templatesDir: string = path.join(os.homedir(), '.minimaz', 'templates')
+  const templatesDir: string = path.join(getGlobalDirPath(), 'templates')
   const deleteName: string | undefined = options.delete || options.d
   const updateName: string | undefined = options.update || options.u
 
@@ -51,7 +51,7 @@ async function updateSingleTemplate(templatesDir: string, templateName: string):
     throw new Error(`Template '${templateName}' not found in ~/.minimaz/templates`)
 
   if (
-    (await askQuestion(`Update template '${templateName}' with current directory? [y/n]:`, 'y')).startsWith('y')
+    !(await askQuestion(`Update template '${templateName}' with current directory? [y/n]:`, 'y')).startsWith('y')
   ) {
     log('info', 'Update cancelled.')
     return
@@ -61,7 +61,7 @@ async function updateSingleTemplate(templatesDir: string, templateName: string):
     await fs.copy(sourceDir, targetDir, { overwrite: true })
     log('success', `Template '${templateName}' updated from current directory.`)
   } catch (error: any) {
-    throw new Error(`Failed to update '${templateName}': ${error.message}`)
+    throw new Error(`Failed to update '${templateName}'`)
   }
 }
 
@@ -79,7 +79,7 @@ async function updateFromNodeModules(templatesDir: string): Promise<void> {
   const items: string[] = await fs.readdir(nodeModulesPath)
 
   if (
-    (await askQuestion('Update local templates overwriting them with defaults? [y/n]:', 'y')).startsWith('y')
+    !((await askQuestion('Update local templates overwriting them with defaults? [y/n]:', 'y')).startsWith('y'))
   ) {
     log('info', 'Update cancelled.')
     return
@@ -110,7 +110,7 @@ async function deleteTemplate(dir: string, name: string): Promise<void> {
   if (!await fs.pathExists(target)) throw new Error(`Template not found: ${name}`)
 
   if (
-    (await askQuestion(`Confirm delete '${name}'? [y/n]`, 'y')).startsWith('y')
+    !(await askQuestion(`Confirm delete '${name}'? [y/n]:`, 'y')).startsWith('y')
   ) {
     log('info', 'Delete cancelled.')
     return
@@ -131,20 +131,38 @@ async function deleteTemplate(dir: string, name: string): Promise<void> {
  * @param targetPath - Optional path to save as a template
  */
 async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
-  let source: string = targetPath ? path.resolve(process.cwd(), targetPath) : process.cwd()
+  let source: string = targetPath
+    ? path.resolve(process.cwd(), targetPath)
+    : process.cwd()
 
   if (!await fs.pathExists(source)) {
     log('warn', `Path not found: ${source}`)
     if (
-      (await askQuestion('Use current directory instead? [y/n]:', 'y')).startsWith('y')
-    ) throw new Error('Operation cancelled.')
-    source = process.cwd()
+      (await askQuestion(
+        'Use current directory instead? [y/n]:', 'y'
+      )).startsWith('y')
+    ) {
+      source = process.cwd()
+    } else {
+      throw new Error('Operation cancelled.')
+    }
   }
 
   try {
     await fs.ensureDir(dir)
     const dest: string = path.join(dir, path.basename(source))
-    await fs.copy(source, dest)
+    if (await fs.pathExists(dest)) {
+      const proceed = (await askQuestion(
+        `Template '${path.basename(dest)}' already exists. Overwrite? [y/n]:`,
+        'n'
+      )).startsWith('y')
+
+      if (!proceed) {
+        log('info', 'Save cancelled.')
+        return
+      }
+    }
+    await fs.copy(source, dest, { overwrite: true })
     log('success', `Template saved to ${dest}`)
   } catch (error: any) {
     throw new Error(`Failed to save template: ${error.message}`)

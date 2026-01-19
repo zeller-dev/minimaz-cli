@@ -1,6 +1,6 @@
 import fs from 'fs-extra'
 import path from 'path'
-import os from 'os'
+
 import {
   log,
   createGlobalDir,
@@ -10,7 +10,7 @@ import {
   pkgTemplate,
   gitIgnoreTemplate,
   initGit,
-  getGlobarDirPath
+  getGlobalDirPath
 } from '../index.js'
 
 /**
@@ -33,7 +33,7 @@ export async function init(
 ): Promise<void> {
 
   // Resolve global and local paths
-  const minimazDir: string = getGlobarDirPath()
+  const minimazDir: string = getGlobalDirPath()
   const templateName: string = options.template ?? 'default'
   const templateDir: string = path.join(minimazDir, 'templates', templateName)
   const targetDir: string = path.resolve(process.cwd(), projectName)
@@ -54,6 +54,10 @@ export async function init(
   if (!await fs.pathExists(templateDir))
     throw new Error(`Template '${templateName}' not found.`)
 
+  if (await fs.pathExists(targetDir))
+    throw new Error(`Target directory '${targetDir}' already exists.`)
+
+
   const initNpm: boolean =
     options.npm
     ?? (await askQuestion('Init NPM? [y/n]:', 'y')).startsWith('y')
@@ -67,6 +71,7 @@ export async function init(
      * Copy template files into the target project directory.
      * At this point no side effects (npm, git, etc.) are executed.
      */
+    log('info', `Copying template from '${templateDir}' to '${targetDir}'`)
     await fs.copy(templateDir, targetDir)
 
     /**
@@ -94,7 +99,7 @@ export async function init(
 
     if (initGitRepo) {
       log('info', 'Initializing GIT...')
-      await initGit(targetDir, options.gitremote, options.gitprovider)
+      await initGit(projectName, targetDir, options.gitremote, options.gitprovider)
     }
 
     log(
