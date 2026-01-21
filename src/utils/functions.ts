@@ -26,7 +26,7 @@ export function parseArgs(rawArgs: string[]): Args {
   const args: Args = { _: [] }
 
   for (let i = 0; i < rawArgs.length; i++) {
-    const arg = rawArgs[i]
+    const arg: string = rawArgs[i]
 
     // Positional argument
     if (!arg.startsWith('-')) {
@@ -36,13 +36,13 @@ export function parseArgs(rawArgs: string[]): Args {
 
     // --key=value syntax
     if (arg.startsWith('--') && arg.includes('=')) {
-      const [key, value] = arg.slice(2).split('=')
+      const [key, value]: string[] = arg.slice(2).split('=')
       args[key] = value
       continue
     }
 
-    const key = arg.replace(/^-+/, '')
-    const next = rawArgs[i + 1]
+    const key: string = arg.replace(/^-+/, '')
+    const next: string = rawArgs[i + 1]
 
     if (next && !next.startsWith('-')) {
       args[key] = next
@@ -95,13 +95,13 @@ export function askQuestion(
  * @param dir - Templates directory path
  */
 export async function listTemplates(): Promise<void> {
-  const dir = path.join(getGlobalDirPath(), 'templates')
+  const dir: string = path.join(getGlobalDirPath(), 'templates')
   if (!await fs.pathExists(dir)) {
     log('info', 'No templates directory found.')
     return
   }
 
-  const templates = await fs.readdir(dir)
+  const templates: string[] = await fs.readdir(dir)
 
   if (templates.length === 0) {
     log('info', 'No global templates available.')
@@ -129,8 +129,8 @@ export function applyReplacements(
       return acc
     }
 
-    const escaped = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const pattern = new RegExp(escaped, 'gi')
+    const escaped: string = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern: RegExp = new RegExp(escaped, 'gi')
 
     return acc.replace(pattern, to)
   }, content)
@@ -148,7 +148,7 @@ export async function getFile(
   replace?: Record<string, string>
 ): Promise<string> {
   try {
-    let file = await fs.readFile(srcPath, 'utf8')
+    let file: string = await fs.readFile(srcPath, 'utf8')
     if (replace) file = applyReplacements(file, replace)
     return file
   } catch (error: any) {
@@ -165,7 +165,7 @@ export async function getFile(
  */
 export function getGlobalNodeModulesPath(): string {
   try {
-    const prefix = execSync('npm config get prefix', { encoding: 'utf8' }).trim()
+    const prefix: string = execSync('npm config get prefix', { encoding: 'utf8' }).trim()
     if (!prefix) throw new Error('Empty npm prefix')
 
     return process.platform === 'win32'
@@ -218,8 +218,8 @@ export async function createGlobalDir(): Promise<void> {
       log('success', `Created settings.json at ${settingsPath}`)
     }
 
-    const exists = await fs.pathExists(globalTemplatesDir)
-    const isEmpty = exists ? (await fs.readdir(globalTemplatesDir)).length === 0 : true
+    const exists: boolean = await fs.pathExists(globalTemplatesDir)
+    const isEmpty: boolean = exists ? (await fs.readdir(globalTemplatesDir)).length === 0 : true
 
     if (!exists) {
       await fs.ensureDir(globalTemplatesDir)

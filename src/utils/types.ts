@@ -16,16 +16,13 @@ export type MinimazConfig = {
     src: string
     dist: string
     public: string
-
     minify: {
         html?: boolean
         css?: boolean
         js?: boolean
         ts?: boolean
     };
-
     replace?: Record<string, string>
-
     folders?: {
         src?: string
         public?: string

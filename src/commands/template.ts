@@ -152,7 +152,7 @@ async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
     await fs.ensureDir(dir)
     const dest: string = path.join(dir, path.basename(source))
     if (await fs.pathExists(dest)) {
-      const proceed = (await askQuestion(
+      const proceed: boolean = (await askQuestion(
         `Template '${path.basename(dest)}' already exists. Overwrite? [y/n]:`,
         'n'
       )).startsWith('y')
