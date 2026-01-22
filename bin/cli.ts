@@ -55,7 +55,7 @@ async function main(): Promise<void> {
         git: args.git,
         gitremote: args.gitremote,
         gitprovider: args.gitprovider
-      })
+      } as any)
     },
 
     // Template command with list/delete/update options
@@ -88,9 +88,8 @@ async function main(): Promise<void> {
    * =============================
    */
   try {
-    if (commands[cmd]) {
-      await commands[cmd]()
-    } else {
+    if (commands[cmd]) { await commands[cmd]() }
+    else {
       // Unknown command → log error and show general help
       log('error', `Unknown command '${cmd}'. Use 'minimaz help' to see available commands.`)
       help()

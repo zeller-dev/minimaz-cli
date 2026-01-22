@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Minimaz</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="../public/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+  <header>
+    <nav>
+      <a class="btn active" href="#">Home</a>
+      <a class="btn" href="pages/about.html">About</a>
+      <a class="btn" href="https://github.com/zeller-dev/minimaz" target="_blank">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>🚀 Welcome to Minimaz</h1>
+    <p><strong>Minimaz</strong> is a minimal static site builder designed for speed and simplicity. It helps you:</p>
+    <ul>
+      <li>💡 Organize your files with a simple structure</li>
+      <li>⚙️ Automatically build and minify HTML, CSS, JS, and TS</li>
+      <li>🔄 Customize file inclusion order using <code>minimaz.config.json</code></li>
+    </ul>
+
+    <h2>🔧 Getting Started</h2>
+    <p>Install and use Minimaz with the following commands:</p>
+    <pre><code># 🔨 Initialize a new project
+npx minimaz init my-site
+
+# 🏗️ Build the site
+npx minimaz build
+
+# 📦 Save template or list/delete existing ones
+npx minimaz template &lt;path&gt; [--list|-l] [--delete|-d]
+
+# 💬 Show help guide
+npx minimaz help</code></pre>
+
+    <h2>📁 Project Structure</h2>
+    <pre><code>my-site/
+├── src/                  # Source files (HTML, CSS, JS, TS)
+├── public/               # Static assets (images, fonts, etc.)
+├── dist/                 # Output directory (auto-generated)
+└── minimaz.config.json   # Configuration file</code></pre>
+
+    <h2>⚙️ Configuration</h2>
+    <pre><code>{
+  "src": "src",
+  "dist": "dist",
+  "public": "public",
+  "minify": { "html": true, "css": true, "js": true, "ts": true },
+  "replace": { "../public/": "public/" },
+  "styles": [ "reset.css", "style.css", "theme.css" ],
+  "scripts": [ "libs/jquery.js", "utils.js", "script.js" ]
+}</code></pre>
+
+    <h2>📤 Production</h2>
+    <p>The final output will be generated in the <code>dist/</code> folder, ready for deployment.</p>
+
+    <h2>❓ Available Commands</h2>
+    <ul>
+      <li><code>init</code> / <code>i</code> – Initialize a new project</li>
+      <li><code>build</code> / <code>b</code> – Build and minify the project</li>
+      <li><code>help</code> / <code>h</code> – Show the help message</li>
+      <li><code>template</code> / <code>t</code> – Manage templates (with <code>--list</code> and <code>--delete</code> options)</li>
+    </ul>
+
+    <p>You're ready to build fast and clean static websites. Happy coding! 🛠️</p>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Minimaz. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

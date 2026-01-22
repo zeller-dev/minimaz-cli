@@ -66,52 +66,50 @@ export async function init(
     options.git
     ?? (await askQuestion('Init Git repository? [y/n]:', 'y')).startsWith('y')
 
-  try {
-    /**
-     * Copy template files into the target project directory.
-     * At this point no side effects (npm, git, etc.) are executed.
-     */
-    log('info', `Copying template from '${templateDir}' to '${targetDir}'`)
-    await fs.copy(templateDir, targetDir)
-
-    /**
-     * Copy a shared .gitignore if present.
-     * The file lives one level above the templates directory.
-     */
-    log('info', 'Initializing gitignore...')
-    await createFileFromTemplate(
-      gitIgnoreTemplate,
-      path.join(targetDir, '.gitignore')
-    )
-
-    /**
-     * Initialize npm only after all files are in place.
-     * This mirrors the behavior of tools like Angular CLI.
-     */
-    if (initNpm) {
-      log('info', 'Initializing NPM...')
-      await createFileFromTemplate(
-        { ...pkgTemplate, name: projectName },
-        path.join(targetDir, 'package.json')
-      )
-      await executeCommand('npm', ['install'], targetDir)
-    }
-
-    if (initGitRepo) {
-      log('info', 'Initializing GIT...')
-      await initGit(projectName, targetDir, options.gitremote, options.gitprovider)
-    }
-
-    log(
-      'success',
-      `Project '${projectName}' created using template '${templateName}'.`
-    )
-
-  } catch (error: any) {
-    /**
-     * Surface a single, clear error to the CLI layer.
-     * Internal errors should not leak implementation details.
-     */
-    throw new Error(`Failed to create project: ${error.message}`)
+  if (initGitRepo) {
+    options.gitprovider = options.gitprovider ??
+      await askQuestion(
+        'Select a provider or paste a url to connect your existing repo (cli tools needed) [local/github/gitlab]:',
+        'local')
   }
+
+  /**
+   * Copy template files into the target project directory.
+   * At this point no side effects (npm, git, etc.) are executed.
+   */
+  log('info', `Copying template from '${templateDir}' to '${targetDir}'`)
+  await fs.copy(templateDir, targetDir)
+
+  /**
+   * Copy a shared .gitignore if present.
+   * The file lives one level above the templates directory.
+   */
+  log('info', 'Initializing gitignore...')
+  await createFileFromTemplate(
+    gitIgnoreTemplate,
+    path.join(targetDir, '.gitignore')
+  )
+
+  /**
+   * Initialize npm only after all files are in place.
+   * This mirrors the behavior of tools like Angular CLI.
+   */
+  if (initNpm) {
+    log('info', 'Initializing NPM...')
+    await createFileFromTemplate(
+      { ...pkgTemplate, name: projectName },
+      path.join(targetDir, 'package.json')
+    )
+    await executeCommand('npm', ['install'], targetDir)
+  }
+
+  if (initGitRepo) {
+    log('info', 'Initializing GIT...')
+    await initGit(projectName, targetDir, options.gitprovider)
+  }
+
+  log(
+    'success',
+    `Project '${projectName}' created using template '${templateName}'.`
+  )
 }

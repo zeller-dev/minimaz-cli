@@ -24,9 +24,7 @@ export type MinimazConfig = {
     };
     replace?: Record<string, string>
     folders?: {
-        src?: string
-        public?: string
-        [key: string]: string | undefined
+        [key: string]: string
     }
     styles?: string[]
     scripts?: string[]

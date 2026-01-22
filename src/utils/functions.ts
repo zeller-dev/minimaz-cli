@@ -6,7 +6,9 @@ import { execSync, spawn } from 'child_process'
 
 import {
   log,
-  Args
+  Args,
+  MinimazConfig,
+  loadConfig
 } from '../index.js'
 
 // @TODO add cache manager?
@@ -124,11 +126,6 @@ export function applyReplacements(
   replacements: Record<string, string> = {}
 ): string {
   return Object.entries(replacements).reduce((acc, [from, to]) => {
-    if (!acc.includes(from)) {
-      log('warn', `Replacement not found: ${from}`)
-      return acc
-    }
-
     const escaped: string = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const pattern: RegExp = new RegExp(escaped, 'gi')
 
@@ -307,68 +304,116 @@ export async function createFileFromTemplate(
 export async function initGit(
   projectName: string,
   targetDir: string,
-  remoteUrl?: string,
-  provider?: 'github' | 'gitlab',
+  provider?: string,
   name: string = 'origin'
 ): Promise<void> {
   log('info', 'Initializing Git repository...')
   await executeCommand('git', ['init'], targetDir)
 
-  // costruisco l'oggetto GitRemote se è stato passato almeno un parametro
-  if (remoteUrl || provider) {
-    if (remoteUrl) {
-      log('info', `Adding git remote '${name}' -> ${remoteUrl}`)
-      await executeCommand('git', ['remote', 'add', name, remoteUrl], targetDir)
-      return
-    }
-
-    if (provider) {
-      await createRemoteRepo(projectName, targetDir, provider, name)
-      return
-    }
-    throw new Error('Git remote configuration is invalid.')
+  if (provider) {
+    await createRemoteRepo(projectName, targetDir, provider, name)
+    log('success', 'Git repository initialized.')
+    return
   }
 
-  log('success', 'Git repository initialized.')
+  throw new Error('Git remote configuration is invalid.')
 }
 
 /**
- * Creates a repository on a provider (GitHub or GitLab) and adds it as a remote.
+ * Creates or connects a remote Git repository.
  *
- * @param targetDir - Local directory of the repository
- * @param provider - 'github' or 'gitlab'
- * @param remoteName - Name of the remote to add
+ * Supported modes:
+ * - GitHub (via gh CLI)
+ * - GitLab (via glab CLI)
+ * - Existing remote URL (SSH / HTTPS)
+ *
+ * This function does NOT create commits.
+ *
+ * @param repoName   - Repository name
+ * @param targetDir  - Local repository directory
+ * @param remote     - Provider name ('github' | 'gitlab') or remote URL
+ * @param remoteName - Git remote name (default: origin)
  */
 async function createRemoteRepo(
   repoName: string,
   targetDir: string,
-  provider: 'github' | 'gitlab' | undefined,
-  remoteName: string
+  remote: string,
+  remoteName: string = 'origin'
 ): Promise<void> {
-  switch (provider) {
-    case 'github':
-      log('info', `Creating GitHub repo '${repoName}'`)
-      await executeCommand(
-        'gh',
-        ['repo', 'create', repoName, '--source=.', '--remote', remoteName],
-        targetDir
-      )
-      break
-
-    case 'gitlab':
-      log('info', `Creating GitLab repo '${repoName}'`)
-      const gitlabUser = process.env.GITLAB_USER
-      if (!gitlabUser) throw new Error('GITLAB_USER env variable not set')
-      await executeCommand(
-        'glab',
-        ['repo', 'create', repoName, '--source=.'],
-        targetDir
-      )
-      await executeCommand(
-        'git',
-        ['remote', 'add', remoteName, `git@gitlab.com:${gitlabUser}/${repoName}.git`],
-        targetDir
-      )
-      break
+  console.log(remote, remoteName, repoName, targetDir)
+  /**
+   * Case 1: Existing repository URL (connect only)
+   */
+  if (/^https?:\/\//.test(remote) || remote.startsWith('git@')) {
+    log('info', `Connecting existing remote '${remote}'`)
+    await executeCommand(
+      'git',
+      ['remote', 'add', remoteName, remote],
+      targetDir
+    )
+    return
   }
+
+  /**
+   * Case 2: GitHub repository creation (via gh CLI)
+   */
+  if (remote === 'github') {
+    log('info', `Creating GitHub repository '${repoName}'`)
+    await executeCommand(
+      'gh',
+      ['repo', 'create', repoName, '--private', '--source=.', '--remote', remoteName],
+      targetDir
+    )
+    return
+  }
+
+  /**
+   * Case 3: GitLab repository creation (via glab CLI)
+   */
+  if (remote === 'gitlab') {
+    log('info', `Creating GitLab repository '${repoName}'`)
+
+    const gitlabUser = process.env.GITLAB_USER
+    if (!gitlabUser)
+      throw new Error('GITLAB_USER environment variable not set')
+
+    await executeCommand(
+      'glab',
+      ['repo', 'create', repoName, '--source=.'],
+      targetDir
+    )
+
+    await executeCommand(
+      'git',
+      [
+        'remote',
+        'add',
+        remoteName,
+        `git@gitlab.com:${gitlabUser}/${repoName}.git`
+      ],
+      targetDir
+    )
+    return
+  }
+
+  /**
+   * Unsupported provider
+   */
+  throw new Error(`Unsupported git provider or remote: '${remote}'`)
+}
+
+
+/**
+ * Removes Dist Directory
+ *
+ */
+export async function removeDistDir(): Promise<void> {
+  const config: MinimazConfig = await loadConfig()
+  const distDir: string = path.resolve(process.cwd(), config.dist || 'dist')
+  if (!fs.existsSync(distDir)) {
+    log('info', `No dist folder found: ${distDir}`)
+    return
+  }
+  fs.remove(distDir)
+  log('success', `Cleared ${distDir}`)
 }
