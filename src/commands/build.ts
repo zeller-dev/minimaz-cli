@@ -2,7 +2,7 @@ import fs, { remove } from 'fs-extra'
 import path from 'path'
 import CleanCSS from 'clean-css'
 import { minify as minifyHtml } from 'html-minifier-terser'
-import { minify as minifyJs, MinifyOutput } from 'terser'
+import { minify as minifyJs } from 'terser'
 
 import {
   loadConfig,

@@ -8,7 +8,8 @@ import {
   log,
   Args,
   MinimazConfig,
-  loadConfig
+  loadConfig,
+  defaultConfig
 } from '../index.js'
 
 // @TODO add cache manager?
@@ -416,4 +417,23 @@ export async function removeDistDir(): Promise<void> {
   }
   fs.remove(distDir)
   log('success', `Cleared ${distDir}`)
+}
+
+/**
+ * Returns Minimaz Config
+ *
+ */
+export async function loadConfig(): Promise<MinimazConfig> {
+  const configPath: string = path.resolve(process.cwd(), 'minimaz.config.json')
+  let config: MinimazConfig;
+
+  if (await fs.pathExists(configPath)) {
+    config = await fs.readJson(configPath)
+    log('info', 'Loaded config from minimaz.config.json')
+  } else {
+    config = JSON.parse(JSON.stringify(defaultConfig))
+    log('warn', 'No minimaz.config.json found. Using default config')
+  }
+
+  return config
 }

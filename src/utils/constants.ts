@@ -83,3 +83,22 @@ export const commands: Record<string, CommandHelp> = {
         description: 'Show Minimaz version'
     }
 }
+
+export const defaultConfig: MinimazConfig = {
+    src: 'src',
+    dist: 'dist',
+    public: 'public',
+    minify: {
+        html: true,
+        css: true,
+        js: true,
+        ts: true
+    },
+    replace: {
+        '../public/': "public/"
+    },
+    folders: {
+        'src': '',
+        'public': 'public'
+    }
+}
