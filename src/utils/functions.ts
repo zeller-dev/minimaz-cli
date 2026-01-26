@@ -8,8 +8,7 @@ import {
   log,
   Args,
   MinimazConfig,
-  loadConfig,
-  defaultConfig
+  minimazConfigTemplate
 } from '../index.js'
 
 // @TODO add cache manager?
@@ -29,7 +28,7 @@ export function parseArgs(rawArgs: string[]): Args {
   const args: Args = { _: [] }
 
   for (let i = 0; i < rawArgs.length; i++) {
-    const arg: string = rawArgs[i]
+    const arg: string = rawArgs[i].toLowerCase();
 
     // Positional argument
     if (!arg.startsWith('-')) {
@@ -261,7 +260,10 @@ export function executeCommand(
       shell: true,
     })
 
-    child.on('error', reject)
+    child.on('error', (err) => {
+      log('error', `Failed to run command: ${err}`)
+      reject(err)
+    })
 
     child.on('close', code => {
       if (code === 0) resolve()
@@ -408,16 +410,25 @@ async function createRemoteRepo(
  * Removes Dist Directory
  *
  */
-export async function removeDistDir(): Promise<void> {
-  const config: MinimazConfig = await loadConfig()
-  const distDir: string = path.resolve(process.cwd(), config.dist || 'dist')
-  if (!fs.existsSync(distDir)) {
+export async function removeDistDir(dir?: string): Promise<void> {
+  const distDir = dir
+    ? path.isAbsolute(dir) ? dir : path.resolve(process.cwd(), dir)
+    : path.resolve(process.cwd(), (await loadConfig()).dist ?? 'dist')
+  const rootDir = process.cwd()
+
+  if (distDir === rootDir || distDir.length <= rootDir.length)
+    throw new Error(`Refusing to delete unsafe directory: ${distDir}`)
+
+  if (!await fs.pathExists(distDir)) {
     log('info', `No dist folder found: ${distDir}`)
     return
   }
-  fs.remove(distDir)
+
+  await fs.remove(distDir)
   log('success', `Cleared ${distDir}`)
 }
+
+
 
 /**
  * Returns Minimaz Config
@@ -431,7 +442,7 @@ export async function loadConfig(): Promise<MinimazConfig> {
     config = await fs.readJson(configPath)
     log('info', 'Loaded config from minimaz.config.json')
   } else {
-    config = JSON.parse(JSON.stringify(defaultConfig))
+    config = JSON.parse(JSON.stringify(minimazConfigTemplate))
     log('warn', 'No minimaz.config.json found. Using default config')
   }
 

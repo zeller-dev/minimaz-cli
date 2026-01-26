@@ -11,4 +11,3 @@ export * from './utils/types.js';
 export * from './utils/functions.js';
 export * from './utils/constants.js';
 export { log } from './utils/logService.js';
-export { loadConfig } from './utils/loadConfig.js';

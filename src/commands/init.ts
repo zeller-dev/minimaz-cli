@@ -39,7 +39,6 @@ export async function init(
   const targetDir: string = path.resolve(process.cwd(), projectName)
 
   /**
-   * Ensure the global Minimaz directory exists.
    * This directory contains user templates and settings.
    */
   if (!await fs.pathExists(minimazDir)) {

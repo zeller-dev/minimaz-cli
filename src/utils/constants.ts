@@ -23,11 +23,15 @@ export const minimazConfigTemplate: MinimazConfig = {
     dist: 'dist',
     public: 'public',
 
+    bundling: {
+        css: true,
+        js: true
+    },
+
     minify: {
         html: true,
         css: true,
-        js: true,
-        ts: true
+        js: true
     },
 
     replace: {
@@ -81,24 +85,5 @@ export const commands: Record<string, CommandHelp> = {
     version: {
         usage: 'minimaz version | v',
         description: 'Show Minimaz version'
-    }
-}
-
-export const defaultConfig: MinimazConfig = {
-    src: 'src',
-    dist: 'dist',
-    public: 'public',
-    minify: {
-        html: true,
-        css: true,
-        js: true,
-        ts: true
-    },
-    replace: {
-        '../public/': "public/"
-    },
-    folders: {
-        'src': '',
-        'public': 'public'
     }
 }

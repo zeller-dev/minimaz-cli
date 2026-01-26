@@ -3,24 +3,25 @@ import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 
 import {
-  build, init, help, template, clear, version,
-  log, parseArgs, CommandFn
+  build, init, help, template, clear, version,            // commands
+  log, parseArgs,                                         // utils
+  CommandFn, templateCommandOptions, initCommandOptions   // types
 } from '../src/index.js'
 
 // Resolve the current filename and directory
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+// TODO const processDir: string = process.cwd()
 
 /**
  * Main CLI entrypoint
  */
 async function main(): Promise<void> {
   // Parse raw CLI arguments (remove "node" and script path)
-  const rawArgs = process.argv.slice(2)
-  const args = parseArgs(rawArgs)
+  const args = parseArgs(process.argv.slice(2))
 
-  const cmd = (args._[0] || '').toLowerCase() // primary command
-  const subArg = args._[1]                    // optional argument (e.g., project name)
+  const cmd: string = (args._[0] || '')   // primary command
+  const subArg: string = args._[1]        // optional argument (e.g., project name)
 
   /**
    * =============================
@@ -49,22 +50,26 @@ async function main(): Promise<void> {
 
     // Init command with optional template
     init: async () => {
-      await init(subArg || 'minimaz-project', {
-        template: args.template || args.t || 'default',
-        npm: args.npm,
-        git: args.git,
-        gitremote: args.gitremote,
-        gitprovider: args.gitprovider
-      } as any)
+      await init(
+        subArg || 'minimaz-project',
+        {
+          template: args.template || args.t || 'default',
+          npm: args.npm,
+          git: args.git,
+          gitremote: args.gitremote,
+          gitprovider: args.gitprovider
+        } as initCommandOptions)
     },
 
     // Template command with list/delete/update options
     template: async () => {
-      await template(subArg, {
-        list: args.l || args.list,
-        delete: args.d || args.delete,
-        update: args.u || args.update
-      } as any)
+      await template(
+        subArg,
+        {
+          list: args.l || args.list,
+          delete: args.d || args.delete,
+          update: args.u || args.update
+        } as templateCommandOptions)
     },
 
     // Version command

@@ -16,6 +16,10 @@ export type MinimazConfig = {
     src: string
     dist: string
     public: string
+    bundling: {
+        css: boolean
+        js: boolean
+    };
     minify: {
         html?: boolean
         css?: boolean
@@ -45,8 +49,27 @@ export interface Args {
     [key: string]: string | boolean | string[]
 }
 
-export type GitRepo = {
-    url: string
-    provider?: 'github' | 'gitlab'
-    name?: string
+// ----- Template Command Options Types -----
+export type templateCommandOptions = {
+    list?: boolean
+    delete?: string
+    update?: string
 }
+
+// ----- Init Command Options Types -----
+export type initCommandOptions = {
+    template?: string
+    npm?: boolean
+    git?: boolean
+    gitremote?: string
+    gitprovider?: string
+}
+
+// ----- Bundles Types -----
+export type Bundles = {
+    css: string[],
+    js: string[]
+}
+
+// ----- File Handlers Types -----
+export type FileHandler = Record<string, (src: string, dest: string) => Promise<void>>

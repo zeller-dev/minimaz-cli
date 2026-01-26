@@ -1,4 +1,4 @@
-import fs, { remove } from 'fs-extra'
+import fs from 'fs-extra'
 import path from 'path'
 import CleanCSS from 'clean-css'
 import { minify as minifyHtml } from 'html-minifier-terser'
@@ -9,7 +9,10 @@ import {
   log,
   applyReplacements,
   getFile,
-  MinimazConfig
+  MinimazConfig,
+  removeDistDir,
+  Bundles,
+  FileHandler
 } from '../index.js'
 
 /**
@@ -20,11 +23,11 @@ import {
  * - Merges and minifies CSS/JS assets when required
  */
 export async function build(): Promise<void> {
-  const config: MinimazConfig = await loadConfig()
+  const config: MinimazConfig = await loadConfig() // Load project config
   const distDir: string = path.resolve(process.cwd(), config.dist || 'dist')
 
-  await remove(distDir)
-  await fs.ensureDir(distDir)
+  await removeDistDir(distDir)       // Clean dist directory
+  await fs.ensureDir(distDir) // Recreate dist directory
 
   if (!config.folders || Object.keys(config.folders).length === 0) {
     log('warn', 'No folders defined in config. Nothing to build.')
@@ -35,7 +38,6 @@ export async function build(): Promise<void> {
     log('info', `Building folder: ${srcPathRel} -> /${destName}`)
     await processFolder(srcPathRel, destName, config, distDir)
   }
-
   log('success', `Build completed. Output saved in /${config.dist}`)
 }
 
@@ -65,13 +67,12 @@ async function processFolder(
     return
   }
 
-  const cssChunks: string[] = []
-  const jsChunks: string[] = []
+  const bundles: Bundles = { css: [], js: [] }
 
-  await walkFolder(fullSrc, fullDest, config, cssChunks, jsChunks)
+  await walkFolder(fullSrc, fullDest, config, bundles)
 
   // Merge CSS/JS bundles only for the root source folder
-  if (srcPathRel === config.src) await mergeRootAssets(cssChunks, jsChunks, config, distDir)
+  if (srcPathRel === config.src) await mergeRootAssets(bundles, config, distDir)
 
   log('success', `Processed folder: ${srcPathRel} -> /${destName}`)
 }
@@ -89,8 +90,7 @@ async function walkFolder(
   src: string,
   dest: string,
   config: MinimazConfig,
-  cssChunks: string[],
-  jsChunks: string[]
+  bundles: Bundles
 ): Promise<void> {
   await fs.ensureDir(dest)
 
@@ -100,10 +100,10 @@ async function walkFolder(
     const stat: fs.Stats = await fs.stat(srcPath)
 
     if (stat.isDirectory()) {
-      await walkFolder(srcPath, destPath, config, cssChunks, jsChunks)
+      await walkFolder(srcPath, destPath, config, bundles)
       continue
     }
-    await processFile(srcPath, destPath, config, cssChunks, jsChunks)
+    await processFile(srcPath, destPath, config, bundles)
   }
 }
 
@@ -120,49 +120,96 @@ async function processFile(
   srcPath: string,
   destPath: string,
   config: MinimazConfig,
-  cssChunks: string[],
-  jsChunks: string[]
+  bundles: Bundles
 ): Promise<void> {
   log('info', `Processing file: ${srcPath}`)
+
   const ext: string = path.extname(srcPath).toLowerCase()
-  switch (ext) {
-    case '.html':
-      await processHtml(srcPath, destPath, config)
-      break
-    case '.css':
-      cssChunks.push(await getFile(srcPath, config.replace))
-      break
-    case '.js':
-      jsChunks.push(await getFile(srcPath, config.replace))
-      break
-    default:
-      await fs.copy(srcPath, destPath)
+  const handlers: FileHandler = {
+    '.html': async (src, dest) => processHtml(src, dest, config),
+    '.css': async (src) => { bundles.css.push(await getFile(src, config.replace)) },
+    '.js': async (src) => { bundles.js.push(await getFile(src, config.replace)) }
   }
+
+  if (handlers[ext]) await handlers[ext](srcPath, destPath)
+  else await fs.copy(srcPath, destPath)
 }
 
 /**
- * Processes and optionally minifies an HTML file.
+ * Processes an HTML file:
+ * - Minifies inline JavaScript (standard, module, nomodule)
+ * - Minifies inline JSON scripts
+ * - Leaves external scripts and other types intact
+ * - Minifies CSS inline and the final HTML if configured
  *
  * @param src - Source HTML file path
  * @param dest - Destination file path
  * @param config - Minimaz configuration
  */
-async function processHtml(
+export async function processHtml(
   src: string,
   dest: string,
   config: MinimazConfig
 ): Promise<void> {
   let content: string = await getFile(src, config.replace)
+  const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/gi
 
+  let lastIndex = 0
+  let result = ''
+  let match: RegExpExecArray | null
+
+  while ((match = scriptRegex.exec(content)) !== null) {
+    const [fullMatch, attrs, code] = match
+
+    result += content.slice(lastIndex, match.index)
+    lastIndex = match.index + fullMatch.length
+
+    if (/src=/i.test(attrs)) {
+      result += fullMatch
+      continue
+    }
+
+    const typeAttr = (attrs.match(/type=["']([^"']+)["']/i)?.[1] || '').toLowerCase()
+    const isModule = /module/i.test(typeAttr)
+    const isNoModule = /nomodule/i.test(attrs)
+
+    if (typeAttr === 'application/json') {
+      try {
+        // Minify JSON: parse and stringify compact
+        const minJson = JSON.stringify(JSON.parse(code))
+        result += `<script${attrs}>${minJson}</script>`
+      } catch (err) {
+        log('warn', `Invalid JSON in ${src}: ${err}`)
+        result += fullMatch
+      }
+    } else if (typeAttr === '' || typeAttr === 'text/javascript' || isModule || isNoModule) {
+      try {
+        // Minify inline JS safely
+        const minJs = await minifyJs(code, { format: { semicolons: true }, module: isModule })
+        result += `<script${attrs}>${minJs.code || ''}</script>`
+      } catch (err) {
+        log('warn', `JS minify error in ${src}: ${err}`)
+        result += fullMatch
+      }
+    } else {
+      result += fullMatch
+    }
+  }
+
+  // Append remaining HTML
+  result += content.slice(lastIndex)
+
+  // Minify final HTML + inline CSS if configured
   if (config.minify?.html) {
-    content = await minifyHtml(content, {
+    result = await minifyHtml(result, {
       collapseWhitespace: true,
       removeComments: true,
-      minifyJS: config.minify.js,
-      minifyCSS: config.minify.css
+      minifyCSS: config.minify.css,
+      minifyJS: false, // already minified above
     })
   }
-  await fs.outputFile(dest, content)
+
+  await fs.outputFile(dest, result)
 }
 
 /**
@@ -174,15 +221,14 @@ async function processHtml(
  * @param distDir - Absolute dist directory path
  */
 async function mergeRootAssets(
-  cssChunks: string[],
-  jsChunks: string[],
+  bundles: Bundles,
   config: MinimazConfig,
   distDir: string
 ): Promise<void> {
-  await appendExternalAssets(config.styles, cssChunks, config)
-  await appendExternalAssets(config.scripts, jsChunks, config)
-  await writeCssBundle(cssChunks, config, distDir)
-  await writeJsBundle(jsChunks, config, distDir)
+  await appendExternalAssets(config.styles, bundles.css, config)
+  await appendExternalAssets(config.scripts, bundles.js, config)
+  await writeCssBundle(bundles.css, config, distDir)
+  await writeJsBundle(bundles.js, config, distDir)
 }
 
 /**
@@ -227,7 +273,12 @@ async function writeCssBundle(
 ): Promise<void> {
   if (!chunks.length) return
   let css: string = chunks.join('')
-  if (config.minify?.css) css = new CleanCSS().minify(css).styles
+  if (config.minify?.css) {
+    const output = new CleanCSS().minify(css)
+    if (output.warnings.length)
+      output.warnings.forEach(w => log('warn', w))
+    css = output.styles
+  }
   await fs.outputFile(path.join(distDir, 'style.css'), css)
 }
 
@@ -245,6 +296,11 @@ async function writeJsBundle(
 ): Promise<void> {
   if (!chunks.length) return
   let js: string = chunks.join('')
-  js = config.minify?.js ? (await minifyJs(js)).code ?? '' : js;
+  if (config.minify?.js)
+    try {
+      js = (await minifyJs(js)).code ?? ''
+    } catch (err) {
+      log('warn', `JS minify failed: ${err}`)
+    }
   if (js) await fs.outputFile(path.join(distDir, 'script.js'), js)
 }
