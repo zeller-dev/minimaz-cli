@@ -15,13 +15,17 @@
     <meta name="robots" content="index, follow">
     <meta property="og:title" content="Minimaz CLI – Minimal Static Site Builder">
     <meta property="og:description"
-        content="A lightweight CLI tool to initialize and build clean static websites.">
+        content="A lightweight CLI tool to initialize and build clean static websites with optional bundling, external scripts, and templates.">
     <meta property="og:url" content="https://github.com/zeller-dev/minimaz-cli">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#0d0d0d">
 
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <!-- Style -->
     <link rel="stylesheet" href="style.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="../node_modules/bootstrap-icons/font/bootstrap-icons.min.css">
 </head>
 
 <body>
@@ -29,41 +33,57 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <header>
-        <h1>Minimaz CLI</h1>
+        <h1>Minimaz CLI <i class="bi bi-lightning-fill"></i></h1>
         <p id="tagline">Minimal input, clean output ⚡</p>
     </header>
 
     <main id="main-content">
         <section id="about" aria-labelledby="about-title">
-            <h2 id="about-title">About</h2>
+            <h2 id="about-title">About <i class="bi bi-info-circle"></i></h2>
             <p>
-                <strong>Minimaz</strong> is a minimal, low-dependency static site builder and project initializer focused
-                on speed, simplicity, and clean output. It works with plain HTML, CSS, JavaScript, and TypeScript —
-                no framework, no runtime, no lock-in.
+                <strong>Minimaz</strong> is a minimal, low-dependency static site builder and project initializer
+                focused
+                on speed, simplicity, and clean output. It supports HTML, CSS, JS, and TypeScript — compile, bundle, and
+                minify
+                with minimal configuration. Ideal for small static sites, utility projects, and quick prototypes.
             </p>
         </section>
 
+        <section id="features" aria-labelledby="features-title">
+            <h2 id="features-title">Key Features <i class="bi bi-gear-fill"></i></h2>
+            <ul>
+                <li>Initialize projects from templates <i class="bi bi-folder-plus"></i></li>
+                <li>Build and minify HTML, CSS, JS, and TypeScript <i class="bi bi-file-earmark-code"></i></li>
+                <li>Optional bundling of CSS/JS files <i class="bi bi-box-seam"></i></li>
+                <li>Include external styles/scripts from any path <i class="bi bi-link-45deg"></i></li>
+                <li>Path replacements for asset links <i class="bi bi-arrows-angle-contract"></i></li>
+                <li>Interactive CLI with timeout prompts <i class="bi bi-terminal-fill"></i></li>
+                <li>Optional npm and Git initialization <i class="bi bi-git"></i></li>
+                <li>Lightweight, fast, and low-dependency <i class="bi bi-lightning"></i></li>
+            </ul>
+        </section>
+
         <section id="use-cases" aria-labelledby="use-cases-title">
-            <h2 id="use-cases-title">Use Cases</h2>
+            <h2 id="use-cases-title">Use Cases <i class="bi bi-check2-square"></i></h2>
             <ul>
                 <li>Small static websites and landing pages</li>
                 <li>Utility projects and internal tools</li>
                 <li>Portfolios and documentation sites</li>
-                <li>Teams that want reproducible, minimal build systems</li>
+                <li>Teams needing reproducible minimal build systems</li>
             </ul>
         </section>
 
         <section id="requirements" aria-labelledby="requirements-title">
-            <h2 id="requirements-title">Requirements</h2>
+            <h2 id="requirements-title">Requirements <i class="bi bi-exclamation-triangle-fill"></i></h2>
             <ul>
                 <li>Node.js ≥ 22</li>
-                <li>npm (recent version)</li>
+                <li>npm (optional if using npx)</li>
             </ul>
         </section>
 
         <section id="installation" aria-labelledby="installation-title">
-            <h2 id="installation-title">Installation</h2>
-            <p>Designed to run without a global install.</p>
+            <h2 id="installation-title">Installation <i class="bi bi-download"></i></h2>
+            <p>Run directly with <code>npx</code> — no global install required.</p>
 
             <pre role="region" aria-labelledby="install-code" tabindex="0">
 <code id="install-code">npx minimaz init my-site
@@ -72,37 +92,46 @@ npx minimaz build
 npx minimaz version</code>
             </pre>
 
-            <p>Alias:</p>
+            <p>Aliases:</p>
 
             <pre role="region" aria-labelledby="alias-code" tabindex="0">
-<code id="alias-code">npx mz init my-site
-npx mz build
-npx mz version</code>
+<code id="alias-code">npx mz i my-site
+npx mz b
+npx mz v</code>
             </pre>
         </section>
 
         <section id="workflow" aria-labelledby="workflow-title">
-            <h2 id="workflow-title">Basic Workflow</h2>
+            <h2 id="workflow-title">Basic Workflow <i class="bi bi-list-task"></i></h2>
 
             <article aria-labelledby="workflow-init">
-                <h3 id="workflow-init">1. Initialize</h3>
+                <h3 id="workflow-init">1. Initialize <i class="bi bi-folder-plus"></i></h3>
                 <pre role="region" tabindex="0"><code>npx minimaz init my-site
 # or
 npx mz i my-site</code></pre>
-                <p>Creates a new project using a global template.</p>
+                <p>Creates a new project from a template. Supports npm and Git initialization with optional providers.
+                </p>
             </article>
 
             <article aria-labelledby="workflow-build">
-                <h3 id="workflow-build">2. Build</h3>
+                <h3 id="workflow-build">2. Build <i class="bi bi-hammer"></i></h3>
                 <pre role="region" tabindex="0"><code>npx minimaz build
 # or
 npx mz b</code></pre>
-                <p>Generates the optimized <code>dist/</code> folder with minified assets.</p>
+                <p>Generates the <code>dist/</code> folder with minified and optionally bundled assets.</p>
+            </article>
+
+            <article aria-labelledby="workflow-clear">
+                <h3 id="workflow-clear">3. Clear <i class="bi bi-trash-fill"></i></h3>
+                <pre role="region" tabindex="0"><code>npx minimaz clear
+# or
+npx mz c</code></pre>
+                <p>Deletes the <code>dist/</code> folder to start fresh.</p>
             </article>
         </section>
 
         <section id="commands" aria-labelledby="commands-title">
-            <h2 id="commands-title">Command Summary</h2>
+            <h2 id="commands-title">Command Summary <i class="bi bi-command"></i></h2>
 
             <table>
                 <caption>Available Minimaz CLI commands and aliases</caption>
@@ -115,46 +144,57 @@ npx mz b</code></pre>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>minimaz init &lt;name&gt;</td>
+                        <td>minimaz init &lt;name&gt; [--template &lt;name&gt;] [--npm] [--git] [--gitprovider
+                            &lt;url&gt;]</td>
                         <td>mz i</td>
-                        <td>Create a new project from a template</td>
+                        <td>Create a new project with optional template, npm, git, and provider settings</td>
                     </tr>
                     <tr>
                         <td>minimaz build</td>
                         <td>mz b</td>
-                        <td>Build and minify the site</td>
+                        <td>Build and minify the project</td>
                     </tr>
                     <tr>
                         <td>minimaz clear</td>
                         <td>mz c</td>
-                        <td>Clear the dist folder</td>
+                        <td>Clear the <code>dist/</code> folder</td>
                     </tr>
                     <tr>
                         <td>minimaz template &lt;path&gt;</td>
                         <td>mz t</td>
-                        <td>Save a folder as a template</td>
+                        <td>Save current folder as a template</td>
                     </tr>
                     <tr>
-                        <td>minimaz template -l</td>
+                        <td>minimaz template --list</td>
                         <td>mz t -l</td>
-                        <td>List templates</td>
+                        <td>List available templates</td>
                     </tr>
                     <tr>
-                        <td>minimaz template -d &lt;name&gt;</td>
+                        <td>minimaz template --delete &lt;name&gt;</td>
                         <td>mz t -d</td>
                         <td>Delete a template</td>
                     </tr>
                     <tr>
+                        <td>minimaz template --update [&lt;name&gt;]</td>
+                        <td>mz t -u</td>
+                        <td>Update one or all templates</td>
+                    </tr>
+                    <tr>
                         <td>minimaz version</td>
                         <td>mz v</td>
-                        <td>Show version</td>
+                        <td>Show Minimaz CLI version</td>
+                    </tr>
+                    <tr>
+                        <td>minimaz help [&lt;command&gt;]</td>
+                        <td>mz h</td>
+                        <td>Show help for CLI or specific command</td>
                     </tr>
                 </tbody>
             </table>
         </section>
 
         <section id="package-info" aria-labelledby="package-info-title">
-            <h2 id="package-info-title">Package Information</h2>
+            <h2 id="package-info-title">Package Information <i class="bi bi-info-square"></i></h2>
             <ul>
                 <li><strong>Name:</strong> minimaz-cli</li>
                 <li><strong>License:</strong> MIT</li>
@@ -164,20 +204,18 @@ npx mz b</code></pre>
                         aria-label="Minimaz CLI source code on GitHub">GitHub</a>
                 </li>
                 <li><strong>npm:</strong>
-                    <a href="https://www.npmjs.com/package/minimaz-cli"
-                        aria-label="Minimaz CLI package on npm">Package Page</a>
+                    <a href="https://www.npmjs.com/package/minimaz-cli" aria-label="Minimaz CLI package on npm">Package
+                        Page</a>
                 </li>
             </ul>
         </section>
     </main>
 
     <footer>
-        <p>© 2025 MrZeller — MIT License</p>
+        <p>© 2026 MrZeller — MIT License</p>
         <p>
-            <a href="https://github.com/zeller-dev/minimaz-cli"
-                aria-label="Minimaz CLI GitHub repository">GitHub</a> —
-            <a href="https://www.npmjs.com/package/minimaz-cli"
-                aria-label="Minimaz CLI npm package">npm</a>
+            <a href="https://github.com/zeller-dev/minimaz-cli" aria-label="Minimaz CLI GitHub repository">GitHub</a> —
+            <a href="https://www.npmjs.com/package/minimaz-cli" aria-label="Minimaz CLI npm package">npm</a>
         </p>
     </footer>
 </body>
