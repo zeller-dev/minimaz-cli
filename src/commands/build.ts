@@ -272,7 +272,6 @@ async function mergeRootAssets(
   if (config.bundling?.js) await writeJsBundle(bundles.js, config, distDir)
 }
 
-
 /**
  * Appends external CSS or JS files to the given chunk accumulator.
  *
