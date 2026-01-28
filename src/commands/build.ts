@@ -124,15 +124,53 @@ async function processFile(
 ): Promise<void> {
   log('info', `Processing file: ${srcPath}`)
 
-  const ext: string = path.extname(srcPath).toLowerCase()
-  const handlers: FileHandler = {
-    '.html': async (src, dest) => processHtml(src, dest, config),
-    '.css': async (src) => { bundles.css.push(await getFile(src, config.replace)) },
-    '.js': async (src) => { bundles.js.push(await getFile(src, config.replace)) }
-  }
+  const ext = path.extname(srcPath).toLowerCase()
 
-  if (handlers[ext]) await handlers[ext](srcPath, destPath)
-  else await fs.copy(srcPath, destPath)
+  switch (ext) {
+    case '.html':
+      await processHtml(srcPath, destPath, config)
+      break
+
+    case '.css': {
+      const css = await getFile(srcPath, config.replace)
+
+      if (config.bundling?.css) {
+        bundles.css.push(css)
+      } else {
+        let out = css
+        if (config.minify?.css) {
+          const min = new CleanCSS().minify(css)
+          if (min.warnings.length)
+            min.warnings.forEach(w => log('warn', w))
+          out = min.styles
+        }
+        await fs.outputFile(destPath, out)
+      }
+      break
+    }
+
+    case '.js': {
+      const js = await getFile(srcPath, config.replace)
+
+      if (config.bundling?.js) {
+        bundles.js.push(js)
+      } else {
+        let out = js
+        if (config.minify?.js) {
+          try {
+            out = (await minifyJs(js)).code ?? ''
+          } catch (err) {
+            log('warn', `JS minify failed in ${srcPath}: ${err}`)
+          }
+        }
+        await fs.outputFile(destPath, out)
+      }
+      break
+    }
+
+    default:
+      await fs.copy(srcPath, destPath)
+  }
 }
 
 /**
@@ -225,11 +263,15 @@ async function mergeRootAssets(
   config: MinimazConfig,
   distDir: string
 ): Promise<void> {
-  await appendExternalAssets(config.styles, bundles.css, config)
-  await appendExternalAssets(config.scripts, bundles.js, config)
-  await writeCssBundle(bundles.css, config, distDir)
-  await writeJsBundle(bundles.js, config, distDir)
+  // CSS
+  await appendExternalAssets(config.styles, bundles.css, config, 'css', !!config.bundling?.css, distDir)
+  // JS
+  await appendExternalAssets(config.scripts, bundles.js, config, 'js', !!config.bundling?.js, distDir)
+
+  if (config.bundling?.css) await writeCssBundle(bundles.css, config, distDir)
+  if (config.bundling?.js) await writeJsBundle(bundles.js, config, distDir)
 }
+
 
 /**
  * Appends external CSS or JS files to the given chunk accumulator.
@@ -241,23 +283,45 @@ async function mergeRootAssets(
 async function appendExternalAssets(
   files: string[] | undefined,
   target: string[],
-  config: MinimazConfig
+  config: MinimazConfig,
+  type: 'css' | 'js',
+  toBundle: boolean,
+  distDir: string
 ): Promise<void> {
   if (!files?.length) return
 
   for (const file of files) {
-    const fullPath: string = path.resolve(process.cwd(), file)
-
+    const fullPath = path.resolve(process.cwd(), file)
     if (!(await fs.pathExists(fullPath))) {
       log('warn', `File not found: ${file}`)
       continue
     }
 
-    let content: string = await fs.readFile(fullPath, 'utf-8')
+    let content = await fs.readFile(fullPath, 'utf-8')
     content = applyReplacements(content, config.replace)
-    target.push(content)
+
+    if (toBundle) {
+      target.push(content)
+    } else {
+      if (type === 'css' && config.minify?.css) {
+        const output = new CleanCSS().minify(content)
+        if (output.warnings.length) output.warnings.forEach(w => log('warn', w))
+        content = output.styles
+      } else if (type === 'js' && config.minify?.js) {
+        try {
+          content = (await minifyJs(content)).code ?? ''
+        } catch (err) {
+          log('warn', `JS minify failed for external file ${file}: ${err}`)
+        }
+      }
+
+      const fileName = path.basename(file)
+      await fs.outputFile(path.join(distDir, fileName), content)
+      log('info', `Copied external ${type} file: ${fileName}`)
+    }
   }
 }
+
 
 /**
  * Writes the final CSS bundle to disk.

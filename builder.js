@@ -29,7 +29,7 @@ const loggers = {
 function log(type, message) {
   const logger = loggers[type] || console.log
   const icon = icons[type] || ""
-  logger(`${icon} ${message}`)
+  logger(`${icon}\t${message}`)
 }
 
 /* ======================
