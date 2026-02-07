@@ -11,8 +11,7 @@ import {
   getFile,
   MinimazConfig,
   removeDistDir,
-  Bundles,
-  FileHandler
+  Bundles
 } from '../index.js'
 
 /**
@@ -26,8 +25,8 @@ export async function build(): Promise<void> {
   const config: MinimazConfig = await loadConfig() // Load project config
   const distDir: string = path.resolve(process.cwd(), config.dist || 'dist')
 
-  await removeDistDir(distDir)       // Clean dist directory
-  await fs.ensureDir(distDir) // Recreate dist directory
+  await removeDistDir(distDir)      // Clean dist directory
+  await fs.ensureDir(distDir)       // Recreate dist directory
 
   if (!config.folders || Object.keys(config.folders).length === 0) {
     log('warn', 'No folders defined in config. Nothing to build.')

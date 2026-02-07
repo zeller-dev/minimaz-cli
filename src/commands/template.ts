@@ -3,7 +3,8 @@ import path from 'path'
 
 import {
   askQuestion, listTemplates, getGlobalNodeModulesPath, log,
-  getGlobalDirPath
+  getGlobalDirPath,
+  getGlobalTemplatesDirPath
 } from '../index.js'
 
 /**
@@ -17,7 +18,7 @@ import {
  * @param options - CLI flags (--list, --delete, --update, etc.)
  */
 export async function template(targetPath?: string, options: any = {}): Promise<void> {
-  const templatesDir: string = path.join(getGlobalDirPath(), 'templates')
+  const templatesDir: string = getGlobalTemplatesDirPath()
   const deleteName: string | undefined = options.delete || options.d
   const updateName: string | undefined = options.update || options.u
 
@@ -32,7 +33,6 @@ export async function template(targetPath?: string, options: any = {}): Promise<
       return await updateFromNodeModules(templatesDir)
     }
   }
-
   // Default action: save current folder as a template
   await saveTemplate(templatesDir, targetPath)
 }

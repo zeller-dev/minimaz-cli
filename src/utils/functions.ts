@@ -1,8 +1,9 @@
-import readline from 'readline'
+import readline, { Interface } from 'readline'
 import fs from 'fs-extra'
 import path from 'path'
 import os from 'os'
-import { execSync, spawn } from 'child_process'
+import spawn from 'cross-spawn'
+import { execSync } from 'child_process'
 
 import {
   log,
@@ -11,7 +12,7 @@ import {
   minimazConfigTemplate
 } from '../index.js'
 
-// @TODO add cache manager?
+// @TODO add cache
 
 /**
  * Parses raw CLI arguments into a structured object.
@@ -67,7 +68,7 @@ export function askQuestion(
   defaultAnswer = ''
 ): Promise<string> {
   return new Promise(resolve => {
-    const rl = readline.createInterface({
+    const rl: Interface = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     })
@@ -184,6 +185,13 @@ export function getGlobalDirPath(): string {
 }
 
 /**
+ * Returns the global templates directory's path.
+ */
+export function getGlobalTemplatesDirPath(): string {
+  return path.join(getGlobalDirPath(), 'templates')
+}
+
+/**
  * Ensures the global Minimaz directory structure exists.
  *
  * Creates:
@@ -254,21 +262,18 @@ export function executeCommand(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     log('info', `Running: ${command} ${args.join(' ')}`)
+
     const child = spawn(command, args, {
       cwd: targetDir,
-      stdio: 'inherit',
-      shell: true,
+      stdio: 'inherit'
     })
 
-    child.on('error', (err) => {
-      log('error', `Failed to run command: ${err}`)
-      reject(err)
-    })
-
-    child.on('close', code => {
-      if (code === 0) resolve()
-      else reject(new Error(`${command} exited with code ${code}`))
-    })
+    child.on('error', reject)
+    child.on('close', code =>
+      code === 0
+        ? resolve()
+        : reject(new Error(`${command} exited with code ${code}`))
+    )
   })
 }
 

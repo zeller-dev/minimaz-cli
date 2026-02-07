@@ -2,13 +2,13 @@ import { LogType } from "../index.js"
 
 // ----- Log Function -----
 // Prints a message to console with icon based on type
-export function log(type: LogType = 'log', message: string): void {
+export function log(type: LogType = 'info', message: string): void {
+
   const icons: Record<LogType, string> = {
-    error: '❌',
-    warn: '⚠️',
-    success: '✅',
-    info: 'ℹ️',
-    log: '📁' // default icon
+    error: '❌',    // error icon
+    warn: '⚠️',     // warning icon
+    success: '✅',  // success icon
+    info: 'ℹ️'      // default icon
   }
 
   switch (type) {
@@ -19,7 +19,7 @@ export function log(type: LogType = 'log', message: string): void {
       console.warn(icons[type], '\t', message)
       break
     default:
-      console.log(icons[type] || icons.log, '\t', message)
+      console.log(icons[type], '\t', message)
       break
   }
 }

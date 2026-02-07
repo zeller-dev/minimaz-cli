@@ -1,5 +1,5 @@
 // ----- Log Types -----
-export type LogType = 'error' | 'warn' | 'success' | 'info' | 'log'
+export type LogType = 'error' | 'warn' | 'success' | 'info'
 
 // ----- Command Help Types -----
 export type CommandHelp = {

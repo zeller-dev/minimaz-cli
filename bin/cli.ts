@@ -1,16 +1,15 @@
 #!/usr/bin/env node
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-
 import {
-  build, init, help, template, clear, version,            // commands
-  log, parseArgs,                                         // utils
-  CommandFn, templateCommandOptions, initCommandOptions   // types
+  build, init, help, template, clear, version,                  // commands
+  log, parseArgs,                                               // utils
+  CommandFn, templateCommandOptions, initCommandOptions, Args,  // types
 } from '../src/index.js'
 
-// Resolve the current filename and directory
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+if (process.env.npm_lifecycle_event === 'postinstall') {
+  import('../src/utils/postInstall.js').then(({ postInstall }) => postInstall())
+  process.exit(0)
+}
+
 // TODO const processDir: string = process.cwd()
 
 /**
@@ -18,8 +17,7 @@ const __dirname = dirname(__filename)
  */
 async function main(): Promise<void> {
   // Parse raw CLI arguments (remove "node" and script path)
-  const args = parseArgs(process.argv.slice(2))
-
+  const args: Args = parseArgs(process.argv.slice(2))
   const cmd: string = (args._[0] || '')   // primary command
   const subArg: string = args._[1]        // optional argument (e.g., project name)
 

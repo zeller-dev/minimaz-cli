@@ -1,151 +1,119 @@
 #!/usr/bin/env node
-import esbuild from "esbuild"
-import fs from "fs-extra"
-import path from "path"
-import { fileURLToPath } from "url"
+import esbuild from 'esbuild'
+import fs from 'fs-extra'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const outDir = path.join(__dirname, "dist")
+const outDir = path.join(__dirname, 'dist')
 
 /* ======================
    Logging
 ====================== */
 
-const icons = {
-  info: "🛠",
-  success: "✅",
-  warn: "⚠️",
-  error: "❌",
+function formatTs(date = new Date()) {
+  const pad = n => n.toString().padStart(2, '0')
+  const y = date.getFullYear()
+  const m = pad(date.getMonth() + 1)
+  const d = pad(date.getDate())
+  const h = pad(date.getHours())
+  const min = pad(date.getMinutes())
+  const s = pad(date.getSeconds())
+  return `${y}-${m}-${d} ${h}:${min}:${s}`
 }
 
-const loggers = {
-  info: console.log,
-  success: console.log,
-  warn: console.warn,
-  error: console.error,
+function log(type = 'info', message) {
+  const icons = { info: '🛠', success: '✅', warn: '⚠️', error: '❌' }
+  const logger = console[type === 'warn' ? 'warn' : type === 'error' ? 'error' : 'log']
+  logger(`[${formatTs()}] ${icons[type]} ${message}`)
 }
-
-function log(type, message) {
-  const logger = loggers[type] || console.log
-  const icon = icons[type] || ""
-  logger(`${icon}\t${message}`)
-}
-
-/* ======================
-   Helpers
-====================== */
-
-// Find all .ts files in a folder
-async function getTSFiles(dir, acc = []) {
-  if (!(await fs.pathExists(dir))) return acc
-
-  for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
-    if (entry.name === "templates") continue // Ignore templates
-
-    const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      log("info", `Found Directory: ${entry.name}`)
-      await getTSFiles(full, acc)
-    }
-    else if (entry.name.endsWith(".ts")) {
-      acc.push(full)
-      log("info", `Found file: ${entry.name}`)
-    } else {
-      log("error", `Unknown: ${entry.name}`)
-    }
-  }
-  return acc
-}
-
-// Remove ./dist from a path for production
-const removeDist = str => str.replace(/^dist\//, "./")
 
 /* ======================
    Build
 ====================== */
 
 async function build() {
+  log('info', 'Building...')
+  const pkg = await fs.readJson(path.join(__dirname, 'package.json'))
 
-  log("info", "Building...")
+  if (!pkg.bin?.minimaz || !pkg.bin?.mz)
+    throw new Error('package.json must include bin entries: minimaz and mz')
 
   // Clean previous build
-  log("info", "Cleaning dist/")
+  log('info', 'Cleaning dist/')
   await fs.remove(outDir)
-  await fs.mkdir(outDir, { recursive: true })
+  await fs.mkdir(path.join(outDir, 'bin'), { recursive: true })
 
-  // Compile source
-  log("info", "Compiling source...")
-  const entryPoints = [
-    path.join(__dirname, "bin/cli.ts"),
-    ...(await getTSFiles(path.join(__dirname, "src"))),
-  ]
+  // Determine which dependencies to keep external
+  // You can add here any module you don't want bundled
+  const externalDeps = Object.keys(pkg.dependencies ?? {}).filter(dep => dep !== 'fs-extra')
 
+  // Bundle everything into one minified CLI
+  log('info', 'Bundling CLI...')
   await esbuild.build({
-    entryPoints,
-    outdir: outDir,
-    platform: "node",
-    target: "node18",
-    format: "esm",
-    bundle: false,
+    entryPoints: [path.join(__dirname, 'bin/cli.ts')],
+    bundle: true,
     minify: true,
+    platform: 'node',
+    target: 'node18',
+    format: 'esm',
+    outfile: path.join(outDir, 'bin/cli.js'),
+    external: externalDeps,
     treeShaking: true,
-    legalComments: "none",
-    logLevel: "silent"
+    sourcemap: false
   })
-  log("success", "Source compiled into dist/")
+  log('success', 'CLI bundled and minified')
 
-  // Copy templates
-  log("info", "Copying templates...")
-  const templatesSrc = path.join(__dirname, "src", "templates")
-  const templatesDest = path.join(outDir, "src", "templates")
-
-  if (await fs.pathExists(templatesSrc)) {
-    await fs.copy(templatesSrc, templatesDest)
-    log("success", "src/templates copied into dist/")
-  } else {
-    log("warn", "src/templates not found.")
-  }
+  // Copy templates if needed
+  log('info', 'Copying templates...')
+  const templatesSrc = path.join(__dirname, 'src', 'templates')
+  const templatesDest = path.join(outDir, 'templates')
 
   // Create minimal package.json
-  log("info", "Creating minimal package.json...")
-  const pkg = await fs.readJson(path.join(__dirname, "package.json"))
+  log('info', 'Creating minimal package.json...')
   const { bin, ...rest } = pkg
+  const removeDist = p => p.replace(/^dist[\\/]/, "")
+
+  delete rest.devDependencies
+  delete rest.scripts
 
   const minimalPkg = {
     ...rest,
-    devDependencies: undefined,
-    scripts: undefined,
     bin: {
       minimaz: removeDist(bin.minimaz),
       mz: removeDist(bin.mz),
     },
-    postinstall: removeDist(pkg.postinstall),
+    postinstall: pkg.postinstall ? removeDist(pkg.postinstall) : undefined,
+    // Only include external dependencies
+    dependencies: externalDeps.reduce((acc, dep) => {
+      acc[dep] = pkg.dependencies[dep]
+      return acc
+    }, {})
   }
 
-  await fs.writeJson(
-    path.join(outDir, "package.json"),
-    minimalPkg,
-    { spaces: 2 }
-  )
+  await fs.writeJson(path.join(outDir, 'package.json'), minimalPkg, { spaces: 2 })
+  log('success', 'Minimal package.json created')
 
-  log("success", "Minimal package.json created")
+  // Copy README and LICENSE
+  log('info', 'Copying README and LICENSE...')
+  if (await fs.pathExists(templatesSrc)) {
+    await fs.copy(templatesSrc, templatesDest)
+    log('success', 'Templates copied')
+  }
 
-  // 5️⃣ Copy README and LICENSE
-  log("info", "Copying README and LICENSE...")
-  await Promise.all(
-    ["README.md", "LICENSE"].map(async file => {
-      const src = path.join(__dirname, file)
-      if (await fs.pathExists(src)) {
-        await fs.copy(src, path.join(outDir, file))
-        log("success", `Copied ${file}`)
-      }
-    })
-  )
-  log("success", "Build ready!")
+  for (const file of ['README.md', 'LICENSE']) {
+    const src = path.join(__dirname, file)
+    const dest = path.join(outDir, file)
+    if (await fs.pathExists(src)) {
+      await fs.copy(src, dest)
+      log('success', `${file} copied`)
+    }
+  }
+  log('success', 'Build ready!')
 }
 
 build().catch(err => {
-  log("error", `Build failed: ${err instanceof Error ? err.message : err}`)
+  log('error', `Build failed: ${err instanceof Error ? err.message : err}`)
   process.exit(1)
 })
