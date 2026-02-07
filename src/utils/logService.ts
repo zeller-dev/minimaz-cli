@@ -1,25 +1,46 @@
 import { LogType } from "../index.js"
 
-// ----- Log Function -----
-// Prints a message to console with icon based on type
-export function log(type: LogType = 'info', message: string): void {
+/**
+ * Formats the current date as YYYY-MM-DD hh:mm:ss
+ */
+function formatTs(date: Date = new Date()): string {
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  const y = date.getFullYear()
+  const m = pad(date.getMonth() + 1)
+  const d = pad(date.getDate())
+  const h = pad(date.getHours())
+  const min = pad(date.getMinutes())
+  const s = pad(date.getSeconds())
+  return `${y}-${m}-${d} ${h}:${min}:${s}`
+}
 
-  const icons: Record<LogType, string> = {
-    error: '❌',    // error icon
-    warn: '⚠️',     // warning icon
-    success: '✅',  // success icon
-    info: 'ℹ️'      // default icon
+/**
+ * Prints a message to console with icon based on type.
+ * Honors VERBOSE environment variable for 'info' messages.
+ */
+export function log(type: LogType = 'info', message: string): void {
+  const prefix: Record<LogType, string> = {
+    error: '[ ERROR ]',
+    warn: '[ WARN  ]',
+    success: '[ SUCCESS ]',
+    info: '[ INFO  ]',
+    debug: '[ DEBUG ]'
   }
+
+  // Only print 'info' if VERBOSE is true, others always print
+  if (type === 'info' && process.env.VERBOSE !== 'true') return
+
+  const output = `[${formatTs()}] ${prefix[type]} ${message}`
 
   switch (type) {
     case 'error':
-      console.error(icons[type], '\t', message)
+      console.error(output)
       break
     case 'warn':
-      console.warn(icons[type], '\t', message)
+      console.warn(output)
       break
     default:
-      console.log(icons[type], '\t', message)
+      console.log(output)
       break
   }
 }

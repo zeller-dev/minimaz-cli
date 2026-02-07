@@ -4,7 +4,8 @@ import path from 'path'
 import {
   askQuestion, listTemplates, getGlobalNodeModulesPath, log,
   getGlobalDirPath,
-  getGlobalTemplatesDirPath
+  getGlobalTemplatesDirPath,
+  getNodeModulesTemplatesPath
 } from '../index.js'
 
 /**
@@ -72,7 +73,7 @@ async function updateSingleTemplate(templatesDir: string, templateName: string):
  * @param templatesDir - Global templates directory (~/.minimaz/templates)
  */
 async function updateFromNodeModules(templatesDir: string): Promise<void> {
-  const nodeModulesPath: string = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
+  const nodeModulesPath: string = getNodeModulesTemplatesPath()
 
   if (!await fs.pathExists(nodeModulesPath)) throw new Error(`'node_modules/minimaz/src/templates' not found.`)
 

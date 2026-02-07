@@ -2,7 +2,8 @@
 import {
   build, init, help, template, clear, version,                  // commands
   log, parseArgs,                                               // utils
-  CommandFn, templateCommandOptions, initCommandOptions, Args,  // types
+  CommandFn, templateCommandOptions, initCommandOptions, Args,
+  initEnv,  // types
 } from '../src/index.js'
 
 if (process.env.npm_lifecycle_event === 'postinstall') {
@@ -11,6 +12,9 @@ if (process.env.npm_lifecycle_event === 'postinstall') {
 }
 
 // TODO const processDir: string = process.cwd()
+// TODO add verbose
+
+process.env.VERBOSE = 'true'
 
 /**
  * Main CLI entrypoint
@@ -20,6 +24,8 @@ async function main(): Promise<void> {
   const args: Args = parseArgs(process.argv.slice(2))
   const cmd: string = (args._[0] || '')   // primary command
   const subArg: string = args._[1]        // optional argument (e.g., project name)
+
+  initEnv(Boolean(args.v))
 
   /**
    * =============================
@@ -91,7 +97,10 @@ async function main(): Promise<void> {
    * =============================
    */
   try {
-    if (commands[cmd]) { await commands[cmd]() }
+    if (commands[cmd]) {
+      log('info', `Executing command '${cmd}'...`)
+      await commands[cmd]()
+    }
     else {
       // Unknown command → log error and show general help
       log('error', `Unknown command '${cmd}'. Use 'minimaz help' to see available commands.`)

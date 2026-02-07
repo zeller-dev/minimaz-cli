@@ -191,6 +191,10 @@ export function getGlobalTemplatesDirPath(): string {
   return path.join(getGlobalDirPath(), 'templates')
 }
 
+export function getNodeModulesTemplatesPath(): string {
+  return path.join(getGlobalNodeModulesPath(), 'src', 'templates')
+}
+
 /**
  * Ensures the global Minimaz directory structure exists.
  *
@@ -452,4 +456,15 @@ export async function loadConfig(): Promise<MinimazConfig> {
   }
 
   return config
+}
+
+/**
+ * Initialize environment variables for the CLI.
+ * @param verbose - set true to enable verbose logging
+ */
+export function initEnv(verbose?: boolean): void {
+  if (verbose) process.env.VERBOSE = 'true'
+
+  // Avoid overwriting system PATH, use CUSTOM_PATH or append
+  process.env.CLI_WORKDIR = process.cwd()
 }
