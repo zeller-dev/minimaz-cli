@@ -10,7 +10,8 @@ import {
   pkgTemplate,
   gitIgnoreTemplate,
   initGit,
-  getGlobalDirPath
+  getGlobalDirPath,
+  resolveCurrentPath
 } from '../index.js'
 
 /**
@@ -33,10 +34,10 @@ export async function init(
 ): Promise<void> {
 
   // Resolve global and local paths
-  const minimazDir: string = getGlobalDirPath()
+  const minimazDir: string = await getGlobalDirPath()
   const templateName: string = options.template ?? 'default'
   const templateDir: string = path.join(minimazDir, 'templates', templateName)
-  const targetDir: string = path.resolve(process.cwd(), projectName)
+  const targetDir: string = resolveCurrentPath([projectName])
 
   /**
    * This directory contains user templates and settings.
@@ -55,7 +56,6 @@ export async function init(
 
   if (await fs.pathExists(targetDir))
     throw new Error(`Target directory '${targetDir}' already exists.`)
-
 
   const initNpm: boolean =
     options.npm
@@ -96,7 +96,7 @@ export async function init(
   if (initNpm) {
     log('info', 'Initializing NPM...')
     await createFileFromTemplate(
-      { ...pkgTemplate, name: projectName },
+      { name: projectName, ...pkgTemplate },
       path.join(targetDir, 'package.json')
     )
     await executeCommand('npm', ['install'], targetDir)

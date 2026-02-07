@@ -2,10 +2,10 @@ import fs from 'fs-extra'
 import path from 'path'
 
 import {
-  askQuestion, listTemplates, getGlobalNodeModulesPath, log,
-  getGlobalDirPath,
+  askQuestion, listTemplates, log,
   getGlobalTemplatesDirPath,
-  getNodeModulesTemplatesPath
+  getNodeModulesTemplatesPath,
+  resolveCurrentPath
 } from '../index.js'
 
 /**
@@ -19,7 +19,7 @@ import {
  * @param options - CLI flags (--list, --delete, --update, etc.)
  */
 export async function template(targetPath?: string, options: any = {}): Promise<void> {
-  const templatesDir: string = getGlobalTemplatesDirPath()
+  const templatesDir: string = await getGlobalTemplatesDirPath()
   const deleteName: string | undefined = options.delete || options.d
   const updateName: string | undefined = options.update || options.u
 
@@ -75,7 +75,8 @@ async function updateSingleTemplate(templatesDir: string, templateName: string):
 async function updateFromNodeModules(templatesDir: string): Promise<void> {
   const nodeModulesPath: string = getNodeModulesTemplatesPath()
 
-  if (!await fs.pathExists(nodeModulesPath)) throw new Error(`'node_modules/minimaz/src/templates' not found.`)
+  if (!await fs.pathExists(nodeModulesPath))
+    throw new Error(`'node_modules/minimaz/src/templates' not found.`)
 
   const items: string[] = await fs.readdir(nodeModulesPath)
 
@@ -132,9 +133,7 @@ async function deleteTemplate(dir: string, name: string): Promise<void> {
  * @param targetPath - Optional path to save as a template
  */
 async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
-  let source: string = targetPath
-    ? path.resolve(process.cwd(), targetPath)
-    : process.cwd()
+  let source: string = resolveCurrentPath(targetPath ? [targetPath] : [])
 
   if (!await fs.pathExists(source)) {
     log('warn', `Path not found: ${source}`)

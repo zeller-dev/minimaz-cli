@@ -1,16 +1,18 @@
-import { LogType } from "../index.js"
+import {
+  LogType   //types
+} from "../index.js"
 
 /**
  * Formats the current date as YYYY-MM-DD hh:mm:ss
  */
 function formatTs(date: Date = new Date()): string {
   const pad = (n: number) => n.toString().padStart(2, '0')
-  const y = date.getFullYear()
-  const m = pad(date.getMonth() + 1)
-  const d = pad(date.getDate())
-  const h = pad(date.getHours())
-  const min = pad(date.getMinutes())
-  const s = pad(date.getSeconds())
+  const y: number = date.getFullYear()
+  const m: string = pad(date.getMonth() + 1)
+  const d: string = pad(date.getDate())
+  const h: string = pad(date.getHours())
+  const min: string = pad(date.getMinutes())
+  const s: string = pad(date.getSeconds())
   return `${y}-${m}-${d} ${h}:${min}:${s}`
 }
 
@@ -28,7 +30,7 @@ export function log(type: LogType = 'info', message: string): void {
   }
 
   // Only print 'info' if VERBOSE is true, others always print
-  if (type === 'info' && process.env.VERBOSE !== 'true') return
+  if (type === 'debug' && process.env.VERBOSE !== 'true') return
 
   const output = `[${formatTs()}] ${prefix[type]} ${message}`
 

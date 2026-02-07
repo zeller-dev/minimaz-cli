@@ -6,10 +6,9 @@ import spawn from 'cross-spawn'
 import { execSync } from 'child_process'
 
 import {
-  log,
-  Args,
-  MinimazConfig,
-  minimazConfigTemplate
+  log,                    // utils
+  Args, MinimazConfig,    // types
+  minimazConfigTemplate   // constants
 } from '../index.js'
 
 // @TODO add cache
@@ -98,7 +97,7 @@ export function askQuestion(
  * @param dir - Templates directory path
  */
 export async function listTemplates(): Promise<void> {
-  const dir: string = path.join(getGlobalDirPath(), 'templates')
+  const dir: string = await getGlobalTemplatesDirPath()
   if (!await fs.pathExists(dir)) {
     log('info', 'No templates directory found.')
     return
@@ -180,15 +179,18 @@ export function getGlobalNodeModulesPath(): string {
 /**
  * Returns the global directory's path.
  */
-export function getGlobalDirPath(): string {
+export async function getGlobalDirPath(): Promise<string> {
+  await createGlobalDir()
   return path.join(os.homedir(), '.minimaz')
 }
 
 /**
  * Returns the global templates directory's path.
  */
-export function getGlobalTemplatesDirPath(): string {
-  return path.join(getGlobalDirPath(), 'templates')
+export async function getGlobalTemplatesDirPath(): Promise<string> {
+  return path.join(
+    await getGlobalDirPath()
+    , 'templates')
 }
 
 export function getNodeModulesTemplatesPath(): string {
@@ -206,7 +208,7 @@ export function getNodeModulesTemplatesPath(): string {
  * Copies default templates if the templates folder is empty.
  */
 export async function createGlobalDir(): Promise<void> {
-  const minimazDir: string = getGlobalDirPath()
+  const minimazDir: string = path.join(os.homedir(), '.minimaz')
   const globalTemplatesDir: string = path.join(minimazDir, 'templates')
   const defaultTemplatesDir: string = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
   const settingsPath: string = path.join(minimazDir, 'settings.json')
@@ -240,9 +242,13 @@ export async function createGlobalDir(): Promise<void> {
       return
     }
 
-    for (const name of await fs.readdir(defaultTemplatesDir)) {
-      await fs.copy(path.join(defaultTemplatesDir, name), path.join(globalTemplatesDir, name))
-      log('success', `Copied template '${name}'.`)
+    if (await fs.pathExists(defaultTemplatesDir)) {
+      for (const name of await fs.readdir(defaultTemplatesDir)) {
+        await fs.copy(path.join(defaultTemplatesDir, name), path.join(globalTemplatesDir, name))
+        log('success', `Copied template '${name}'.`)
+      }
+    } else {
+      log('warn', 'Default templates directory not found.')
     }
 
     log('success', 'Default templates setup completed.')
@@ -325,10 +331,9 @@ export async function initGit(
   if (provider) {
     await createRemoteRepo(projectName, targetDir, provider, name)
     log('success', 'Git repository initialized.')
-    return
+  } else {
+    log('info', 'Git repository initialized locally (no remote).')
   }
-
-  throw new Error('Git remote configuration is invalid.')
 }
 
 /**
@@ -421,7 +426,7 @@ async function createRemoteRepo(
  */
 export async function removeDistDir(dir?: string): Promise<void> {
   const distDir = dir
-    ? path.isAbsolute(dir) ? dir : path.resolve(process.cwd(), dir)
+    ? path.isAbsolute(dir) ? dir : resolveCurrentPath([dir])
     : path.resolve(process.cwd(), (await loadConfig()).dist ?? 'dist')
   const rootDir = process.cwd()
 
@@ -444,7 +449,7 @@ export async function removeDistDir(dir?: string): Promise<void> {
  *
  */
 export async function loadConfig(): Promise<MinimazConfig> {
-  const configPath: string = path.resolve(process.cwd(), 'minimaz.config.json')
+  const configPath: string = resolveCurrentPath(['minimaz.config.json'])
   let config: MinimazConfig;
 
   if (await fs.pathExists(configPath)) {
@@ -467,4 +472,21 @@ export function initEnv(verbose?: boolean): void {
 
   // Avoid overwriting system PATH, use CUSTOM_PATH or append
   process.env.CLI_WORKDIR = process.cwd()
+}
+
+/**
+ * Resolve a path relative to the CLI's current working directory
+ * @param components optional path segments to append
+ */
+export function resolveCurrentPath(components: string[] = []): string {
+  const baseDir = process.env.CLI_WORKDIR ?? process.cwd()
+  return path.resolve(baseDir, ...components)
+}
+
+export async function readJsonFile(filePath: string): Promise<any> {
+  try {
+    return await fs.readJson(filePath)
+  } catch (error: any) {
+    throw new Error(`Failed to read JSON file at '${filePath}': ${error.message}`)
+  }
 }

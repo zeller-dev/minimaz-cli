@@ -12,20 +12,6 @@
     "README.md",
     "package.json"
   ],
-  "scripts": {
-    "dev": "node --loader ts-node/esm bin/cli.ts",
-    "build": "tsc --noEmit && node builder.js",
-    "postinstall:dev": "node --loader ts-node/esm ./src/utils/postInstall.ts",
-    "postinstall:prod": "node dist/src/utils/postInstall.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zeller-dev/minimaz-cli.git"
-  },
-  "bin": {
-    "minimaz": "dist/bin/cli.js",
-    "mz": "dist/bin/cli.js"
-  },
   "keywords": [
     "cli",
     "minimal",
@@ -34,6 +20,20 @@
     "project",
     "starter"
   ],
+  "scripts": {
+    "dev": "node --loader ts-node/esm bin/cli.ts",
+    "build": "tsc --noEmit && node builder.js",
+    "postinstall:dev": "node --loader ts-node/esm ./src/utils/postInstall.ts",
+    "postinstall:prod": "node dist/src/utils/postInstall.js"
+  },
+  "bin": {
+    "minimaz": "dist/bin/cli.js",
+    "mz": "dist/bin/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeller-dev/minimaz-cli.git"
+  },
   "homepage": "https://github.com/zeller-dev/minimaz-cli#readme",
   "bugs": {
     "url": "https://github.com/zeller-dev/minimaz-cli/issues"

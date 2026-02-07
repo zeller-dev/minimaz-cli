@@ -1,6 +1,5 @@
-import { log } from 'console'
 import {
-    removeDistDir
+    removeDistDir // utils
 } from '../index.js'
 
 export async function clear(): Promise<void> {

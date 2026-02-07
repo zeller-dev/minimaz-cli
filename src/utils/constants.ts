@@ -1,5 +1,8 @@
-import { CommandHelp, MinimazConfig, PkgTemplate } from "./types.js"
+import {
+    CommandHelp, MinimazConfig, PkgTemplate     // types
+} from "../index.js"
 
+// ----- Package.json template -----
 export const pkgTemplate: PkgTemplate = {
     version: '0.0.1',
     license: 'ISC',
@@ -14,10 +17,12 @@ export const pkgTemplate: PkgTemplate = {
     }
 }
 
+// ----- .gitignore template -----
 export const gitIgnoreTemplate: string = `dist
 .vscode
 node_modules`
 
+// ----- Default minimaz.config.json template -----
 export const minimazConfigTemplate: MinimazConfig = {
     src: 'src',
     dist: 'dist',
@@ -54,6 +59,7 @@ export const minimazConfigTemplate: MinimazConfig = {
     }
 }
 
+// ----- CLI Commands Help -----
 export const commands: Record<string, CommandHelp> = {
     init: {
         usage: 'minimaz init | i <project-name>',

@@ -1,4 +1,7 @@
-import { CommandHelp, commands } from "../index.js"
+import {
+  CommandHelp,  // types
+  commands      // constants
+} from "../index.js"
 
 /**
  * Display help message.

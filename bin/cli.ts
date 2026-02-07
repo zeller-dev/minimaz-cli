@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 import {
   build, init, help, template, clear, version,                  // commands
-  log, parseArgs,                                               // utils
-  CommandFn, templateCommandOptions, initCommandOptions, Args,
-  initEnv,  // types
+  log, parseArgs, initEnv,                                      // utils
+  CommandFn, templateCommandOptions, initCommandOptions, Args   // types
 } from '../src/index.js'
 
 if (process.env.npm_lifecycle_event === 'postinstall') {
@@ -13,8 +12,6 @@ if (process.env.npm_lifecycle_event === 'postinstall') {
 
 // TODO const processDir: string = process.cwd()
 // TODO add verbose
-
-process.env.VERBOSE = 'true'
 
 /**
  * Main CLI entrypoint

@@ -11,7 +11,8 @@ import {
   getFile,
   MinimazConfig,
   removeDistDir,
-  Bundles
+  Bundles,
+  resolveCurrentPath
 } from '../index.js'
 
 /**
@@ -23,7 +24,7 @@ import {
  */
 export async function build(): Promise<void> {
   const config: MinimazConfig = await loadConfig() // Load project config
-  const distDir: string = path.resolve(process.cwd(), config.dist || 'dist')
+  const distDir: string = resolveCurrentPath(config.dist ? [config.dist] : [])
 
   await removeDistDir(distDir)      // Clean dist directory
   await fs.ensureDir(distDir)       // Recreate dist directory
@@ -58,7 +59,7 @@ async function processFolder(
   config: MinimazConfig,
   distDir: string
 ): Promise<void> {
-  const fullSrc: string = path.resolve(process.cwd(), srcPathRel)
+  const fullSrc: string = resolveCurrentPath([srcPathRel])
   const fullDest: string = path.join(distDir, destName)
 
   if (!(await fs.pathExists(fullSrc))) {
@@ -123,7 +124,7 @@ async function processFile(
 ): Promise<void> {
   log('info', `Processing file: ${srcPath}`)
 
-  const ext = path.extname(srcPath).toLowerCase()
+  const ext: string = path.extname(srcPath).toLowerCase()
 
   switch (ext) {
     case '.html':
@@ -131,7 +132,7 @@ async function processFile(
       break
 
     case '.css': {
-      const css = await getFile(srcPath, config.replace)
+      const css: string = await getFile(srcPath, config.replace)
 
       if (config.bundling?.css) {
         bundles.css.push(css)
@@ -149,7 +150,7 @@ async function processFile(
     }
 
     case '.js': {
-      const js = await getFile(srcPath, config.replace)
+      const js: string = await getFile(srcPath, config.replace)
 
       if (config.bundling?.js) {
         bundles.js.push(js)
@@ -289,7 +290,7 @@ async function appendExternalAssets(
   if (!files?.length) return
 
   for (const file of files) {
-    const fullPath = path.resolve(process.cwd(), file)
+    const fullPath = resolveCurrentPath([file])
     if (!(await fs.pathExists(fullPath))) {
       log('warn', `File not found: ${file}`)
       continue
