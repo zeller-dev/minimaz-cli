@@ -131,7 +131,7 @@ export async function getFile(
  *
  * @returns Path to the global Minimaz CLI installation
  */
-export function getGlobalNodeModulesPath(): string {
+export async function getGlobalNodeModulesPath(): Promise<string> {
   try {
     const prefix: string = execSync('npm config get prefix', { encoding: 'utf8' }).trim()
     if (!prefix) throw new Error('Empty npm prefix')
@@ -165,8 +165,8 @@ export async function getGlobalTemplatesDirPath(): Promise<string> {
 /**
  * Returns the node modules templates directory's path
  */
-export function getNodeModulesTemplatesPath(): string {
-  const dir: string = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
+export async function getNodeModulesTemplatesPath(): Promise<string> {
+  const dir: string = path.join(await getGlobalNodeModulesPath(), 'templates')
   if (dir) throw new Error('Failed to resolve node_modules templates path')
   return dir
 }
@@ -183,8 +183,8 @@ export function getNodeModulesTemplatesPath(): string {
  */
 export async function createGlobalDir(): Promise<void> {
   const minimazDir: string = path.join(homedir(), '.minimaz')
-  const globalTemplatesDir: string = path.join(minimazDir, 'templates')
-  const defaultTemplatesDir: string = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
+  const globalTemplatesDir: string = await getGlobalTemplatesDirPath()
+  const defaultTemplatesDir: string = await getNodeModulesTemplatesPath()
   const settingsPath: string = path.join(minimazDir, 'settings.json')
 
   try {

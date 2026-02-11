@@ -8,7 +8,7 @@ export const pkgTemplate: PkgTemplate = {
     license: 'ISC',
     type: 'commonjs',
     scripts: {
-        build: 'mz b',
+        build: 'npx mz b',
         start: 'npx mz b && npx serve dist/'
     },
     devDependencies: {
