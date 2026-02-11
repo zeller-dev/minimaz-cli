@@ -65,12 +65,12 @@ async function main(): Promise<void> {
     // Template command with list/delete/update options
     template: async () => {
       await template(
-        subArg,
         {
           list: args.l || args.list,
           delete: args.d || args.delete,
           update: args.u || args.update
-        } as templateCommandOptions)
+        } as templateCommandOptions),
+        subArg
     },
 
     // Version command

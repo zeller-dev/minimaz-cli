@@ -5,14 +5,8 @@ import { minify as minifyHtml } from 'html-minifier-terser'
 import { minify as minifyJs } from 'terser'
 
 import {
-  loadConfig,
-  log,
-  applyReplacements,
-  getFile,
-  MinimazConfig,
-  removeDistDir,
-  Bundles,
-  resolveCurrentPath
+  loadConfig, log, applyReplacements, getFile, removeDistDir, resolveCurrentPath, // utils
+  MinimazConfig, Bundles                                                          // types
 } from '../index.js'
 
 /**
@@ -24,19 +18,20 @@ import {
  */
 export async function build(): Promise<void> {
   const config: MinimazConfig = await loadConfig() // Load project config
-  const distDir: string = resolveCurrentPath(config.dist ? [config.dist] : [])
+  const currentDirPath: string = resolveCurrentPath()
+  const distDirPath: string = path.resolve(currentDirPath, config.dist)
 
-  await removeDistDir(distDir)      // Clean dist directory
-  await fs.ensureDir(distDir)       // Recreate dist directory
+  await removeDistDir(distDirPath)      // Clean dist directory
+  await fs.ensureDir(distDirPath)       // Recreate dist directory
 
   if (!config.folders || Object.keys(config.folders).length === 0) {
     log('warn', 'No folders defined in config. Nothing to build.')
     return
   }
 
-  for (const [srcPathRel, destName] of Object.entries(config.folders)) {
-    log('info', `Building folder: ${srcPathRel} -> /${destName}`)
-    await processFolder(srcPathRel, destName, config, distDir)
+  for (const [from, to] of Object.entries(config.folders)) {
+    log('debug', `Building folder: ${from} -> /${to}`)
+    await processFolder(from, to, config, distDirPath)
   }
   log('success', `Build completed. Output saved in /${config.dist}`)
 }
@@ -54,16 +49,16 @@ export async function build(): Promise<void> {
  * @param distDir - Absolute dist directory path
  */
 async function processFolder(
-  srcPathRel: string,
+  srcName: string,
   destName: string,
   config: MinimazConfig,
   distDir: string
 ): Promise<void> {
-  const fullSrc: string = resolveCurrentPath([srcPathRel])
+  const fullSrc: string = resolveCurrentPath([srcName])
   const fullDest: string = path.join(distDir, destName)
 
   if (!(await fs.pathExists(fullSrc))) {
-    log('warn', `Folder not found: ${srcPathRel}`)
+    log('warn', `Folder not found: ${srcName}`)
     return
   }
 
@@ -72,9 +67,9 @@ async function processFolder(
   await walkFolder(fullSrc, fullDest, config, bundles)
 
   // Merge CSS/JS bundles only for the root source folder
-  if (srcPathRel === config.src) await mergeRootAssets(bundles, config, distDir)
+  if (srcName === config.src) await mergeRootAssets(bundles, config, distDir)
 
-  log('success', `Processed folder: ${srcPathRel} -> /${destName}`)
+  log('success', `Processed folder: ${srcName} -> /${destName}`)
 }
 
 /**
@@ -122,7 +117,7 @@ async function processFile(
   config: MinimazConfig,
   bundles: Bundles
 ): Promise<void> {
-  log('info', `Processing file: ${srcPath}`)
+  log('debug', `Processing file: ${srcPath}`)
 
   const ext: string = path.extname(srcPath).toLowerCase()
 
@@ -132,39 +127,12 @@ async function processFile(
       break
 
     case '.css': {
-      const css: string = await getFile(srcPath, config.replace)
-
-      if (config.bundling?.css) {
-        bundles.css.push(css)
-      } else {
-        let out = css
-        if (config.minify?.css) {
-          const min = new CleanCSS().minify(css)
-          if (min.warnings.length)
-            min.warnings.forEach(w => log('warn', w))
-          out = min.styles
-        }
-        await fs.outputFile(destPath, out)
-      }
+      processCSS(srcPath, destPath, config, bundles.css)
       break
     }
 
     case '.js': {
-      const js: string = await getFile(srcPath, config.replace)
-
-      if (config.bundling?.js) {
-        bundles.js.push(js)
-      } else {
-        let out = js
-        if (config.minify?.js) {
-          try {
-            out = (await minifyJs(js)).code ?? ''
-          } catch (err) {
-            log('warn', `JS minify failed in ${srcPath}: ${err}`)
-          }
-        }
-        await fs.outputFile(destPath, out)
-      }
+      processJS(srcPath, destPath, config, bundles.js)
       break
     }
 
@@ -184,7 +152,7 @@ async function processFile(
  * @param dest - Destination file path
  * @param config - Minimaz configuration
  */
-export async function processHtml(
+async function processHtml(
   src: string,
   dest: string,
   config: MinimazConfig
@@ -250,6 +218,48 @@ export async function processHtml(
   await fs.outputFile(dest, result)
 }
 
+/**
+ * Processes a CSS file
+ *
+ * @param src
+ * @param dest
+ * @param config
+ * @param bundle
+ */
+async function processCSS(src: string, dest: string, config: MinimazConfig, bundle: string[]): Promise<void> {
+  const css: string = await getFile(src, config.replace)
+
+  if (config.bundling?.css) {
+    bundle.push(css)
+  } else {
+    let out = css
+    if (config.minify?.css) {
+      const min = new CleanCSS().minify(css)
+      if (min.warnings.length) min.warnings.forEach(w => log('warn', w))
+      out = min.styles
+    }
+    await fs.outputFile(dest, out)
+  }
+}
+/**
+ * Processes a JavaScript file:
+ *
+ * @param src
+ * @param dest
+ * @param config
+ * @param bundle
+ */
+async function processJS(src: string, dest: string, config: MinimazConfig, bundle: string[]): Promise<void> {
+  const js: string = await getFile(src, config.replace)
+
+  if (config.bundling?.js) {
+    bundle.push(js)
+  } else {
+    let out = js
+    if (config.minify?.js) out = (await minifyJs(js)).code ?? ''
+    await fs.outputFile(dest, out)
+  }
+}
 /**
  * Merges and writes root-level CSS and JS bundles.
  *

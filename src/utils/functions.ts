@@ -1,25 +1,20 @@
-import readline, { Interface } from 'readline'
+import readline from 'readline'
 import fs from 'fs-extra'
 import path from 'path'
-import os from 'os'
 import spawn from 'cross-spawn'
+import { homedir } from 'os'
 import { execSync } from 'child_process'
 
 import {
-  log,                    // utils
-  Args, MinimazConfig,    // types
-  minimazConfigTemplate   // constants
+  log,                                  // utils
+  Args, MinimazConfig,                  // types
+  minimazConfigTemplate, pkgTemplate    // constants
 } from '../index.js'
 
 // @TODO add cache
 
 /**
  * Parses raw CLI arguments into a structured object.
- *
- * Supports:
- * - flags (--flag, -f)
- * - key-value pairs (--key value or --key=value)
- * - positional arguments
  *
  * @param rawArgs - Array of raw arguments from CLI
  * @returns Parsed arguments object
@@ -67,7 +62,7 @@ export function askQuestion(
   defaultAnswer = ''
 ): Promise<string> {
   return new Promise(resolve => {
-    const rl: Interface = readline.createInterface({
+    const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     })
@@ -92,29 +87,6 @@ export function askQuestion(
 }
 
 /**
- * Lists all available templates in a directory.
- *
- * @param dir - Templates directory path
- */
-export async function listTemplates(): Promise<void> {
-  const dir: string = await getGlobalTemplatesDirPath()
-  if (!await fs.pathExists(dir)) {
-    log('info', 'No templates directory found.')
-    return
-  }
-
-  const templates: string[] = await fs.readdir(dir)
-
-  if (templates.length === 0) {
-    log('info', 'No global templates available.')
-    return
-  }
-
-  log('info', 'Available global templates:')
-  templates.forEach(t => log('info', `- ${t}`))
-}
-
-/**
  * Applies string replacements to a given content.
  *
  * @param content - Original content string
@@ -128,7 +100,6 @@ export function applyReplacements(
   return Object.entries(replacements).reduce((acc, [from, to]) => {
     const escaped: string = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const pattern: RegExp = new RegExp(escaped, 'gi')
-
     return acc.replace(pattern, to)
   }, content)
 }
@@ -181,20 +152,23 @@ export function getGlobalNodeModulesPath(): string {
  */
 export async function getGlobalDirPath(): Promise<string> {
   await createGlobalDir()
-  return path.join(os.homedir(), '.minimaz')
+  return path.join(homedir(), '.minimaz')
 }
 
 /**
  * Returns the global templates directory's path.
  */
 export async function getGlobalTemplatesDirPath(): Promise<string> {
-  return path.join(
-    await getGlobalDirPath()
-    , 'templates')
+  return path.join(await getGlobalDirPath(), 'templates')
 }
 
+/**
+ * Returns the node modules templates directory's path
+ */
 export function getNodeModulesTemplatesPath(): string {
-  return path.join(getGlobalNodeModulesPath(), 'src', 'templates')
+  const dir: string = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
+  if (dir) throw new Error('Failed to resolve node_modules templates path')
+  return dir
 }
 
 /**
@@ -208,7 +182,7 @@ export function getNodeModulesTemplatesPath(): string {
  * Copies default templates if the templates folder is empty.
  */
 export async function createGlobalDir(): Promise<void> {
-  const minimazDir: string = path.join(os.homedir(), '.minimaz')
+  const minimazDir: string = path.join(homedir(), '.minimaz')
   const globalTemplatesDir: string = path.join(minimazDir, 'templates')
   const defaultTemplatesDir: string = path.join(getGlobalNodeModulesPath(), 'src', 'templates')
   const settingsPath: string = path.join(minimazDir, 'settings.json')
@@ -238,7 +212,7 @@ export async function createGlobalDir(): Promise<void> {
     }
 
     if (!isEmpty) {
-      log('info', 'Global templates directory not empty. Skipping copy.')
+      log('debug', 'Global templates directory not empty. Skipping copy.')
       return
     }
 
@@ -271,7 +245,7 @@ export function executeCommand(
   targetDir: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    log('info', `Running: ${command} ${args.join(' ')}`)
+    log('debug', `Running: ${command} ${args.join(' ')}`)
 
     const child = spawn(command, args, {
       cwd: targetDir,
@@ -300,16 +274,24 @@ export async function createFileFromTemplate(
   template: Record<string, unknown> | string,
   outputPath: string
 ): Promise<void> {
-  const content =
-    typeof template === 'string'
-      ? template.endsWith('\n') ? template : template + '\n'
-      : JSON.stringify(template, null, 2) + '\n'
+  const content: string = typeof template === 'string'
+    ? template.endsWith('\n') ? template : template + '\n'
+    : JSON.stringify(template, null, 2) + '\n'
 
   try {
     await fs.outputFile(outputPath, content)
   } catch (error: any) {
     throw new Error(`Failed to create file at '${outputPath}': ${error.message}`)
   }
+}
+
+export async function initNpmProject(target: string, name: string): Promise<void> {
+  log('info', 'Initializing NPM...')
+  await createFileFromTemplate(
+    { name: name, ...pkgTemplate },
+    path.join(target, 'package.json')
+  )
+  await executeCommand('npm', ['install'], target)
 }
 
 /**
@@ -412,17 +394,12 @@ async function createRemoteRepo(
     )
     return
   }
-
-  /**
-   * Unsupported provider
-   */
+  // Unsupported provider
   throw new Error(`Unsupported git provider or remote: '${remote}'`)
 }
 
-
 /**
  * Removes Dist Directory
- *
  */
 export async function removeDistDir(dir?: string): Promise<void> {
   const distDir = dir
@@ -434,7 +411,7 @@ export async function removeDistDir(dir?: string): Promise<void> {
     throw new Error(`Refusing to delete unsafe directory: ${distDir}`)
 
   if (!await fs.pathExists(distDir)) {
-    log('info', `No dist folder found: ${distDir}`)
+    log('debug', `No dist folder found: ${distDir}`)
     return
   }
 
@@ -442,11 +419,8 @@ export async function removeDistDir(dir?: string): Promise<void> {
   log('success', `Cleared ${distDir}`)
 }
 
-
-
 /**
  * Returns Minimaz Config
- *
  */
 export async function loadConfig(): Promise<MinimazConfig> {
   const configPath: string = resolveCurrentPath(['minimaz.config.json'])
@@ -454,39 +428,55 @@ export async function loadConfig(): Promise<MinimazConfig> {
 
   if (await fs.pathExists(configPath)) {
     config = await fs.readJson(configPath)
-    log('info', 'Loaded config from minimaz.config.json')
+    log('success', 'Loaded config from minimaz.config.json')
   } else {
     config = JSON.parse(JSON.stringify(minimazConfigTemplate))
     log('warn', 'No minimaz.config.json found. Using default config')
   }
-
   return config
 }
 
 /**
  * Initialize environment variables for the CLI.
+ *
  * @param verbose - set true to enable verbose logging
  */
 export function initEnv(verbose?: boolean): void {
-  if (verbose) process.env.VERBOSE = 'true'
+  // Verbose
+  process.env.VERBOSE = verbose ? 'true' : 'false'
+  log('debug', `VERBOSE = ${process.env.VERBOSE}`)
 
-  // Avoid overwriting system PATH, use CUSTOM_PATH or append
+  // Working Path
   process.env.CLI_WORKDIR = process.cwd()
+  log('debug', `CLI_WORKDIR = ${process.env.CLI_WORKDIR}`)
 }
 
 /**
  * Resolve a path relative to the CLI's current working directory
+ *
  * @param components optional path segments to append
  */
 export function resolveCurrentPath(components: string[] = []): string {
-  const baseDir = process.env.CLI_WORKDIR ?? process.cwd()
-  return path.resolve(baseDir, ...components)
+  return path.resolve(
+    process.env.CLI_WORKDIR ?? process.cwd(),
+    ...components
+  )
 }
 
+/**
+ * Reads and parses a JSON file.
+ *
+ * @param filePath - Path to the JSON file
+ */
 export async function readJsonFile(filePath: string): Promise<any> {
-  try {
-    return await fs.readJson(filePath)
-  } catch (error: any) {
-    throw new Error(`Failed to read JSON file at '${filePath}': ${error.message}`)
-  }
+  return await fs.readJson(filePath)
+}
+
+/**
+ * Reads the contents of a directory and returns an array of file and folder names.
+ *
+ * @param dir - Path to the directory to read
+ */
+export async function getDirElements(dir: string): Promise<string[]> {
+  return await fs.readdir(dir)
 }

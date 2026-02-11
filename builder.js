@@ -47,7 +47,10 @@ async function build() {
 
   // Determine which dependencies to keep external
   // You can add here any module you don't want bundled
-  const externalDeps = Object.keys(pkg.dependencies ?? {}).filter(dep => dep !== 'fs-extra')
+  const externalDeps = [
+    ...Object.keys(pkg.dependencies ?? {}),
+    'fs', 'path', 'os', 'child_process', 'fs-extra'
+  ].filter(Boolean);
 
   // Bundle everything into one minified CLI
   log('info', 'Bundling CLI...')

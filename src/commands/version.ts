@@ -1,5 +1,5 @@
 import {
-    log, readJsonFile, resolveCurrentPath   // utils
+    readJsonFile, resolveCurrentPath   // utils
 } from "../index.js"
 
 export async function version(): Promise<void> {
@@ -9,5 +9,11 @@ export async function version(): Promise<void> {
     if (typeof version !== 'string')
         throw new Error('Invalid or missing version in package.json')
 
-    log('info', version)
+    console.log(
+        '==========================================',
+        '\n',
+        `minimaz-cli version: ${version}`,
+        '\n',
+        '==========================================',
+    )
 }

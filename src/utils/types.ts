@@ -58,7 +58,7 @@ export type templateCommandOptions = {
 
 // ----- Init Command Options Types -----
 export type initCommandOptions = {
-    template?: string
+    template: string
     npm?: boolean
     git?: boolean
     gitremote?: string

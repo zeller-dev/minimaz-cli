@@ -2,67 +2,61 @@ import fs from 'fs-extra'
 import path from 'path'
 
 import {
-  askQuestion, listTemplates, log,
-  getGlobalTemplatesDirPath,
-  getNodeModulesTemplatesPath,
-  resolveCurrentPath
+  askQuestion, log, getGlobalTemplatesDirPath, getNodeModulesTemplatesPath, resolveCurrentPath, // utils
+  templateCommandOptions // types
 } from '../index.js'
 
 /**
- * Handles all template-related operations:
- * - Save current folder as a global template
- * - Update existing templates
- * - Delete templates
- * - Sync templates from node_modules
+ * Template command handler. Supports listing, saving, updating, and deleting templates.
  *
  * @param targetPath - Optional path of the folder to save as template
  * @param options - CLI flags (--list, --delete, --update, etc.)
  */
-export async function template(targetPath?: string, options: any = {}): Promise<void> {
+export async function template(options: templateCommandOptions, targetPath?: string): Promise<void> {
+
   const templatesDir: string = await getGlobalTemplatesDirPath()
-  const deleteName: string | undefined = options.delete || options.d
-  const updateName: string | undefined = options.update || options.u
 
-  if (deleteName) return await deleteTemplate(templatesDir, deleteName)
-  if (options.list || options.l) return await listTemplates()
+  // list templates
+  if (options.list) return await listTemplates(templatesDir)
 
-  // --- UPDATE MODE ---
-  if (updateName !== undefined) {
-    if (typeof updateName === 'string' && updateName.trim()) {
-      return await updateSingleTemplate(templatesDir, updateName.trim())
-    } else {
-      return await updateFromNodeModules(templatesDir)
-    }
-  }
+  // delete template
+  if (options.delete) return await deleteTemplate(templatesDir, options.delete)
+
   // Default action: save current folder as a template
   await saveTemplate(templatesDir, targetPath)
+
+  // update template
+  if (options.update) {
+    if (typeof options.update === 'string' && options.update.trim())
+      return await updateSingleTemplate(templatesDir, options.update.trim())
+    else
+      return await updateFromNodeModules(templatesDir)
+  }
 }
 
 /**
  * Updates a single template with files from the current working directory.
  *
- * @param templatesDir - Global templates directory (~/.minimaz/templates)
+ * @param dir - Global templates directory (~/.minimaz/templates)
  * @param templateName - Name of the template to update
  */
-async function updateSingleTemplate(templatesDir: string, templateName: string): Promise<void> {
-  const sourceDir: string = path.resolve(process.cwd())
-  const targetDir: string = path.join(templatesDir, templateName)
+async function updateSingleTemplate(dir: string, name: string): Promise<void> {
+  const sourceDir: string = resolveCurrentPath([])
+  const targetDir: string = path.join(dir, name)
 
   if (!await fs.pathExists(targetDir))
-    throw new Error(`Template '${templateName}' not found in ~/.minimaz/templates`)
+    throw new Error(`Template '${name}' not found in ~/.minimaz/templates`)
 
-  if (
-    !(await askQuestion(`Update template '${templateName}' with current directory? [y/n]:`, 'y')).startsWith('y')
-  ) {
+  if (!(await askQuestion(`Update '${name}' with current directory? [Y/n]:`, 'y')).startsWith('y')) {
     log('info', 'Update cancelled.')
     return
   }
 
   try {
     await fs.copy(sourceDir, targetDir, { overwrite: true })
-    log('success', `Template '${templateName}' updated from current directory.`)
+    log('success', `Template '${name}' updated from current directory.`)
   } catch (error: any) {
-    throw new Error(`Failed to update '${templateName}'`)
+    throw new Error(`Failed to update '${name}'`)
   }
 }
 
@@ -72,27 +66,21 @@ async function updateSingleTemplate(templatesDir: string, templateName: string):
  *
  * @param templatesDir - Global templates directory (~/.minimaz/templates)
  */
-async function updateFromNodeModules(templatesDir: string): Promise<void> {
+async function updateFromNodeModules(dir: string): Promise<void> {
   const nodeModulesPath: string = getNodeModulesTemplatesPath()
-
-  if (!await fs.pathExists(nodeModulesPath))
-    throw new Error(`'node_modules/minimaz/src/templates' not found.`)
-
   const items: string[] = await fs.readdir(nodeModulesPath)
 
-  if (
-    !((await askQuestion('Update local templates overwriting them with defaults? [y/n]:', 'y')).startsWith('y'))
-  ) {
+  if (!((await askQuestion('Update local templates overwriting them with defaults? [Y/n]:', 'y')).startsWith('y'))) {
     log('info', 'Update cancelled.')
     return
   }
 
   try {
-    for (const item of items) {
-      const src: string = path.join(nodeModulesPath, item)
-      const dest: string = path.join(templatesDir, item)
+    for (const i of items) {
+      const src: string = path.join(nodeModulesPath, i)
+      const dest: string = path.join(dir, i)
       await fs.copy(src, dest, { overwrite: true })
-      log('success', `Updated '${item}'`)
+      log('success', `Updated '${i}'`)
     }
     log('info', `✨ All templates and files updated successfully.`)
   } catch (error: any) {
@@ -107,13 +95,10 @@ async function updateFromNodeModules(templatesDir: string): Promise<void> {
  * @param name - Template name to delete
  */
 async function deleteTemplate(dir: string, name: string): Promise<void> {
-  if (!name) throw new Error('No template name specified to delete.')
   const target: string = path.join(dir, name)
   if (!await fs.pathExists(target)) throw new Error(`Template not found: ${name}`)
 
-  if (
-    !(await askQuestion(`Confirm delete '${name}'? [y/n]:`, 'y')).startsWith('y')
-  ) {
+  if (!(await askQuestion(`Confirm delete '${name}'? [Y/n]:`, 'y')).startsWith('y')) {
     log('info', 'Delete cancelled.')
     return
   }
@@ -137,11 +122,7 @@ async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
 
   if (!await fs.pathExists(source)) {
     log('warn', `Path not found: ${source}`)
-    if (
-      (await askQuestion(
-        'Use current directory instead? [y/n]:', 'y'
-      )).startsWith('y')
-    ) {
+    if ((await askQuestion('Use current directory instead? [Y/n]:', 'y')).startsWith('y')) {
       source = process.cwd()
     } else {
       throw new Error('Operation cancelled.')
@@ -152,12 +133,7 @@ async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
     await fs.ensureDir(dir)
     const dest: string = path.join(dir, path.basename(source))
     if (await fs.pathExists(dest)) {
-      const proceed: boolean = (await askQuestion(
-        `Template '${path.basename(dest)}' already exists. Overwrite? [y/n]:`,
-        'n'
-      )).startsWith('y')
-
-      if (!proceed) {
+      if (!(await askQuestion(`Template '${path.basename(dest)}' already exists. Overwrite? [y/N]:`, 'n')).startsWith('y')) {
         log('info', 'Save cancelled.')
         return
       }
@@ -166,5 +142,24 @@ async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
     log('success', `Template saved to ${dest}`)
   } catch (error: any) {
     throw new Error(`Failed to save template: ${error.message}`)
+  }
+}
+
+/**
+ * Lists all available templates in a directory.
+ *
+ * @param dir - Templates directory path
+ */
+async function listTemplates(dir: string): Promise<void> {
+  const templates: string[] = await fs.readdir(dir)
+
+  if (templates.length === 0) {
+    log('info', 'No global templates available.')
+    return
+  }
+
+  log('info', 'Available global templates:')
+  for (let i = 0; i < templates.length; i++) {
+    console.log(`${i} - ${templates[i]}`)
   }
 }

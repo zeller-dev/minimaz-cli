@@ -60,7 +60,7 @@ export const minimazConfigTemplate: MinimazConfig = {
 }
 
 // ----- CLI Commands Help -----
-export const commands: Record<string, CommandHelp> = {
+export const commandsHelp: Record<string, CommandHelp> = {
     init: {
         usage: 'minimaz init | i <project-name>',
         description: 'Create a new project (default: "minimaz-site")',
@@ -92,4 +92,14 @@ export const commands: Record<string, CommandHelp> = {
         usage: 'minimaz version | v',
         description: 'Show Minimaz version'
     }
+}
+
+// ----- Colors for logging -----
+export const colors: Record<string, string> = {
+    reset: '\x1b[0m',
+    red: '\x1b[31m',
+    yellow: '\x1b[33m',
+    green: '\x1b[32m',
+    blue: '\x1b[34m',
+    gray: '\x1b[90m'
 }
