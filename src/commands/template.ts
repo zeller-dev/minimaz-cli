@@ -67,7 +67,7 @@ async function updateSingleTemplate(dir: string, name: string): Promise<void> {
  * @param templatesDir - Global templates directory (~/.minimaz/templates)
  */
 async function updateFromNodeModules(dir: string): Promise<void> {
-  const nodeModulesPath: string = getNodeModulesTemplatesPath()
+  const nodeModulesPath: string = await getNodeModulesTemplatesPath()
   const items: string[] = await fs.readdir(nodeModulesPath)
 
   if (!((await askQuestion('Update local templates overwriting them with defaults? [Y/n]:', 'y')).startsWith('y'))) {
