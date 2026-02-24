@@ -1,0 +1,75 @@
+@font-face {
+    font-display: block;
+    font-family: "bootstrap-icons";
+    src: url("../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2") format("woff2"),
+        url("../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff") format("woff");
+}
+
+.icon::before,
+[class^="bi-"]::before,
+[class*=" bi-"]::before {
+    display: inline-block;
+    font-family: bootstrap-icons !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    vertical-align: -.125em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Bootstrap Icons personalizzato */
+
+.icon.code-slash::before {
+    content: "\f2c6";
+}
+
+.icon.person-lines-fill::before {
+    content: "\f4db";
+}
+
+.icon.tools::before {
+    content: "\f5db";
+}
+
+.icon.linkedin::before {
+    content: "\f472";
+}
+
+.icon.instagram::before {
+    content: "\f437";
+}
+
+.icon.github::before {
+    content: "\f3ed";
+}
+
+.icon.facebook::before {
+    content: "\f344";
+}
+
+.icon.envelope-fill::before {
+    content: "\f32c";
+}
+
+.icon.whatsapp::before {
+    content: "\f618";
+}
+
+.icon.lightbulb::before {
+    content: "\F468";
+}
+
+.icon.cart::before {
+    content: "\f23D";
+}
+
+.icon.person::before {
+    content: "\F4DD";
+}
+
+.icon.telephone::before {
+    content: "\F5B4";
+}

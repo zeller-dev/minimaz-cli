@@ -1,0 +1,246 @@
+/* =========================================================
+   ROOT VARIABLES
+========================================================= */
+:root {
+    color-scheme: dark;
+    --bg: #0d0d0d;
+    --fg: #858282;
+    --accent: #60b5e6;
+    --accent2: #fdc503;
+    --border: #222;
+    --code-bg: #1a1a1a;
+
+    /* Future section additions */
+    --card-bg: #141414;
+    --badge-bg: #1e1e1e;
+}
+
+/* =========================================================
+   GLOBAL RESET
+========================================================= */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: system-ui, sans-serif;
+    line-height: 1.6;
+    max-width: 900px;
+    margin-inline: auto;
+    padding: 2rem 1rem 4rem;
+}
+
+/* =========================================================
+   STRUCTURAL ELEMENTS
+========================================================= */
+header,
+footer,
+main,
+section,
+article {
+    width: 100%;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+header {
+    text-align: center;
+    padding-block: 2rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+    color: var(--accent);
+    margin: 0;
+    font-size: 2rem;
+}
+
+#tagline {
+    color: var(--accent2);
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+/* =========================================================
+   HEADINGS
+========================================================= */
+h2 {
+    margin-top: 2.5rem;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.25rem;
+}
+
+h3 {
+    color: var(--accent2);
+    margin-top: 1.5rem;
+}
+
+/* =========================================================
+   TYPOGRAPHY
+========================================================= */
+p,
+ul,
+li {
+    margin-top: 0.5rem;
+}
+
+ul {
+    padding-left: 1.2rem;
+}
+
+/* =========================================================
+   CODE BLOCKS
+========================================================= */
+code,
+pre {
+    font-family: "Fira Code", monospace;
+    background-color: var(--code-bg);
+    color: var(--accent2);
+}
+
+pre {
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+}
+
+/* =========================================================
+   TABLES
+========================================================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+}
+
+th {
+    background-color: #141414;
+    color: var(--accent2);
+}
+
+tr:nth-child(even) {
+    background-color: #151515;
+}
+
+/* =========================================================
+   LINKS
+========================================================= */
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover,
+a:focus {
+    color: var(--accent2);
+    text-decoration: underline;
+}
+
+/* =========================================================
+   FUTURE FEATURES SECTION
+========================================================= */
+.future-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+@media (min-width: 700px) {
+    .future-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.future-item {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 1.2rem;
+    border-radius: 6px;
+    transition: border-color 0.2s ease;
+}
+
+.future-item:hover {
+    border-color: var(--accent);
+}
+
+.future-item header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    padding: 0;
+    margin-bottom: 0.5rem;
+}
+
+.future-item h3 {
+    margin: 0;
+}
+
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+.status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: var(--badge-bg);
+    border: 1px solid var(--border);
+}
+
+/* Individual states */
+.status-planned {
+    color: var(--accent);
+}
+
+.status-inprogress {
+    color: var(--accent2);
+}
+
+.status-research {
+    color: #b98cff;
+}
+
+.status-idea {
+    color: #999;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+footer {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #999;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
