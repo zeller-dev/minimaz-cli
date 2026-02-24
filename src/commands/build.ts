@@ -94,6 +94,8 @@ async function walkFolder(
     const destPath: string = path.join(dest, item)
     const stat: fs.Stats = await fs.stat(srcPath)
 
+    log('debug', `Found ${stat.isDirectory() ? 'DIRECTORY' : 'FILE'}: ${item}`)
+
     if (stat.isDirectory()) {
       await walkFolder(srcPath, destPath, config, bundles)
       continue
@@ -127,12 +129,12 @@ async function processFile(
       break
 
     case '.css': {
-      processCSS(srcPath, destPath, config, bundles.css)
+      await processCSS(srcPath, destPath, config, bundles.css)
       break
     }
 
     case '.js': {
-      processJS(srcPath, destPath, config, bundles.js)
+      await processJS(srcPath, destPath, config, bundles.js)
       break
     }
 
@@ -302,7 +304,7 @@ async function appendExternalAssets(
   for (const file of files) {
     const fullPath = resolveCurrentPath([file])
     if (!(await fs.pathExists(fullPath))) {
-      log('warn', `File not found: ${file}`)
+      log('warn', `File not found: ${file} `)
       continue
     }
 
@@ -320,13 +322,13 @@ async function appendExternalAssets(
         try {
           content = (await minifyJs(content)).code ?? ''
         } catch (err) {
-          log('warn', `JS minify failed for external file ${file}: ${err}`)
+          log('warn', `JS minify failed for external file ${file}: ${err} `)
         }
       }
 
       const fileName = path.basename(file)
       await fs.outputFile(path.join(distDir, fileName), content)
-      log('info', `Copied external ${type} file: ${fileName}`)
+      log('info', `Copied external ${type} file: ${fileName} `)
     }
   }
 }
@@ -373,7 +375,7 @@ async function writeJsBundle(
     try {
       js = (await minifyJs(js)).code ?? ''
     } catch (err) {
-      log('warn', `JS minify failed: ${err}`)
+      log('warn', `JS minify failed: ${err} `)
     }
   if (js) await fs.outputFile(path.join(distDir, 'script.js'), js)
 }
