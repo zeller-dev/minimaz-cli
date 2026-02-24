@@ -22,54 +22,50 @@
 
 /* Bootstrap Icons personalizzato */
 
-.icon.code-slash::before {
-    content: "\f2c6";
+.icon.collection-fill::before {
+    content: "\F2C9";
 }
 
-.icon.person-lines-fill::before {
-    content: "\f4db";
+.icon.rocket-takeoff::before {
+    content: "\F845";
 }
 
-.icon.tools::before {
-    content: "\f5db";
+.icon.file-earmark-text::before {
+    content: "\F38B";
 }
 
-.icon.linkedin::before {
-    content: "\f472";
+.icon.link-45deg::before {
+    content: "\F470";
 }
 
-.icon.instagram::before {
-    content: "\f437";
+.icon.lightning-fill::before {
+    content: "\F46E";
 }
 
-.icon.github::before {
-    content: "\f3ed";
+.icon.info-circle::before {
+    content: "\F431";
 }
 
-.icon.facebook::before {
-    content: "\f344";
+.icon.gear-fill::before {
+    content: "\F3E2";
 }
 
-.icon.envelope-fill::before {
-    content: "\f32c";
+.icon.download::before {
+    content: "\F30A";
 }
 
-.icon.whatsapp::before {
-    content: "\f618";
+.icon.folder2-open::before {
+    content: "\F3D8";
 }
 
-.icon.lightbulb::before {
-    content: "\F468";
+.icon.sliders::before {
+    content: "\F56B";
 }
 
-.icon.cart::before {
-    content: "\f23D";
+.icon.command::before {
+    content: "\F2CF";
 }
 
-.icon.person::before {
-    content: "\F4DD";
-}
-
-.icon.telephone::before {
-    content: "\F5B4";
+.icon.file-earmark-text::before {
+    content: "F38B";
 }

@@ -35,7 +35,7 @@
     <!-- HEADER                                  -->
     <!-- ======================================== -->
     <header>
-        <h1>Minimaz CLI <i class="bi bi-lightning-fill"></i></h1>
+        <h1>Minimaz CLI <i class="icon lightning-fill"></i></h1>
         <p id="tagline">Minimal input. Clean output. ⚡</p>
         <p class="version">Version: <strong>v0.3.1</strong></p>
     </header>
@@ -46,7 +46,7 @@
         <!-- ABOUT                                   -->
         <!-- ======================================== -->
         <section id="about">
-            <h2>About <i class="bi bi-info-circle"></i></h2>
+            <h2>About <i class="icon info-circle"></i></h2>
             <p>
                 <strong>Minimaz</strong> is a minimal, low-dependency static site builder
                 and project initializer focused on speed, simplicity, and clean output.
@@ -63,7 +63,7 @@
         <!-- FEATURES                                -->
         <!-- ======================================== -->
         <section id="features">
-            <h2>Features <i class="bi bi-gear-fill"></i></h2>
+            <h2>Features <i class="icon gear-fill"></i></h2>
             <ul>
                 <li>Initialize projects from templates</li>
                 <li>Save, list, delete, and update global templates</li>
@@ -86,7 +86,7 @@
         <!-- INSTALLATION                            -->
         <!-- ======================================== -->
         <section id="installation">
-            <h2>Installation <i class="bi bi-download"></i></h2>
+            <h2>Installation <i class="icon download"></i></h2>
             <p>Run directly using <code>npx</code> (no global install required):</p>
 
             <pre><code>npx minimaz init my-site
@@ -105,7 +105,7 @@ npx mz v</code></pre>
         <!-- PROJECT STRUCTURE                       -->
         <!-- ======================================== -->
         <section id="project-structure">
-            <h2>Project Structure <i class="bi bi-folder2-open"></i></h2>
+            <h2>Project Structure <i class="icon folder2-open"></i></h2>
 
             <pre><code>my-site/
 ├── dist/              # Output folder (generated)
@@ -121,17 +121,35 @@ npx mz v</code></pre>
         <!-- CONFIGURATION                           -->
         <!-- ======================================== -->
         <section id="configuration">
-            <h2>Configuration <i class="bi bi-sliders"></i></h2>
+            <h2>Configuration <i class="icon sliders"></i></h2>
 
             <pre><code>{
-  "src": "src",
-  "dist": "dist",
-  "public": "public",
-  "bundling": { "css": true, "js": true },
-  "minify": { "html": true, "css": true, "js": true, "ts": true },
-  "replace": { "../public/": "public/" },
-  "styles": ["../node_modules/library.css"],
-  "scripts": ["../node_modules/library.js"]
+    "src": "src",
+    "dist": "dist",
+    "public": "public",
+    "bundling": {
+        "css": true,
+        "js": true
+    },
+    "minify": {
+        "html": true,
+        "css": true,
+        "js": true,
+        "ts": true
+    },
+    "replace": {
+        "../public/": "public/"
+    },
+    "styles": [
+       "../node_modules/library.css"
+    ],
+    "scripts": [
+        "../node_modules/library.js"
+    ],
+    "folders": {
+        "public": "public",
+        "src": ""
+    }
 }</code></pre>
 
             <ul>
@@ -139,6 +157,8 @@ npx mz v</code></pre>
                 <li><strong>minify.html/css/js/ts</strong> → toggle per file type</li>
                 <li><strong>styles/scripts</strong> → include external files</li>
                 <li><strong>replace</strong> → asset path replacements</li>
+                <li><strong>styles & scripts</strong> → external styles or scrips to add</li>
+                <li><strong>folders</strong> → folders to scan</li>
             </ul>
         </section>
 
@@ -146,7 +166,7 @@ npx mz v</code></pre>
         <!-- COMMANDS                                -->
         <!-- ======================================== -->
         <section id="commands">
-            <h2>Commands <i class="bi bi-command"></i></h2>
+            <h2>Commands <i class="icon command"></i></h2>
 
             <pre><code># Build
 minimaz build
@@ -184,7 +204,7 @@ mz v</code></pre>
         <!-- FUTURE FEATURES / ROADMAP               -->
         <!-- ======================================== -->
         <section id="future-features">
-            <h2>Upcoming & Future Features <i class="bi bi-rocket-takeoff"></i></h2>
+            <h2>Upcoming & Future Features <i class="icon rocket-takeoff"></i></h2>
 
             <p>
                 Planned improvements and roadmap direction.
@@ -325,7 +345,7 @@ mz v</code></pre>
         <!-- GLOBAL TEMPLATES                        -->
         <!-- ======================================== -->
         <section id="templates">
-            <h2>Global Templates <i class="bi bi-collection-fill"></i></h2>
+            <h2>Global Templates <i class="icon collection-fill"></i></h2>
 
             <pre><code>~/.minimaz/templates</code></pre>
 
@@ -338,7 +358,7 @@ mz v</code></pre>
         <!-- LICENSE                                 -->
         <!-- ======================================== -->
         <section id="license">
-            <h2>License <i class="bi bi-file-earmark-text"></i></h2>
+            <h2>License <i class="icon file-earmark-text"></i></h2>
             <p>MIT License</p>
         </section>
 
@@ -346,7 +366,7 @@ mz v</code></pre>
         <!-- LINKS                                   -->
         <!-- ======================================== -->
         <section id="links">
-            <h2>Links <i class="bi bi-link-45deg"></i></h2>
+            <h2>Links <i class="icon link-45deg"></i></h2>
             <ul>
                 <li>
                     <a href="https://github.com/zeller-dev/minimaz-cli">
