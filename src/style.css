@@ -5,8 +5,8 @@
     color-scheme: dark;
 
     /* Base colors */
-    --bg: #0d0d0d;
-    --fg: #858282;
+    --bg: #222;
+    --fg: #999;
     --accent: #60b5e6;
     --accent2: #fdc503;
     --border: #222;
@@ -50,20 +50,15 @@ body {
     background-color: var(--bg);
     color: var(--fg);
     font-family: var(--font-sans);
-    max-width: 900px;
-    margin: 0 auto;
-    padding: var(--space-lg) var(--space-md) 4rem;
+    margin: 0;
 }
 
 /* =========================================================
    STRUCTURAL ELEMENTS
 ========================================================= */
-header,
-footer,
-main,
-section,
-article {
-    width: 100%;
+
+section {
+    margin: 3rem auto;
 }
 
 /* =========================================================
@@ -71,7 +66,7 @@ article {
 ========================================================= */
 header {
     text-align: center;
-    padding-block: 2rem 1rem;
+    padding-block: var(--space-md);
     border-bottom: 1px solid var(--border);
 }
 
@@ -79,6 +74,10 @@ header h1 {
     color: var(--accent);
     font-size: 2rem;
     margin-bottom: 0.25rem;
+}
+
+main {
+    padding: 0 var(--space-md);
 }
 
 #tagline {
@@ -90,29 +89,46 @@ header h1 {
    HEADINGS
 ========================================================= */
 h2 {
-    margin-top: 2.5rem;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    gap: var(--space-md);
     color: var(--accent);
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 0.25rem;
+    margin-bottom: var(--space-md);
+}
+
+h2 i {
+    padding: var(--space-md);
+    background-color: var(--accent2);
+    border-radius: 100%;
+    color: var(--bg);
+}
+
+h2 span {
+    padding: var(--space-md) 0;
+    flex-grow: 1;
+    border-bottom: 2px solid var(--accent);
 }
 
 h3 {
     color: var(--accent2);
-    margin-top: 1.5rem;
 }
 
 /* =========================================================
    TYPOGRAPHY
 ========================================================= */
-p,
-ul,
-li {
-    margin-top: var(--space-sm);
-}
 
 ul {
     padding-left: 1.2rem;
     list-style: disc;
+}
+
+p {
+    margin-bottom: var(--space-md);
+}
+
+p:last-child {
+    margin-bottom: 0;
 }
 
 /* =========================================================
@@ -174,45 +190,6 @@ a:focus {
 }
 
 /* =========================================================
-   FUTURE FEATURES GRID
-========================================================= */
-.future-grid {
-    display: grid;
-    gap: var(--space-lg);
-    margin-top: var(--space-lg);
-}
-
-@media (min-width: 700px) {
-    .future-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-.future-item {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border);
-    padding: var(--space-md);
-    border-radius: var(--radius-md);
-    transition: border-color 0.2s ease, transform 0.2s ease;
-}
-
-.future-item:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-}
-
-.future-item header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-xs);
-}
-
-.future-item h3 {
-    margin: 0;
-}
-
-/* =========================================================
    STATUS BADGES
 ========================================================= */
 .status {
@@ -241,17 +218,92 @@ a:focus {
     color: #999;
 }
 
+.sr-only {
+    display: none;
+}
+
+.max-width {
+    max-width: 900px;
+}
+
+/* =========================================================
+   LOGO
+========================================================= */
+header img {
+    display: block;
+    margin: 0 auto var(--space-sm);
+    max-width: 180px;
+    width: 100%;
+    height: auto;
+}
+
 /* =========================================================
    FOOTER
 ========================================================= */
-footer {
-    margin-top: 3rem;
-    text-align: center;
+/* =========================================================
+   ENHANCED FOOTER
+========================================================= */
+
+.site-footer {
+    margin-top: 4rem;
+    padding: var(--space-lg);
+    border-top: 1px solid var(--border);
     font-size: 0.9rem;
     color: #999;
+}
+
+.footer-grid {
+    display: grid;
+    gap: var(--space-lg);
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 700px) {
+    .footer-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.footer-col h3,
+.footer-col h4 {
+    margin-bottom: var(--space-sm);
+    color: var(--accent);
+}
+
+.footer-col h4 {
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--accent);
+}
+
+.footer-col p {
+    margin-bottom: var(--space-sm);
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-col li {
+    margin-top: var(--space-xs);
+}
+
+.footer-col a {
+    color: var(--accent);
+}
+
+.footer-col a:hover {
+    color: var(--accent2);
+}
+
+.footer-bottom {
     border-top: 1px solid var(--border);
     padding-top: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #777;
 }
+
 
 /* =========================================================
    ACCESSIBILITY

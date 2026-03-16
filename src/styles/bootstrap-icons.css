@@ -5,9 +5,7 @@
         url("../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff") format("woff");
 }
 
-.icon::before,
-[class^="bi-"]::before,
-[class*=" bi-"]::before {
+[class*="icon"]::before {
     display: inline-block;
     font-family: bootstrap-icons !important;
     font-style: normal;
@@ -64,8 +62,4 @@
 
 .icon.command::before {
     content: "\F2CF";
-}
-
-.icon.file-earmark-text::before {
-    content: "F38B";
 }
