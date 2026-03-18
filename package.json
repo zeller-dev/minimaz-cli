@@ -1,13 +1,13 @@
 {
   "name": "minimaz-cli",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Minimal project initializer and builder CLI",
   "author": "MrZeller",
   "license": "MIT",
   "type": "module",
   "files": [
     "bin",
-    "src",
+    "templates",
     "LICENSE",
     "README.md",
     "package.json"

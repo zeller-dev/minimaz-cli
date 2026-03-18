@@ -183,7 +183,7 @@ export async function getNodeModulesTemplatesPath(): Promise<string> {
  */
 export async function createGlobalDir(): Promise<void> {
   const minimazDir: string = path.join(homedir(), '.minimaz')
-  const globalTemplatesDir: string = await getGlobalTemplatesDirPath()
+  const globalTemplatesDir = path.join(minimazDir, 'templates')
   const defaultTemplatesDir: string = await getNodeModulesTemplatesPath()
   const settingsPath: string = path.join(minimazDir, 'settings.json')
 
