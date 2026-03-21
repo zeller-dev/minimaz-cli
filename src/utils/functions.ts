@@ -8,7 +8,8 @@ import { execSync } from 'child_process'
 import {
   log,                                  // utils
   Args, MinimazConfig,                  // types
-  minimazConfigTemplate, pkgTemplate    // constants
+  minimazConfigTemplate, pkgTemplate,    // constants
+  colors
 } from '../index.js'
 
 // @TODO add cache
@@ -162,13 +163,15 @@ export async function getGlobalTemplatesDirPath(): Promise<string> {
   return path.join(await getGlobalDirPath(), 'templates')
 }
 
+export async function getGlobalTemplatePath(templateName: string): Promise<string> {
+  return path.join(await getGlobalTemplatesDirPath(), templateName)
+}
+
 /**
  * Returns the node modules templates directory's path
  */
 export async function getNodeModulesTemplatesPath(): Promise<string> {
-  const dir: string = path.join(await getGlobalNodeModulesPath(), 'templates')
-  if (dir) throw new Error('Failed to resolve node_modules templates path')
-  return dir
+  return path.join(await getGlobalNodeModulesPath(), 'templates')
 }
 
 /**
@@ -196,7 +199,7 @@ export async function createGlobalDir(): Promise<void> {
         {
           createdAt: new Date().toISOString(),
           templatesPath: globalTemplatesDir,
-          npmGlobalPath: getGlobalNodeModulesPath()
+          npmGlobalPath: await getGlobalNodeModulesPath()
         },
         { spaces: 2 }
       )
@@ -271,131 +274,29 @@ export function executeCommand(
  * @param outputPath - File path to write
  */
 export async function createFileFromTemplate(
-  template: Record<string, unknown> | string,
-  outputPath: string
+  template: Record<string, unknown> | string | undefined,
+  pathComponents: string[]
 ): Promise<void> {
-  const content: string = typeof template === 'string'
-    ? template.endsWith('\n') ? template : template + '\n'
-    : JSON.stringify(template, null, 2) + '\n'
+  const outputPath = path.resolve(...pathComponents)
+
+  let content = ''
+
+  if (template !== undefined) {
+    if (typeof template === 'string') {
+      content = template.endsWith('\n') ? template : `${template}\n`
+    } else if (typeof template === 'object' && template !== null) {
+      content = `${JSON.stringify(template, null, 2)}\n`
+    } else {
+      throw new Error('Unsupported template type. Must be string or object.')
+    }
+  }
 
   try {
     await fs.outputFile(outputPath, content)
-  } catch (error: any) {
-    throw new Error(`Failed to create file at '${outputPath}': ${error.message}`)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    throw new Error(`Failed to create file at '${outputPath}': ${message}`)
   }
-}
-
-export async function initNpmProject(target: string, name: string): Promise<void> {
-  log('info', 'Initializing NPM...')
-  await createFileFromTemplate(
-    { name: name, ...pkgTemplate },
-    path.join(target, 'package.json')
-  )
-  await executeCommand('npm', ['install'], target)
-}
-
-/**
- * Initializes a Git repository in the given directory.
- *
- * @param targetDir - Directory to initialize Git
- * @param remoteUrl - Optional remote URL
- * @param provider - Optional provider ('github' | 'gitlab')
- */
-export async function initGit(
-  projectName: string,
-  targetDir: string,
-  provider?: string,
-  name: string = 'origin'
-): Promise<void> {
-  log('info', 'Initializing Git repository...')
-  await executeCommand('git', ['init'], targetDir)
-
-  if (provider) {
-    await createRemoteRepo(projectName, targetDir, provider, name)
-    log('success', 'Git repository initialized.')
-  } else {
-    log('info', 'Git repository initialized locally (no remote).')
-  }
-}
-
-/**
- * Creates or connects a remote Git repository.
- *
- * Supported modes:
- * - GitHub (via gh CLI)
- * - GitLab (via glab CLI)
- * - Existing remote URL (SSH / HTTPS)
- *
- * This function does NOT create commits.
- *
- * @param repoName   - Repository name
- * @param targetDir  - Local repository directory
- * @param remote     - Provider name ('github' | 'gitlab') or remote URL
- * @param remoteName - Git remote name (default: origin)
- */
-async function createRemoteRepo(
-  repoName: string,
-  targetDir: string,
-  remote: string,
-  remoteName: string = 'origin'
-): Promise<void> {
-  console.log(remote, remoteName, repoName, targetDir)
-  /**
-   * Case 1: Existing repository URL (connect only)
-   */
-  if (/^https?:\/\//.test(remote) || remote.startsWith('git@')) {
-    log('info', `Connecting existing remote '${remote}'`)
-    await executeCommand(
-      'git',
-      ['remote', 'add', remoteName, remote],
-      targetDir
-    )
-    return
-  }
-
-  /**
-   * Case 2: GitHub repository creation (via gh CLI)
-   */
-  if (remote === 'github') {
-    log('info', `Creating GitHub repository '${repoName}'`)
-    await executeCommand(
-      'gh',
-      ['repo', 'create', repoName, '--private', '--source=.', '--remote', remoteName],
-      targetDir
-    )
-    return
-  }
-
-  /**
-   * Case 3: GitLab repository creation (via glab CLI)
-   */
-  if (remote === 'gitlab') {
-    log('info', `Creating GitLab repository '${repoName}'`)
-
-    const gitlabUser = process.env.GITLAB_USER
-    if (!gitlabUser)
-      throw new Error('GITLAB_USER environment variable not set')
-
-    await executeCommand(
-      'glab',
-      ['repo', 'create', repoName, '--source=.'],
-      targetDir
-    )
-
-    await executeCommand(
-      'git',
-      [
-        'remote',
-        'add',
-        remoteName,
-        `git@gitlab.com:${gitlabUser}/${repoName}.git`
-      ],
-      targetDir
-    )
-    return
-  }
-  // Unsupported provider
-  throw new Error(`Unsupported git provider or remote: '${remote}'`)
 }
 
 /**
@@ -479,4 +380,11 @@ export async function readJsonFile(filePath: string): Promise<any> {
  */
 export async function getDirElements(dir: string): Promise<string[]> {
   return await fs.readdir(dir)
+}
+
+/**
+ * Colorises text
+ */
+export function colorize(text: string, color: string): string {
+  return `${color}${text}${colors.reset}`
 }

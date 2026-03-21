@@ -1,6 +1,8 @@
 import {
-  colors,   // constants
-  LogType   // types
+  colorize,         // functions
+  colors, prefix,   // constants
+  LogType           // types
+
 } from "../index.js"
 
 /**
@@ -8,13 +10,6 @@ import {
  * Timestamp is shown only when VERBOSE=true.
  */
 export function log(type: LogType = 'info', message: string): void {
-  const prefix: Record<LogType, string> = {
-    error: colorize('[ --- ERROR ----- ]\t', colors.red),
-    warn: colorize('[ --- WARN ------ ]\t', colors.yellow),
-    success: colorize('[ --- SUCCESS --- ]\t', colors.green),
-    info: colorize('[ --- INFO ------ ]\t', colors.blue),
-    debug: colorize('[ --- DEBUG ----- ]\t', colors.gray)
-  }
 
   const isVerbose: boolean = process.env.VERBOSE === 'true'
 
@@ -37,13 +32,6 @@ export function log(type: LogType = 'info', message: string): void {
       console.log(output)
       break
   }
-}
-
-/**
- * Colorises text
- */
-function colorize(text: string, color: string): string {
-  return `${color}${text}${colors.reset}`
 }
 
 /**

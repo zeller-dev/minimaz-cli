@@ -1,5 +1,5 @@
 import {
-  createGlobalDir, log // utils
+  createGlobalDir, log  // utils
 } from '../index.js'
 
 // ----- Setup Default Templates -----

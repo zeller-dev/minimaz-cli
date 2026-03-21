@@ -1,5 +1,6 @@
 import {
-    CommandHelp, MinimazConfig, PkgTemplate     // types
+    colorize,
+    CommandHelp, LogType, MinimazConfig, PkgTemplate     // types
 } from "../index.js"
 
 // ----- Package.json template -----
@@ -18,9 +19,13 @@ export const pkgTemplate: PkgTemplate = {
 }
 
 // ----- .gitignore template -----
-export const gitIgnoreTemplate: string = `dist
+export const gitIgnoreTemplate: string = `
+node_modules
+dist
+.env
 .vscode
-node_modules`
+.DS_Store
+`.trim()
 
 // ----- Default minimaz.config.json template -----
 export const minimazConfigTemplate: MinimazConfig = {
@@ -102,4 +107,12 @@ export const colors: Record<string, string> = {
     green: '\x1b[32m',
     blue: '\x1b[34m',
     gray: '\x1b[90m'
+}
+
+export const prefix: Record<LogType, string> = {
+    error: colorize('[ --- ERROR ----- ]\t', colors.red),
+    warn: colorize('[ --- WARN ------ ]\t', colors.yellow),
+    success: colorize('[ --- SUCCESS --- ]\t', colors.green),
+    info: colorize('[ --- INFO ------ ]\t', colors.blue),
+    debug: colorize('[ --- DEBUG ----- ]\t', colors.gray)
 }
