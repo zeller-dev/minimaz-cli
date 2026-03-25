@@ -2,7 +2,7 @@ import fs from 'fs-extra'
 
 import {
   log, askQuestion, getGlobalTemplatePath, createFileFromTemplate, resolveCurrentPath, executeCommand, // utils
-  gitIgnoreTemplate, pkgTemplate, // constants
+  gitIgnoreTemplate, pkgTemplate, minimazConfigTemplate, // constants
   initCommandOptions // types
 } from '../index.js'
 
@@ -32,6 +32,13 @@ export async function init(
   // Copy template files to target directory
   log('debug', `Copying template from '${templateDir}' to '${targetDir}'`)
   await fs.copy(templateDir, targetDir)
+
+  // add minimaz.config.json
+  log('debug', 'Initializing minimaz.config.json...')
+  await createFileFromTemplate(
+    minimazConfigTemplate,
+    [targetDir, 'minimaz.config.json']
+  )
 
   // Check for NPM initialization option (ask if not provided)
   const useNpm = options.npm !== undefined

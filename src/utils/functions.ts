@@ -8,7 +8,7 @@ import { execSync } from 'child_process'
 import {
   log,                                  // utils
   Args, MinimazConfig,                  // types
-  minimazConfigTemplate, pkgTemplate,    // constants
+  minimazConfigTemplate,    // constants
   colors
 } from '../index.js'
 
