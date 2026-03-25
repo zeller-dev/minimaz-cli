@@ -49,6 +49,7 @@ async function build() {
   // You can add here any module you don't want bundled
   const externalDeps = [
     ...Object.keys(pkg.dependencies ?? {}),
+    ...Object.keys(pkg.devDependencies ?? {}),
     'fs', 'path', 'os', 'child_process', 'fs-extra'
   ].filter(Boolean);
 

@@ -29,9 +29,9 @@ dist
 
 // ----- Default minimaz.config.json template -----
 export const minimazConfigTemplate: MinimazConfig = {
-    src: 'src',
-    dist: 'dist',
-    public: 'public',
+    src: 'src', // TODO: remove
+    dist: 'dist', // TODO: rename this to outDir
+    public: 'public', // TODO: remove
 
     bundling: {
         css: true,

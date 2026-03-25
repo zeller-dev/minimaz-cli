@@ -3,6 +3,7 @@ import path from 'path'
 import CleanCSS from 'clean-css'
 import { minify as minifyHtml } from 'html-minifier-terser'
 import { minify as minifyJs } from 'terser'
+import ts from 'typescript'
 
 import {
   loadConfig, log, applyReplacements, getFile, removeDistDir, resolveCurrentPath, // utils
@@ -138,6 +139,11 @@ async function processFile(
       break
     }
 
+    case '.ts': {
+      await processTS(srcPath, destPath, config, bundles.js)
+      break
+    }
+
     default:
       await fs.copy(srcPath, destPath)
   }
@@ -262,6 +268,37 @@ async function processJS(src: string, dest: string, config: MinimazConfig, bundl
     await fs.outputFile(dest, out)
   }
 }
+
+async function processTS(
+  srcPath: string,
+  destPath: string,
+  config: MinimazConfig,
+  jsBundle: string[]
+): Promise<void> {
+  const tsContent = await getFile(srcPath, config.replace)
+
+  // Compile TS to JS
+  const compiled = ts.transpileModule(tsContent, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2020,
+      sourceMap: false,
+      strict: true,
+    },
+  })
+
+  const jsContent = compiled.outputText
+
+  // Process resulting JS just like normal JS
+  if (config.bundling?.js) {
+    jsBundle.push(jsContent)
+  } else {
+    let out = jsContent
+    if (config.minify?.js) out = (await minifyJs(out)).code ?? ''
+    await fs.outputFile(destPath.replace(/\.ts$/, '.js'), out)
+  }
+}
+
 /**
  * Merges and writes root-level CSS and JS bundles.
  *
