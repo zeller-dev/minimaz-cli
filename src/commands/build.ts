@@ -7,7 +7,8 @@ import { transform, build as jsBuild, Loader } from 'esbuild'
 
 import {
     loadConfig, log, applyReplacements, getFile, removeDistDir, resolveCurrentPath, // utils
-    MinimazConfig, Bundles, File                                                    // types
+    MinimazConfig, Bundles, File,                                                    // types
+    getDirElements
 } from '../index.js'
 
 /**
@@ -94,7 +95,7 @@ async function walkFolder(
 ): Promise<void> {
     await fs.ensureDir(dest)
 
-    for (const item of await fs.readdir(src)) {
+    for (const item of await getDirElements(src)) {
         const srcPath: string = path.join(src, item)
         const destPath: string = path.join(dest, item)
         const stat: fs.Stats = await fs.stat(srcPath)

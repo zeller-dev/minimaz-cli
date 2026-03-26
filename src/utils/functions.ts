@@ -3,13 +3,13 @@ import fs from 'fs-extra'
 import path from 'path'
 import spawn from 'cross-spawn'
 import { homedir } from 'os'
-import { execSync } from 'child_process'
+import { ChildProcess, execSync } from 'child_process'
 
 import {
     log,                                  // utils
     Args, MinimazConfig,                  // types
-    minimazConfigTemplate,    // constants
-    colors
+    minimazConfigTemplate, colors         // constants
+
 } from '../index.js'
 
 // @TODO add cache
@@ -133,6 +133,8 @@ export async function getFile(
  * @returns Path to the global Minimaz CLI installation
  */
 export async function getGlobalNodeModulesPath(): Promise<string> {
+    log('debug', `Getting global node modules path`)
+
     try {
         const prefix: string = execSync('npm config get prefix', { encoding: 'utf8' }).trim()
         if (!prefix) throw new Error('Empty npm prefix')
@@ -149,29 +151,53 @@ export async function getGlobalNodeModulesPath(): Promise<string> {
 }
 
 /**
- * Returns the global directory's path.
+ * Returns the path to the global Minimaz directory.
+ * Throws an error if the directory does not exist.
  */
 export async function getGlobalDirPath(): Promise<string> {
-    await createGlobalDir()
-    return path.join(homedir(), '.minimaz')
+    log('debug', `Checking existence of global Minimaz directory...`)
+    const dir: string = path.join(homedir(), '.minimaz')
+    const exists: boolean = await fs.pathExists(dir)
+    if (!exists)
+        throw new Error(`Global Minimaz folder does not exist.\nRun 'minimaz config' to generate it.`)
+
+    return dir
 }
 
 /**
  * Returns the global templates directory's path.
  */
 export async function getGlobalTemplatesDirPath(): Promise<string> {
-    return path.join(await getGlobalDirPath(), 'templates')
+    log('debug', 'Getting global templates directory path')
+    const dir: string = path.join(await getGlobalDirPath(), 'templates')
+    const exists: boolean = await fs.pathExists(dir)
+    if (!exists)
+        throw new Error(`Template directory not found in global directory`)
+
+    return dir
 }
 
-export async function getGlobalTemplatePath(templateName: string): Promise<string> {
-    return path.join(await getGlobalTemplatesDirPath(), templateName)
+export async function getGlobalTemplatePath(template: string): Promise<string> {
+    log('debug', `Getting template '${template}'directory path`)
+    const dir: string = path.join(await getGlobalTemplatesDirPath(), template)
+    const exists: boolean = await fs.pathExists(dir)
+    if (!exists)
+        throw new Error(`Template '${template}' not found.`)
+
+    return dir
 }
 
 /**
  * Returns the node modules templates directory's path
  */
 export async function getNodeModulesTemplatesPath(): Promise<string> {
-    return path.join(await getGlobalNodeModulesPath(), 'templates')
+    log('debug', 'Getting default templates directory path')
+    const dir: string = path.join(await getGlobalNodeModulesPath(), 'templates')
+    const exists: boolean = await fs.pathExists(dir)
+    if (!exists)
+        throw new Error('Default template folder not found')
+
+    return dir
 }
 
 /**
@@ -185,14 +211,15 @@ export async function getNodeModulesTemplatesPath(): Promise<string> {
  * Copies default templates if the templates folder is empty.
  */
 export async function createGlobalDir(): Promise<void> {
+    // Creating dir if it does not exist
     const minimazDir: string = path.join(homedir(), '.minimaz')
+    await fs.ensureDir(minimazDir)
+
     const globalTemplatesDir = path.join(minimazDir, 'templates')
     const defaultTemplatesDir: string = await getNodeModulesTemplatesPath()
     const settingsPath: string = path.join(minimazDir, 'settings.json')
 
     try {
-        await fs.ensureDir(minimazDir)
-
         if (!await fs.pathExists(settingsPath)) {
             await fs.outputJson(
                 settingsPath,
@@ -245,13 +272,13 @@ export async function createGlobalDir(): Promise<void> {
 export function executeCommand(
     command: string,
     args: string[],
-    targetDir: string
+    target: string
 ): Promise<void> {
-    return new Promise((resolve, reject) => {
-        log('debug', `Running: ${command} ${args.join(' ')}`)
+    log('debug', `Running: ${command} ${args.join(' ')}`)
 
-        const child = spawn(command, args, {
-            cwd: targetDir,
+    return new Promise((resolve, reject) => {
+        const child: ChildProcess = spawn(command, args, {
+            cwd: target,
             stdio: 'inherit'
         })
 
@@ -277,8 +304,8 @@ export async function createFileFromTemplate(
     template: Record<string, unknown> | string | undefined,
     pathComponents: string[]
 ): Promise<void> {
-    const outputPath = path.resolve(...pathComponents)
-
+    log('debug', 'Creating file from template...')
+    const outputPath: string = path.resolve(...pathComponents)
     let content = ''
 
     if (template !== undefined) {
@@ -303,6 +330,7 @@ export async function createFileFromTemplate(
  * Removes Dist Directory
  */
 export async function removeDistDir(dir?: string): Promise<void> {
+    log('debug', 'Removing outDir...')
     const distDir = dir
         ? path.isAbsolute(dir) ? dir : resolveCurrentPath([dir])
         : path.resolve(process.cwd(), (await loadConfig()).outDir ?? 'dist')
@@ -324,17 +352,17 @@ export async function removeDistDir(dir?: string): Promise<void> {
  * Returns Minimaz Config
  */
 export async function loadConfig(): Promise<MinimazConfig> {
-    const configPath: string = resolveCurrentPath(['minimaz.config.json'])
-    let config: MinimazConfig;
+    log('debug', 'Loading minimaz.config.json...')
 
-    if (await fs.pathExists(configPath)) {
-        config = await fs.readJson(configPath)
+    const path: string = resolveCurrentPath(['minimaz.config.json'])
+
+    if (await fs.pathExists(path)) {
         log('success', 'Loaded config from minimaz.config.json')
+        return await fs.readJson(path)
     } else {
-        config = JSON.parse(JSON.stringify(minimazConfigTemplate))
         log('warn', 'No minimaz.config.json found. Using default config')
+        return JSON.parse(JSON.stringify(minimazConfigTemplate))
     }
-    return config
 }
 
 /**
@@ -343,6 +371,8 @@ export async function loadConfig(): Promise<MinimazConfig> {
  * @param verbose - set true to enable verbose logging
  */
 export function initEnv(verbose?: boolean): void {
+    log('debug', 'Initializing environments variables...')
+
     // Verbose
     process.env.VERBOSE = verbose ? 'true' : 'false'
     log('debug', `VERBOSE = ${process.env.VERBOSE}`)
@@ -358,6 +388,7 @@ export function initEnv(verbose?: boolean): void {
  * @param components optional path segments to append
  */
 export function resolveCurrentPath(components: string[] = []): string {
+    log('debug', 'Resolving current path...')
     return path.resolve(
         process.env.CLI_WORKDIR ?? process.cwd(),
         ...components
@@ -367,18 +398,29 @@ export function resolveCurrentPath(components: string[] = []): string {
 /**
  * Reads and parses a JSON file.
  *
- * @param filePath - Path to the JSON file
+ * @param file - Path to the JSON file
  */
-export async function readJsonFile(filePath: string): Promise<any> {
-    return await fs.readJson(filePath)
+export async function readJsonFile(file: string): Promise<any | null> {
+    const exists: boolean = await fs.pathExists(file)
+    if (!exists)
+        throw new Error(`NOT FOUND: '${file}' does not exist`)
+
+    return await fs.readJson(file)
 }
 
 /**
  * Reads the contents of a directory and returns an array of file and folder names.
+ * Returns an empty array if the directory does not exist.
  *
  * @param dir - Path to the directory to read
  */
 export async function getDirElements(dir: string): Promise<string[]> {
+    log('debug', `Reading elements of ${dir}...`)
+    const exists: boolean = await fs.pathExists(dir)
+    if (!exists) {
+        log('warn', `Directory does not exist: ${dir}`)
+        return []
+    }
     return await fs.readdir(dir)
 }
 

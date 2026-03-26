@@ -17,17 +17,13 @@ export async function init(
     options: initCommandOptions
 ): Promise<void> {
 
-    // Resolve global and local paths
-    const templateDir: string = await getGlobalTemplatePath(options.template)
+    // Resolve targetDir and check if it exists
     const targetDir: string = resolveCurrentPath([projectName])
-
-    // Ensure template exists
-    if (!await fs.pathExists(templateDir))
-        throw new Error(`Template '${options.template}' not found.`)
-
-    // Ensure target directory does not already exist
     if (await fs.pathExists(targetDir))
         throw new Error(`Target directory '${targetDir}' already exists.`)
+
+    // Resolve templateDir and check if it exists
+    const templateDir: string = await getGlobalTemplatePath(options.template)
 
     // Copy template files to target directory
     log('debug', `Copying template from '${templateDir}' to '${targetDir}'`)
@@ -82,6 +78,15 @@ export async function initGit(
 
     log('info', 'Initializing Git repository...')
 
+    // Initialize local git repository
+    log('debug', 'Running git init...')
+    await executeCommand('git', ['init'], targetDir)
+
+    if (provider)
+        await linkRemoteRepo(projectName, targetDir, provider, name)
+    else
+        log('info', 'Git repository initialized locally')
+
     // add .gitignore
     log('debug', 'Initializing gitignore...')
     await createFileFromTemplate(
@@ -89,16 +94,7 @@ export async function initGit(
         [targetDir, '.gitignore']
     )
 
-    // Initialize local git repository
-    log('debug', 'Running git init...')
-    await executeCommand('git', ['init'], targetDir)
-
-    if (provider) {
-        await linkRemoteRepo(projectName, targetDir, provider, name)
-        log('success', 'Git repository initialized.')
-    } else {
-        log('info', 'Git repository initialized locally (no remote).')
-    }
+    log('success', 'Git repository initialized.')
 }
 
 /**

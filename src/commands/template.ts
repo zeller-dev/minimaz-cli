@@ -3,7 +3,8 @@ import path from 'path'
 
 import {
     askQuestion, log, getGlobalTemplatesDirPath, getNodeModulesTemplatesPath, resolveCurrentPath, // utils
-    templateCommandOptions // types
+    templateCommandOptions, // types
+    getDirElements
 } from '../index.js'
 
 /**
@@ -68,7 +69,7 @@ async function updateSingleTemplate(dir: string, name: string): Promise<void> {
  */
 async function updateFromNodeModules(dir: string): Promise<void> {
     const nodeModulesPath: string = await getNodeModulesTemplatesPath()
-    const items: string[] = await fs.readdir(nodeModulesPath)
+    const items: string[] = await getDirElements(nodeModulesPath)
 
     if (!((await askQuestion('Update local templates overwriting them with defaults? [Y/n]:', 'y')).startsWith('y'))) {
         log('info', 'Update cancelled.')
@@ -151,7 +152,7 @@ async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
  * @param dir - Templates directory path
  */
 async function listTemplates(dir: string): Promise<void> {
-    const templates: string[] = await fs.readdir(dir)
+    const templates: string[] = await getDirElements(dir)
 
     if (templates.length === 0) {
         log('info', 'No global templates available.')
