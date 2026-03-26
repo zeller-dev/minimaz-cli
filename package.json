@@ -1,59 +1,59 @@
 {
-  "name": "minimaz-cli",
-  "version": "0.3.5",
-  "description": "Minimal project initializer and builder CLI",
-  "author": "MrZeller",
-  "license": "MIT",
-  "type": "module",
-  "files": [
-    "bin",
-    "templates",
-    "LICENSE",
-    "README.md",
-    "package.json"
-  ],
-  "keywords": [
-    "cli",
-    "minimal",
-    "build",
-    "init",
-    "project",
-    "starter"
-  ],
-  "scripts": {
-    "dev": "node --loader ts-node/esm bin/cli.ts",
-    "build": "tsc --noEmit && node builder.js",
-    "postinstall:dev": "node --loader ts-node/esm ./src/utils/postInstall.ts",
-    "postinstall:prod": "node dist/src/utils/postInstall.js"
-  },
-  "bin": {
-    "minimaz": "dist/bin/cli.js",
-    "mz": "dist/bin/cli.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zeller-dev/minimaz-cli.git"
-  },
-  "homepage": "https://github.com/zeller-dev/minimaz-cli#readme",
-  "bugs": {
-    "url": "https://github.com/zeller-dev/minimaz-cli/issues"
-  },
-  "dependencies": {
-    "clean-css": "^5.3.3",
-    "cross-spawn": "^7.0.6",
-    "fs-extra": "^11.3.0",
-    "html-minifier-terser": "^7.2.0",
-    "terser": "^5.44.0"
-  },
-  "devDependencies": {
-    "@types/clean-css": "^4.2.11",
-    "@types/cross-spawn": "^6.0.6",
-    "@types/fs-extra": "^11.0.4",
-    "@types/html-minifier-terser": "^7.0.2",
-    "@types/node": "^24.7.2",
-    "esbuild": "^0.25.10",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
-  },
-  "postinstall": "node dist/bin/cli.js"
+    "name": "minimaz-cli",
+    "version": "0.3.5",
+    "description": "Minimal project initializer and builder CLI",
+    "author": "MrZeller",
+    "license": "MIT",
+    "type": "module",
+    "files": [
+        "bin",
+        "templates",
+        "LICENSE",
+        "README.md",
+        "package.json"
+    ],
+    "keywords": [
+        "cli",
+        "minimal",
+        "build",
+        "init",
+        "project",
+        "starter"
+    ],
+    "scripts": {
+        "dev": "node --loader ts-node/esm bin/cli.ts",
+        "build": "tsc --noEmit && node builder.js",
+        "postinstall:dev": "node --loader ts-node/esm ./src/utils/postInstall.ts",
+        "postinstall:prod": "node dist/src/utils/postInstall.js"
+    },
+    "bin": {
+        "minimaz": "dist/bin/cli.js",
+        "mz": "dist/bin/cli.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zeller-dev/minimaz-cli.git"
+    },
+    "homepage": "https://github.com/zeller-dev/minimaz-cli#readme",
+    "bugs": {
+        "url": "https://github.com/zeller-dev/minimaz-cli/issues"
+    },
+    "dependencies": {
+        "clean-css": "^5.3.3",
+        "cross-spawn": "^7.0.6",
+        "fs-extra": "^11.3.0",
+        "html-minifier-terser": "^7.2.0",
+        "terser": "^5.44.0",
+        "esbuild": "^0.25.12"
+    },
+    "devDependencies": {
+        "@types/clean-css": "^4.2.11",
+        "@types/cross-spawn": "^6.0.6",
+        "@types/fs-extra": "^11.0.4",
+        "@types/html-minifier-terser": "^7.0.2",
+        "@types/node": "^24.7.2",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3"
+    },
+    "postinstall": "node dist/bin/cli.js"
 }

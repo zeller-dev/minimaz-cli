@@ -3,11 +3,11 @@ import path from 'path'
 import CleanCSS from 'clean-css'
 import { minify as minifyHtml } from 'html-minifier-terser'
 import { minify as minifyJs } from 'terser'
-import ts from 'typescript'
+import { transform, build as jsBuild, Loader } from 'esbuild'
 
 import {
-  loadConfig, log, applyReplacements, getFile, removeDistDir, resolveCurrentPath, // utils
-  MinimazConfig, Bundles                                                          // types
+    loadConfig, log, applyReplacements, getFile, removeDistDir, resolveCurrentPath, // utils
+    MinimazConfig, Bundles, File                                                    // types
 } from '../index.js'
 
 /**
@@ -18,23 +18,24 @@ import {
  * - Merges and minifies CSS/JS assets when required
  */
 export async function build(): Promise<void> {
-  const config: MinimazConfig = await loadConfig() // Load project config
-  const currentDirPath: string = resolveCurrentPath()
-  const distDirPath: string = path.resolve(currentDirPath, config.dist)
+    const config: MinimazConfig = await loadConfig() // Load project config
+    const currentDirPath: string = resolveCurrentPath()
+    const distDirPath: string = path.resolve(currentDirPath, config.outDir)
 
-  await removeDistDir(distDirPath)      // Clean dist directory
-  await fs.ensureDir(distDirPath)       // Recreate dist directory
+    await removeDistDir(distDirPath)      // Clean dist directory
+    await fs.ensureDir(distDirPath)       // Recreate dist directory
 
-  if (!config.folders || Object.keys(config.folders).length === 0) {
-    log('warn', 'No folders defined in config. Nothing to build.')
-    return
-  }
+    if (!config.folders || Object.keys(config.folders).length === 0) {
+        log('warn', 'No folders defined in config. Nothing to build.')
+        return
+    }
 
-  for (const [from, to] of Object.entries(config.folders)) {
-    log('debug', `Building folder: ${from} -> /${to}`)
-    await processFolder(from, to, config, distDirPath)
-  }
-  log('success', `Build completed. Output saved in /${config.dist}`)
+    for (const [from, to] of Object.entries(config.folders)) {
+        log('debug', `Building folder: ${from} -> /${to}`)
+        await processFolder(from, to, config, distDirPath)
+    }
+
+    log('success', `Build completed. Output saved in /${config.outDir}`)
 }
 
 /**
@@ -50,27 +51,30 @@ export async function build(): Promise<void> {
  * @param distDir - Absolute dist directory path
  */
 async function processFolder(
-  srcName: string,
-  destName: string,
-  config: MinimazConfig,
-  distDir: string
+    srcName: string,
+    destName: string,
+    config: MinimazConfig,
+    distDir: string
 ): Promise<void> {
-  const fullSrc: string = resolveCurrentPath([srcName])
-  const fullDest: string = path.join(distDir, destName)
+    const fullSrc: string = resolveCurrentPath([srcName])
+    const fullDest: string = path.join(distDir, destName)
 
-  if (!(await fs.pathExists(fullSrc))) {
-    log('warn', `Folder not found: ${srcName}`)
-    return
-  }
+    if (!(await fs.pathExists(fullSrc))) {
+        log('warn', `Folder not found: ${srcName}`)
+        return
+    }
 
-  const bundles: Bundles = { css: [], js: [] }
+    const bundles: Bundles = { css: [], js: [] }
 
-  await walkFolder(fullSrc, fullDest, config, bundles)
+    await walkFolder(fullSrc, fullDest, config, bundles)
 
-  // Merge CSS/JS bundles only for the root source folder
-  if (srcName === config.src) await mergeRootAssets(bundles, config, distDir)
+    // Merge CSS/JS bundles only for the root source folder
+    if (srcName === process.env.CLI_WORKDIR) {
+        log('debug', 'Working on the root dir, adding external script, styles and bundles')
+        await mergeRootAssets(bundles, config, distDir)
+    }
 
-  log('success', `Processed folder: ${srcName} -> /${destName}`)
+    log('success', `Processed folder: ${srcName} -> /${destName}`)
 }
 
 /**
@@ -83,70 +87,73 @@ async function processFolder(
  * @param jsChunks - Accumulator for JS content
  */
 async function walkFolder(
-  src: string,
-  dest: string,
-  config: MinimazConfig,
-  bundles: Bundles
+    src: string,
+    dest: string,
+    config: MinimazConfig,
+    bundles: Bundles
 ): Promise<void> {
-  await fs.ensureDir(dest)
+    await fs.ensureDir(dest)
 
-  for (const item of await fs.readdir(src)) {
-    const srcPath: string = path.join(src, item)
-    const destPath: string = path.join(dest, item)
-    const stat: fs.Stats = await fs.stat(srcPath)
+    for (const item of await fs.readdir(src)) {
+        const srcPath: string = path.join(src, item)
+        const destPath: string = path.join(dest, item)
+        const stat: fs.Stats = await fs.stat(srcPath)
 
-    log('debug', `Found ${stat.isDirectory() ? 'DIRECTORY' : 'FILE'}: ${item}`)
+        log('debug', `Found ${stat.isDirectory() ? 'DIRECTORY' : 'FILE'}: ${item}`)
 
-    if (stat.isDirectory()) {
-      await walkFolder(srcPath, destPath, config, bundles)
-      continue
+        if (stat.isDirectory()) {
+            await walkFolder(srcPath, destPath, config, bundles)
+            continue
+        }
+        const fileContent: string = await getFile(srcPath, config.replace)
+        if (fileContent.length > 0) {
+            const fileExt: string = path.extname(srcPath).toLowerCase();
+            await processFile(
+                { src: srcPath, dest: destPath, content: fileContent, ext: fileExt },
+                config,
+                bundles
+            )
+        }
     }
-    await processFile(srcPath, destPath, config, bundles)
-  }
 }
 
 /**
  * Processes a single file based on its extension.
  *
- * @param srcPath - Source file path
- * @param destPath - Destination file path
+ * @param file
  * @param config - Minimaz configuration
- * @param cssChunks - Accumulator for CSS content
- * @param jsChunks - Accumulator for JS content
+ * @param bundles
  */
 async function processFile(
-  srcPath: string,
-  destPath: string,
-  config: MinimazConfig,
-  bundles: Bundles
+    file: File,
+    config: MinimazConfig,
+    bundles: Bundles
 ): Promise<void> {
-  log('debug', `Processing file: ${srcPath}`)
+    log('debug', `Processing file: ${file.src}`)
 
-  const ext: string = path.extname(srcPath).toLowerCase()
+    switch (file.ext) {
+        case '.html':
+            await processHtml(file, config)
+            break
 
-  switch (ext) {
-    case '.html':
-      await processHtml(srcPath, destPath, config)
-      break
+        case '.css': {
+            await processCSS(file, bundles.css, !!config.bundling?.css, !!config.minify?.css)
+            break
+        }
 
-    case '.css': {
-      await processCSS(srcPath, destPath, config, bundles.css)
-      break
+        case '.js': {
+            await processJS(file, bundles.js, !!config.bundling?.js, !!config.minify?.js)
+            break
+        }
+        case '.tsx':
+        case '.ts': {
+            await processTS(file, bundles.js, !!config.bundling?.js, !!config.minify?.js)
+            break
+        }
+
+        default:
+            await copyToDist(file)
     }
-
-    case '.js': {
-      await processJS(srcPath, destPath, config, bundles.js)
-      break
-    }
-
-    case '.ts': {
-      await processTS(srcPath, destPath, config, bundles.js)
-      break
-    }
-
-    default:
-      await fs.copy(srcPath, destPath)
-  }
 }
 
 /**
@@ -156,147 +163,169 @@ async function processFile(
  * - Leaves external scripts and other types intact
  * - Minifies CSS inline and the final HTML if configured
  *
- * @param src - Source HTML file path
- * @param dest - Destination file path
+ * @param file
  * @param config - Minimaz configuration
  */
 async function processHtml(
-  src: string,
-  dest: string,
-  config: MinimazConfig
+    file: File,
+    config: MinimazConfig
 ): Promise<void> {
-  let content: string = await getFile(src, config.replace)
-  const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/gi
+    const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/gi
 
-  let lastIndex = 0
-  let result = ''
-  let match: RegExpExecArray | null
+    let lastIndex = 0
+    let result = ''
+    let match: RegExpExecArray | null
 
-  while ((match = scriptRegex.exec(content)) !== null) {
-    const [fullMatch, attrs, code] = match
+    while ((match = scriptRegex.exec(file.content)) !== null) {
+        const [fullMatch, attrs, code] = match
 
-    result += content.slice(lastIndex, match.index)
-    lastIndex = match.index + fullMatch.length
+        result += file.content.slice(lastIndex, match.index)
+        lastIndex = match.index + fullMatch.length
 
-    if (/src=/i.test(attrs)) {
-      result += fullMatch
-      continue
+        if (/src=/i.test(attrs)) {
+            result += fullMatch
+            continue
+        }
+
+        const typeAttr = (attrs.match(/type=["']([^"']+)["']/i)?.[1] || '').toLowerCase()
+        const isModule = /module/i.test(typeAttr)
+        const isNoModule = /nomodule/i.test(attrs)
+
+        if (typeAttr === 'application/json') {
+            try {
+                // Minify JSON: parse and stringify compact
+                const minJson = JSON.stringify(JSON.parse(code))
+                result += `<script${attrs}>${minJson}</script>`
+            } catch (err) {
+                log('warn', `Invalid JSON in ${file.src}: ${err}`)
+                result += fullMatch
+            }
+        } else if (typeAttr === '' || typeAttr === 'text/javascript' || isModule || isNoModule) {
+            try {
+                // Minify inline JS safely
+                const minJs = await minifyJs(code, { format: { semicolons: true }, module: isModule })
+                result += `<script${attrs}>${minJs.code || ''}</script>`
+            } catch (err) {
+                log('warn', `JS minify error in ${file.src}: ${err}`)
+                result += fullMatch
+            }
+        } else {
+            result += fullMatch
+        }
     }
 
-    const typeAttr = (attrs.match(/type=["']([^"']+)["']/i)?.[1] || '').toLowerCase()
-    const isModule = /module/i.test(typeAttr)
-    const isNoModule = /nomodule/i.test(attrs)
+    // Append remaining HTML
+    result += file.content.slice(lastIndex)
 
-    if (typeAttr === 'application/json') {
-      try {
-        // Minify JSON: parse and stringify compact
-        const minJson = JSON.stringify(JSON.parse(code))
-        result += `<script${attrs}>${minJson}</script>`
-      } catch (err) {
-        log('warn', `Invalid JSON in ${src}: ${err}`)
-        result += fullMatch
-      }
-    } else if (typeAttr === '' || typeAttr === 'text/javascript' || isModule || isNoModule) {
-      try {
-        // Minify inline JS safely
-        const minJs = await minifyJs(code, { format: { semicolons: true }, module: isModule })
-        result += `<script${attrs}>${minJs.code || ''}</script>`
-      } catch (err) {
-        log('warn', `JS minify error in ${src}: ${err}`)
-        result += fullMatch
-      }
-    } else {
-      result += fullMatch
+    // Minify final HTML + inline CSS if configured
+    if (config.minify?.html) {
+        result = await minifyHtml(result, {
+            collapseWhitespace: true,
+            removeComments: true,
+            minifyCSS: config.minify.css,
+            minifyJS: false, // already minified above
+        })
     }
-  }
 
-  // Append remaining HTML
-  result += content.slice(lastIndex)
-
-  // Minify final HTML + inline CSS if configured
-  if (config.minify?.html) {
-    result = await minifyHtml(result, {
-      collapseWhitespace: true,
-      removeComments: true,
-      minifyCSS: config.minify.css,
-      minifyJS: false, // already minified above
-    })
-  }
-
-  await fs.outputFile(dest, result)
+    await fs.outputFile(file.dest, result)
 }
 
 /**
  * Processes a CSS file
  *
- * @param src
- * @param dest
+ * @param file
  * @param config
  * @param bundle
  */
-async function processCSS(src: string, dest: string, config: MinimazConfig, bundle: string[]): Promise<void> {
-  const css: string = await getFile(src, config.replace)
-
-  if (config.bundling?.css) {
-    bundle.push(css)
-  } else {
-    let out = css
-    if (config.minify?.css) {
-      const min = new CleanCSS().minify(css)
-      if (min.warnings.length) min.warnings.forEach(w => log('warn', w))
-      out = min.styles
+async function processCSS(
+    file: File,
+    bundle: string[],
+    bundling: boolean,
+    minifying: boolean
+): Promise<void> {
+    if (bundling) {
+        bundle.push(file.content)
+    } else {
+        let out = file.content
+        if (minifying) {
+            const min = new CleanCSS().minify(file.content)
+            if (min.warnings.length) min.warnings.forEach(w => log('warn', w))
+            out = min.styles
+        }
+        await fs.outputFile(file.dest, out)
     }
-    await fs.outputFile(dest, out)
-  }
 }
 /**
  * Processes a JavaScript file:
  *
- * @param src
- * @param dest
+ * @param file
  * @param config
  * @param bundle
  */
-async function processJS(src: string, dest: string, config: MinimazConfig, bundle: string[]): Promise<void> {
-  const js: string = await getFile(src, config.replace)
+async function processJS(
+    file: File,
+    bundle: string[],
+    bundling: boolean,
+    minifying: boolean
+): Promise<void> {
 
-  if (config.bundling?.js) {
-    bundle.push(js)
-  } else {
-    let out = js
-    if (config.minify?.js) out = (await minifyJs(js)).code ?? ''
-    await fs.outputFile(dest, out)
-  }
+    // Detect CommonJS patterns
+    if (/require\s*\(|module\.exports|exports\./.test(file.content))
+        log('warn', `CommonJS detected consider converting to ESM`)
+
+    if (bundling) {
+        bundle.push(file.content)
+    } else {
+        let out = file.content
+        if (minifying) out = (await minifyJs(out)).code ?? ''
+        await fs.outputFile(file.dest, out)
+    }
 }
 
+/**
+ * Processes a TypeScript file:
+ *
+ * - Transpiles TypeScript to JavaScript using esbuild
+ * - Does not perform type-checking (handled separately in dev)
+ * - Outputs ES module JavaScript targeting ES2020
+ * - Adds result to JS bundle or writes it directly to disk
+ *
+ * @param file
+ * @param config - Minimaz configuration
+ * @param jsBundle - Accumulator for JS bundle content
+ */
 async function processTS(
-  srcPath: string,
-  destPath: string,
-  config: MinimazConfig,
-  jsBundle: string[]
+    file: File,
+    bundle: string[],
+    bundling: boolean,
+    minifying: boolean
 ): Promise<void> {
-  const tsContent = await getFile(srcPath, config.replace)
 
-  // Compile TS to JS
-  const compiled = ts.transpileModule(tsContent, {
-    compilerOptions: {
-      module: ts.ModuleKind.ESNext,
-      target: ts.ScriptTarget.ES2020,
-      sourceMap: false,
-      strict: true,
-    },
-  })
+    // Detect CommonJS patterns in TS
+    if (/require\s*\(|module\.exports|exports\./.test(file.content))
+        log('warn', `CommonJS detected in ${file.src}, consider converting to ESM`)
 
-  const jsContent = compiled.outputText
+    const loader: Loader = file.ext === '.ts' ? 'ts' : 'tsx';
 
-  // Process resulting JS just like normal JS
-  if (config.bundling?.js) {
-    jsBundle.push(jsContent)
-  } else {
-    let out = jsContent
-    if (config.minify?.js) out = (await minifyJs(out)).code ?? ''
-    await fs.outputFile(destPath.replace(/\.ts$/, '.js'), out)
-  }
+    // Compile TS to JS using esbuild
+    const result = await transform(file.content, {
+        loader,
+        target: 'es2020',
+        format: 'esm',
+        sourcemap: false,
+    })
+
+    const jsContent = result.code
+
+    // Reuse processJS for further handling
+    const jsDest = file.dest.replace(/\.(ts|tsx)$/i, '.js')
+
+    await processJS(
+        { src: file.src, dest: jsDest, content: jsContent, ext: 'js' },
+        bundle,
+        bundling,
+        minifying
+    )
 }
 
 /**
@@ -308,19 +337,27 @@ async function processTS(
  * @param distDir - Absolute dist directory path
  */
 async function mergeRootAssets(
-  bundles: Bundles,
-  config: MinimazConfig,
-  distDir: string
+    bundles: Bundles,
+    config: MinimazConfig,
+    distDir: string
 ): Promise<void> {
-  // CSS
-  await appendExternalAssets(config.styles, bundles.css, config, 'css', !!config.bundling?.css, distDir)
-  // JS
-  await appendExternalAssets(config.scripts, bundles.js, config, 'js', !!config.bundling?.js, distDir)
+    const bundleDir = getBundleOutDir(config, distDir)
+    await fs.ensureDir(bundleDir)
 
-  if (config.bundling?.css) await writeCssBundle(bundles.css, config, distDir)
-  if (config.bundling?.js) await writeJsBundle(bundles.js, config, distDir)
+    // Write bundles if enabled
+    if (config.bundling?.css) await writeCssBundle(bundles.css, config, bundleDir)
+    if (config.bundling?.js) await writeJsBundle(bundles.js, config, bundleDir)
 }
 
+/*
+async function handleExternal(config: MinimazConfig, bundles: Bundles): Promise<void> {
+  // External assets
+
+
+  await appendExternalAssets(config.styles, bundles.css, config, 'css', !!config.bundling?.css, bundleDir)
+  await appendExternalAssets(config.scripts, bundles.js, config, 'js', !!config.bundling?.js, bundleDir)
+}
+  */
 /**
  * Appends external CSS or JS files to the given chunk accumulator.
  *
@@ -328,48 +365,38 @@ async function mergeRootAssets(
  * @param target - Target accumulator
  * @param config - Minimaz configuration
  */
-async function appendExternalAssets(
-  files: string[] | undefined,
-  target: string[],
-  config: MinimazConfig,
-  type: 'css' | 'js',
-  toBundle: boolean,
-  distDir: string
+async function processExternals(
+    externals: string[],
+    target: string[],
+    bundles: Bundles,
+    config: MinimazConfig
 ): Promise<void> {
-  if (!files?.length) return
+    log('info', 'Processing externals...')
 
-  for (const file of files) {
-    const fullPath = resolveCurrentPath([file])
-    if (!(await fs.pathExists(fullPath))) {
-      log('warn', `File not found: ${file} `)
-      continue
+    /* this should take the path in the external,
+    process it with processFolder if it's a folder
+    or processFile if it's a file
+    */
+
+    for (const external of externals) {
+
     }
 
-    let content = await fs.readFile(fullPath, 'utf-8')
-    content = applyReplacements(content, config.replace)
+    for (const f of externals) {
+        const fullPath: string = resolveCurrentPath([f])
 
-    if (toBundle) {
-      target.push(content)
-    } else {
-      if (type === 'css' && config.minify?.css) {
-        const output = new CleanCSS().minify(content)
-        if (output.warnings.length) output.warnings.forEach(w => log('warn', w))
-        content = output.styles
-      } else if (type === 'js' && config.minify?.js) {
-        try {
-          content = (await minifyJs(content)).code ?? ''
-        } catch (err) {
-          log('warn', `JS minify failed for external file ${file}: ${err} `)
+        if (!(await fs.pathExists(fullPath))) {
+            log('warn', `File not found: ${f} `)
+            continue
         }
-      }
 
-      const fileName = path.basename(file)
-      await fs.outputFile(path.join(distDir, fileName), content)
-      log('info', `Copied external ${type} file: ${fileName} `)
+        const ext: string = path.extname(fullPath).toLowerCase();
+        const content: string = await getFile(fullPath, config.replace)
+
+
+        await processFile({ src: fullPath, dest: f, content: content, ext: ext }, config, bundles)
     }
-  }
 }
-
 
 /**
  * Writes the final CSS bundle to disk.
@@ -379,40 +406,64 @@ async function appendExternalAssets(
  * @param distDir - Absolute dist directory path
  */
 async function writeCssBundle(
-  chunks: string[],
-  config: MinimazConfig,
-  distDir: string
+    chunks: string[],
+    config: MinimazConfig,
+    distDir: string
 ): Promise<void> {
-  if (!chunks.length) return
-  let css: string = chunks.join('')
-  if (config.minify?.css) {
-    const output = new CleanCSS().minify(css)
-    if (output.warnings.length)
-      output.warnings.forEach(w => log('warn', w))
-    css = output.styles
-  }
-  await fs.outputFile(path.join(distDir, 'style.css'), css)
+    if (!chunks.length) return
+    let css: string = chunks.join('')
+    if (config.minify?.css) {
+        const output = new CleanCSS().minify(css)
+        if (output.warnings.length)
+            output.warnings.forEach(w => log('warn', w))
+        css = output.styles
+    }
+    await fs.outputFile(path.join(distDir, 'style.css'), css)
 }
 
 /**
- * Writes the final JS bundle to disk.
+ * Writes the final JS bundle to disk using esbuild.
  *
- * @param chunks - JS chunks
+ * @param chunks - JS/TS chunks collected from the build
  * @param config - Minimaz configuration
  * @param distDir - Absolute dist directory path
  */
 async function writeJsBundle(
-  chunks: string[],
-  config: MinimazConfig,
-  distDir: string
+    chunks: string[],
+    config: MinimazConfig,
+    distDir: string
 ): Promise<void> {
-  if (!chunks.length) return
-  let js: string = chunks.join('')
-  if (config.minify?.js)
+    if (!chunks.length) return
+
     try {
-      js = (await minifyJs(js)).code ?? ''
+        const result = await jsBuild({
+            stdin: {
+                contents: chunks.join('\n'),
+                resolveDir: distDir,
+                loader: 'js',
+                sourcefile: 'bundle.js'
+            },
+            bundle: true,
+            format: 'esm',
+            minify: !!config.minify?.js,
+            sourcemap: false,
+            write: false
+        })
+
+        await fs.outputFile(path.join(distDir, 'script.js'), result.outputFiles[0].text)
+        log('success', `JS bundle written to /${distDir}/script.js`)
     } catch (err) {
-      log('warn', `JS minify failed: ${err} `)
+        log('warn', `ESBuild JS bundle failed: ${err}`)
     }
-  if (js) await fs.outputFile(path.join(distDir, 'script.js'), js)
+}
+
+async function copyToDist(
+    file: File
+): Promise<void> {
+    await fs.outputFile(file.dest, file.content)
+}
+
+function getBundleOutDir(config: MinimazConfig, distDir: string) {
+    // If outDir is empty string or undefined, return the distDir itself
+    return config.bundling?.outDir ? path.join(distDir, config.bundling.outDir) : distDir
 }

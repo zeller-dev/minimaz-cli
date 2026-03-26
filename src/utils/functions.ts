@@ -6,10 +6,10 @@ import { homedir } from 'os'
 import { execSync } from 'child_process'
 
 import {
-  log,                                  // utils
-  Args, MinimazConfig,                  // types
-  minimazConfigTemplate,    // constants
-  colors
+    log,                                  // utils
+    Args, MinimazConfig,                  // types
+    minimazConfigTemplate,    // constants
+    colors
 } from '../index.js'
 
 // @TODO add cache
@@ -21,35 +21,35 @@ import {
  * @returns Parsed arguments object
  */
 export function parseArgs(rawArgs: string[]): Args {
-  const args: Args = { _: [] }
+    const args: Args = { _: [] }
 
-  for (let i = 0; i < rawArgs.length; i++) {
-    const arg: string = rawArgs[i].toLowerCase();
+    for (let i = 0; i < rawArgs.length; i++) {
+        const arg: string = rawArgs[i].toLowerCase();
 
-    // Positional argument
-    if (!arg.startsWith('-')) {
-      args._.push(arg)
-      continue
+        // Positional argument
+        if (!arg.startsWith('-')) {
+            args._.push(arg)
+            continue
+        }
+
+        // --key=value syntax
+        if (arg.startsWith('--') && arg.includes('=')) {
+            const [key, value]: string[] = arg.slice(2).split('=')
+            args[key] = value
+            continue
+        }
+
+        const key: string = arg.replace(/^-+/, '')
+        const next: string = rawArgs[i + 1]
+
+        if (next && !next.startsWith('-')) {
+            args[key] = next
+            i++
+        } else {
+            args[key] = true
+        }
     }
-
-    // --key=value syntax
-    if (arg.startsWith('--') && arg.includes('=')) {
-      const [key, value]: string[] = arg.slice(2).split('=')
-      args[key] = value
-      continue
-    }
-
-    const key: string = arg.replace(/^-+/, '')
-    const next: string = rawArgs[i + 1]
-
-    if (next && !next.startsWith('-')) {
-      args[key] = next
-      i++
-    } else {
-      args[key] = true
-    }
-  }
-  return args
+    return args
 }
 
 /**
@@ -59,32 +59,32 @@ export function parseArgs(rawArgs: string[]): Args {
  * @returns User input as a trimmed string
  */
 export function askQuestion(
-  query: string,
-  defaultAnswer = ''
+    query: string,
+    defaultAnswer = ''
 ): Promise<string> {
-  return new Promise(resolve => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    })
+    return new Promise(resolve => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        })
 
-    const timer = setTimeout(() => {
-      rl.close()
-      resolve(defaultAnswer)
-    }, 60000)
+        const timer = setTimeout(() => {
+            rl.close()
+            resolve(defaultAnswer)
+        }, 60000)
 
-    rl.question(`❓ ${query} `, answer => {
-      clearTimeout(timer)
-      rl.close()
-      resolve(answer.trim() || defaultAnswer)
-    })
+        rl.question(`❓ ${query} `, answer => {
+            clearTimeout(timer)
+            rl.close()
+            resolve(answer.trim() || defaultAnswer)
+        })
 
-    rl.on('SIGINT', () => {
-      clearTimeout(timer)
-      rl.close()
-      process.exit(130)
+        rl.on('SIGINT', () => {
+            clearTimeout(timer)
+            rl.close()
+            process.exit(130)
+        })
     })
-  })
 }
 
 /**
@@ -95,14 +95,14 @@ export function askQuestion(
  * @returns Modified string with replacements applied
  */
 export function applyReplacements(
-  content: string,
-  replacements: Record<string, string> = {}
+    content: string,
+    replacements: Record<string, string> = {}
 ): string {
-  return Object.entries(replacements).reduce((acc, [from, to]) => {
-    const escaped: string = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const pattern: RegExp = new RegExp(escaped, 'gi')
-    return acc.replace(pattern, to)
-  }, content)
+    return Object.entries(replacements).reduce((acc, [from, to]) => {
+        const escaped: string = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const pattern: RegExp = new RegExp(escaped, 'gi')
+        return acc.replace(pattern, to)
+    }, content)
 }
 
 /**
@@ -113,17 +113,17 @@ export function applyReplacements(
  * @returns File content as a string
  */
 export async function getFile(
-  srcPath: string,
-  replace?: Record<string, string>
+    srcPath: string,
+    replace?: Record<string, string>
 ): Promise<string> {
-  try {
-    let file: string = await fs.readFile(srcPath, 'utf8')
-    if (replace) file = applyReplacements(file, replace)
-    return file
-  } catch (error: any) {
-    log('error', `Failed to read file ${srcPath}: ${error.message}`)
-    return ''
-  }
+    try {
+        let file: string = await fs.readFile(srcPath, 'utf8')
+        if (replace) file = applyReplacements(file, replace)
+        return file
+    } catch (error: any) {
+        log('error', `Failed to read file ${srcPath}: ${error.message}`)
+        return ''
+    }
 }
 
 /**
@@ -133,45 +133,45 @@ export async function getFile(
  * @returns Path to the global Minimaz CLI installation
  */
 export async function getGlobalNodeModulesPath(): Promise<string> {
-  try {
-    const prefix: string = execSync('npm config get prefix', { encoding: 'utf8' }).trim()
-    if (!prefix) throw new Error('Empty npm prefix')
+    try {
+        const prefix: string = execSync('npm config get prefix', { encoding: 'utf8' }).trim()
+        if (!prefix) throw new Error('Empty npm prefix')
 
-    return process.platform === 'win32'
-      ? path.join(prefix, 'node_modules', 'minimaz-cli')
-      : path.join(prefix, 'lib', 'node_modules', 'minimaz-cli')
-  } catch {
-    // Fallback paths for misconfigured or portable environments
-    return process.platform === 'win32'
-      ? path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'minimaz-cli')
-      : '/usr/local/lib/node_modules/minimaz-cli'
-  }
+        return process.platform === 'win32'
+            ? path.join(prefix, 'node_modules', 'minimaz-cli')
+            : path.join(prefix, 'lib', 'node_modules', 'minimaz-cli')
+    } catch {
+        // Fallback paths for misconfigured or portable environments
+        return process.platform === 'win32'
+            ? path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'minimaz-cli')
+            : '/usr/local/lib/node_modules/minimaz-cli'
+    }
 }
 
 /**
  * Returns the global directory's path.
  */
 export async function getGlobalDirPath(): Promise<string> {
-  await createGlobalDir()
-  return path.join(homedir(), '.minimaz')
+    await createGlobalDir()
+    return path.join(homedir(), '.minimaz')
 }
 
 /**
  * Returns the global templates directory's path.
  */
 export async function getGlobalTemplatesDirPath(): Promise<string> {
-  return path.join(await getGlobalDirPath(), 'templates')
+    return path.join(await getGlobalDirPath(), 'templates')
 }
 
 export async function getGlobalTemplatePath(templateName: string): Promise<string> {
-  return path.join(await getGlobalTemplatesDirPath(), templateName)
+    return path.join(await getGlobalTemplatesDirPath(), templateName)
 }
 
 /**
  * Returns the node modules templates directory's path
  */
 export async function getNodeModulesTemplatesPath(): Promise<string> {
-  return path.join(await getGlobalNodeModulesPath(), 'templates')
+    return path.join(await getGlobalNodeModulesPath(), 'templates')
 }
 
 /**
@@ -185,54 +185,54 @@ export async function getNodeModulesTemplatesPath(): Promise<string> {
  * Copies default templates if the templates folder is empty.
  */
 export async function createGlobalDir(): Promise<void> {
-  const minimazDir: string = path.join(homedir(), '.minimaz')
-  const globalTemplatesDir = path.join(minimazDir, 'templates')
-  const defaultTemplatesDir: string = await getNodeModulesTemplatesPath()
-  const settingsPath: string = path.join(minimazDir, 'settings.json')
+    const minimazDir: string = path.join(homedir(), '.minimaz')
+    const globalTemplatesDir = path.join(minimazDir, 'templates')
+    const defaultTemplatesDir: string = await getNodeModulesTemplatesPath()
+    const settingsPath: string = path.join(minimazDir, 'settings.json')
 
-  try {
-    await fs.ensureDir(minimazDir)
+    try {
+        await fs.ensureDir(minimazDir)
 
-    if (!await fs.pathExists(settingsPath)) {
-      await fs.outputJson(
-        settingsPath,
-        {
-          createdAt: new Date().toISOString(),
-          templatesPath: globalTemplatesDir,
-          npmGlobalPath: await getGlobalNodeModulesPath()
-        },
-        { spaces: 2 }
-      )
-      log('success', `Created settings.json at ${settingsPath}`)
+        if (!await fs.pathExists(settingsPath)) {
+            await fs.outputJson(
+                settingsPath,
+                {
+                    createdAt: new Date().toISOString(),
+                    templatesPath: globalTemplatesDir,
+                    npmGlobalPath: await getGlobalNodeModulesPath()
+                },
+                { spaces: 2 }
+            )
+            log('success', `Created settings.json at ${settingsPath}`)
+        }
+
+        const exists: boolean = await fs.pathExists(globalTemplatesDir)
+        const isEmpty: boolean = exists ? (await fs.readdir(globalTemplatesDir)).length === 0 : true
+
+        if (!exists) {
+            await fs.ensureDir(globalTemplatesDir)
+            log('success', 'Created global templates directory.')
+        }
+
+        if (!isEmpty) {
+            log('debug', 'Global templates directory not empty. Skipping copy.')
+            return
+        }
+
+        if (await fs.pathExists(defaultTemplatesDir)) {
+            for (const name of await fs.readdir(defaultTemplatesDir)) {
+                await fs.copy(path.join(defaultTemplatesDir, name), path.join(globalTemplatesDir, name))
+                log('success', `Copied template '${name}'.`)
+            }
+        } else {
+            log('warn', 'Default templates directory not found.')
+        }
+
+        log('success', 'Default templates setup completed.')
+    } catch (error: any) {
+        log('error', `Failed to create global templates directory: ${error.message}`)
+        throw error
     }
-
-    const exists: boolean = await fs.pathExists(globalTemplatesDir)
-    const isEmpty: boolean = exists ? (await fs.readdir(globalTemplatesDir)).length === 0 : true
-
-    if (!exists) {
-      await fs.ensureDir(globalTemplatesDir)
-      log('success', 'Created global templates directory.')
-    }
-
-    if (!isEmpty) {
-      log('debug', 'Global templates directory not empty. Skipping copy.')
-      return
-    }
-
-    if (await fs.pathExists(defaultTemplatesDir)) {
-      for (const name of await fs.readdir(defaultTemplatesDir)) {
-        await fs.copy(path.join(defaultTemplatesDir, name), path.join(globalTemplatesDir, name))
-        log('success', `Copied template '${name}'.`)
-      }
-    } else {
-      log('warn', 'Default templates directory not found.')
-    }
-
-    log('success', 'Default templates setup completed.')
-  } catch (error: any) {
-    log('error', `Failed to create global templates directory: ${error.message}`)
-    throw error
-  }
 }
 
 /**
@@ -243,25 +243,25 @@ export async function createGlobalDir(): Promise<void> {
  * @param targetDir - Working directory
  */
 export function executeCommand(
-  command: string,
-  args: string[],
-  targetDir: string
+    command: string,
+    args: string[],
+    targetDir: string
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    log('debug', `Running: ${command} ${args.join(' ')}`)
+    return new Promise((resolve, reject) => {
+        log('debug', `Running: ${command} ${args.join(' ')}`)
 
-    const child = spawn(command, args, {
-      cwd: targetDir,
-      stdio: 'inherit'
+        const child = spawn(command, args, {
+            cwd: targetDir,
+            stdio: 'inherit'
+        })
+
+        child.on('error', reject)
+        child.on('close', code =>
+            code === 0
+                ? resolve()
+                : reject(new Error(`${command} exited with code ${code}`))
+        )
     })
-
-    child.on('error', reject)
-    child.on('close', code =>
-      code === 0
-        ? resolve()
-        : reject(new Error(`${command} exited with code ${code}`))
-    )
-  })
 }
 
 /**
@@ -274,67 +274,67 @@ export function executeCommand(
  * @param outputPath - File path to write
  */
 export async function createFileFromTemplate(
-  template: Record<string, unknown> | string | undefined,
-  pathComponents: string[]
+    template: Record<string, unknown> | string | undefined,
+    pathComponents: string[]
 ): Promise<void> {
-  const outputPath = path.resolve(...pathComponents)
+    const outputPath = path.resolve(...pathComponents)
 
-  let content = ''
+    let content = ''
 
-  if (template !== undefined) {
-    if (typeof template === 'string') {
-      content = template.endsWith('\n') ? template : `${template}\n`
-    } else if (typeof template === 'object' && template !== null) {
-      content = `${JSON.stringify(template, null, 2)}\n`
-    } else {
-      throw new Error('Unsupported template type. Must be string or object.')
+    if (template !== undefined) {
+        if (typeof template === 'string') {
+            content = template.endsWith('\n') ? template : `${template}\n`
+        } else if (typeof template === 'object' && template !== null) {
+            content = `${JSON.stringify(template, null, 2)}\n`
+        } else {
+            throw new Error('Unsupported template type. Must be string or object.')
+        }
     }
-  }
 
-  try {
-    await fs.outputFile(outputPath, content)
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error)
-    throw new Error(`Failed to create file at '${outputPath}': ${message}`)
-  }
+    try {
+        await fs.outputFile(outputPath, content)
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error)
+        throw new Error(`Failed to create file at '${outputPath}': ${message}`)
+    }
 }
 
 /**
  * Removes Dist Directory
  */
 export async function removeDistDir(dir?: string): Promise<void> {
-  const distDir = dir
-    ? path.isAbsolute(dir) ? dir : resolveCurrentPath([dir])
-    : path.resolve(process.cwd(), (await loadConfig()).dist ?? 'dist')
-  const rootDir = process.cwd()
+    const distDir = dir
+        ? path.isAbsolute(dir) ? dir : resolveCurrentPath([dir])
+        : path.resolve(process.cwd(), (await loadConfig()).outDir ?? 'dist')
+    const rootDir = process.cwd()
 
-  if (distDir === rootDir || distDir.length <= rootDir.length)
-    throw new Error(`Refusing to delete unsafe directory: ${distDir}`)
+    if (distDir === rootDir || distDir.length <= rootDir.length)
+        throw new Error(`Refusing to delete unsafe directory: ${distDir}`)
 
-  if (!await fs.pathExists(distDir)) {
-    log('debug', `No dist folder found: ${distDir}`)
-    return
-  }
+    if (!await fs.pathExists(distDir)) {
+        log('debug', `No dist folder found: ${distDir}`)
+        return
+    }
 
-  await fs.remove(distDir)
-  log('success', `Cleared ${distDir}`)
+    await fs.remove(distDir)
+    log('success', `Cleared ${distDir}`)
 }
 
 /**
  * Returns Minimaz Config
  */
 export async function loadConfig(): Promise<MinimazConfig> {
-  const configPath: string = resolveCurrentPath(['minimaz.config.json'])
-  let config: MinimazConfig;
+    const configPath: string = resolveCurrentPath(['minimaz.config.json'])
+    let config: MinimazConfig;
 
-  if (await fs.pathExists(configPath)) {
-    config = await fs.readJson(configPath)
-    log('success', 'Loaded config from minimaz.config.json')
-  } else {
-    config = JSON.parse(JSON.stringify(minimazConfigTemplate))
-    log('warn', 'No minimaz.config.json found. Using default config')
-  }
-  return config
+    if (await fs.pathExists(configPath)) {
+        config = await fs.readJson(configPath)
+        log('success', 'Loaded config from minimaz.config.json')
+    } else {
+        config = JSON.parse(JSON.stringify(minimazConfigTemplate))
+        log('warn', 'No minimaz.config.json found. Using default config')
+    }
+    return config
 }
 
 /**
@@ -343,13 +343,13 @@ export async function loadConfig(): Promise<MinimazConfig> {
  * @param verbose - set true to enable verbose logging
  */
 export function initEnv(verbose?: boolean): void {
-  // Verbose
-  process.env.VERBOSE = verbose ? 'true' : 'false'
-  log('debug', `VERBOSE = ${process.env.VERBOSE}`)
+    // Verbose
+    process.env.VERBOSE = verbose ? 'true' : 'false'
+    log('debug', `VERBOSE = ${process.env.VERBOSE}`)
 
-  // Working Path
-  process.env.CLI_WORKDIR = process.cwd()
-  log('debug', `CLI_WORKDIR = ${process.env.CLI_WORKDIR}`)
+    // Working Path
+    process.env.CLI_WORKDIR = process.cwd()
+    log('debug', `CLI_WORKDIR = ${process.env.CLI_WORKDIR}`)
 }
 
 /**
@@ -358,10 +358,10 @@ export function initEnv(verbose?: boolean): void {
  * @param components optional path segments to append
  */
 export function resolveCurrentPath(components: string[] = []): string {
-  return path.resolve(
-    process.env.CLI_WORKDIR ?? process.cwd(),
-    ...components
-  )
+    return path.resolve(
+        process.env.CLI_WORKDIR ?? process.cwd(),
+        ...components
+    )
 }
 
 /**
@@ -370,7 +370,7 @@ export function resolveCurrentPath(components: string[] = []): string {
  * @param filePath - Path to the JSON file
  */
 export async function readJsonFile(filePath: string): Promise<any> {
-  return await fs.readJson(filePath)
+    return await fs.readJson(filePath)
 }
 
 /**
@@ -379,12 +379,12 @@ export async function readJsonFile(filePath: string): Promise<any> {
  * @param dir - Path to the directory to read
  */
 export async function getDirElements(dir: string): Promise<string[]> {
-  return await fs.readdir(dir)
+    return await fs.readdir(dir)
 }
 
 /**
  * Colorises text
  */
 export function colorize(text: string, color: string): string {
-  return `${color}${text}${colors.reset}`
+    return `${color}${text}${colors.reset}`
 }
