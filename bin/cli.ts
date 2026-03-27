@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import {
-    build, init, help, template, clear, version,                  // commands
+    build, init, help, template, clear, version, config,          // commands
     log, parseArgs, initEnv,                                      // utils
     CommandFn, templateCommandOptions, initCommandOptions, Args   // types
 } from '../src/index.js'
@@ -47,6 +47,9 @@ async function main(): Promise<void> {
 
         // Clear command
         clear: () => clear(),
+
+        // Config command
+        config: async () => config(Boolean(args.overwrite === true || args.overwrite === 'true')),
 
         // Init command with optional template
         init: async () => {

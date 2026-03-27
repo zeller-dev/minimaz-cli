@@ -5,6 +5,7 @@ export { help } from './commands/help.js'
 export { template } from './commands/template.js'
 export { clear } from './commands/clear.js'
 export { version } from './commands/version.js'
+export { config } from './commands/config.js'
 
 // Export utils
 export * from './utils/types.js'

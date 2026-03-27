@@ -7,7 +7,7 @@ import { ChildProcess, execSync } from 'child_process'
 
 import {
     log,                                  // utils
-    Args, MinimazConfig,                  // types
+    Args, MinimazConfig, Settings, // types
     minimazConfigTemplate, colors         // constants
 
 } from '../index.js'
@@ -133,7 +133,7 @@ export async function getFile(
  * @returns Path to the global Minimaz CLI installation
  */
 export async function getGlobalNodeModulesPath(): Promise<string> {
-    log('debug', `Getting global node modules path`)
+    log('debug', `Getting global node modules path...`)
 
     try {
         const prefix: string = execSync('npm config get prefix', { encoding: 'utf8' }).trim()
@@ -168,7 +168,7 @@ export async function getGlobalDirPath(): Promise<string> {
  * Returns the global templates directory's path.
  */
 export async function getGlobalTemplatesDirPath(): Promise<string> {
-    log('debug', 'Getting global templates directory path')
+    log('debug', 'Getting global templates directory path...')
     const dir: string = path.join(await getGlobalDirPath(), 'templates')
     const exists: boolean = await fs.pathExists(dir)
     if (!exists)
@@ -178,7 +178,7 @@ export async function getGlobalTemplatesDirPath(): Promise<string> {
 }
 
 export async function getGlobalTemplatePath(template: string): Promise<string> {
-    log('debug', `Getting template '${template}'directory path`)
+    log('debug', `Getting template '${template}'directory path...`)
     const dir: string = path.join(await getGlobalTemplatesDirPath(), template)
     const exists: boolean = await fs.pathExists(dir)
     if (!exists)
@@ -191,75 +191,13 @@ export async function getGlobalTemplatePath(template: string): Promise<string> {
  * Returns the node modules templates directory's path
  */
 export async function getNodeModulesTemplatesPath(): Promise<string> {
-    log('debug', 'Getting default templates directory path')
+    log('debug', 'Getting default templates directory path...')
     const dir: string = path.join(await getGlobalNodeModulesPath(), 'templates')
     const exists: boolean = await fs.pathExists(dir)
     if (!exists)
         throw new Error('Default template folder not found')
 
     return dir
-}
-
-/**
- * Ensures the global Minimaz directory structure exists.
- *
- * Creates:
- * - ~/.minimaz
- * - ~/.minimaz/templates
- * - ~/.minimaz/settings.json
- *
- * Copies default templates if the templates folder is empty.
- */
-export async function createGlobalDir(): Promise<void> {
-    // Creating dir if it does not exist
-    const minimazDir: string = path.join(homedir(), '.minimaz')
-    await fs.ensureDir(minimazDir)
-
-    const globalTemplatesDir = path.join(minimazDir, 'templates')
-    const defaultTemplatesDir: string = await getNodeModulesTemplatesPath()
-    const settingsPath: string = path.join(minimazDir, 'settings.json')
-
-    try {
-        if (!await fs.pathExists(settingsPath)) {
-            await fs.outputJson(
-                settingsPath,
-                {
-                    createdAt: new Date().toISOString(),
-                    templatesPath: globalTemplatesDir,
-                    npmGlobalPath: await getGlobalNodeModulesPath()
-                },
-                { spaces: 2 }
-            )
-            log('success', `Created settings.json at ${settingsPath}`)
-        }
-
-        const exists: boolean = await fs.pathExists(globalTemplatesDir)
-        const isEmpty: boolean = exists ? (await fs.readdir(globalTemplatesDir)).length === 0 : true
-
-        if (!exists) {
-            await fs.ensureDir(globalTemplatesDir)
-            log('success', 'Created global templates directory.')
-        }
-
-        if (!isEmpty) {
-            log('debug', 'Global templates directory not empty. Skipping copy.')
-            return
-        }
-
-        if (await fs.pathExists(defaultTemplatesDir)) {
-            for (const name of await fs.readdir(defaultTemplatesDir)) {
-                await fs.copy(path.join(defaultTemplatesDir, name), path.join(globalTemplatesDir, name))
-                log('success', `Copied template '${name}'.`)
-            }
-        } else {
-            log('warn', 'Default templates directory not found.')
-        }
-
-        log('success', 'Default templates setup completed.')
-    } catch (error: any) {
-        log('error', `Failed to create global templates directory: ${error.message}`)
-        throw error
-    }
 }
 
 /**
@@ -429,4 +367,12 @@ export async function getDirElements(dir: string): Promise<string[]> {
  */
 export function colorize(text: string, color: string): string {
     return `${color}${text}${colors.reset}`
+}
+
+export async function getSettingsTemplate(globalTemplatesDir: string): Promise<Settings> {
+    return {
+        createdAt: new Date().toISOString(),
+        templatesPath: globalTemplatesDir,
+        npmGlobalPath: await getGlobalNodeModulesPath()
+    }
 }

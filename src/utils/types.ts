@@ -86,3 +86,10 @@ export type File = {
     content: string
     ext: string
 }
+
+// --- Type for settings ---
+export type Settings = {
+    createdAt: string
+    templatesPath: string
+    npmGlobalPath: string
+}
