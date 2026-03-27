@@ -267,40 +267,53 @@ export async function createFileFromTemplate(
 /**
  * Removes Dist Directory
  */
-export async function removeDistDir(dir?: string): Promise<void> {
+export async function removeOutDir(dir?: string): Promise<void> {
     log('debug', 'Removing outDir...')
-    const distDir = dir
+    const outDir = dir
         ? path.isAbsolute(dir) ? dir : resolveCurrentPath([dir])
         : path.resolve(process.cwd(), (await loadConfig()).outDir ?? 'dist')
     const rootDir = process.cwd()
 
-    if (distDir === rootDir || distDir.length <= rootDir.length)
-        throw new Error(`Refusing to delete unsafe directory: ${distDir}`)
+    if (outDir === rootDir || outDir.length <= rootDir.length)
+        throw new Error(`Refusing to delete unsafe directory: ${outDir}`)
 
-    if (!await fs.pathExists(distDir)) {
-        log('debug', `No dist folder found: ${distDir}`)
+    if (!await fs.pathExists(outDir)) {
+        log('debug', `No dist folder found: ${outDir}`)
         return
     }
 
-    await fs.remove(distDir)
-    log('success', `Cleared ${distDir}`)
+    await fs.remove(outDir)
+    log('success', `Cleared ${outDir}`)
 }
 
 /**
  * Returns Minimaz Config
  */
 export async function loadConfig(): Promise<MinimazConfig> {
-    log('debug', 'Loading minimaz.config.json...')
+    const configPath = resolveCurrentPath(['minimaz.config.json'])
+    let config: any
 
-    const path: string = resolveCurrentPath(['minimaz.config.json'])
-
-    if (await fs.pathExists(path)) {
+    if (await fs.pathExists(configPath)) {
+        config = await fs.readJson(configPath)
         log('success', 'Loaded config from minimaz.config.json')
-        return await fs.readJson(path)
     } else {
         log('warn', 'No minimaz.config.json found. Using default config')
-        return JSON.parse(JSON.stringify(minimazConfigTemplate))
+        config = JSON.parse(JSON.stringify(minimazConfigTemplate))
     }
+
+    // Validate required fields
+    if (!config.outDir || typeof config.outDir !== 'string')
+        throw new Error('Invalid config: outDir must be a string')
+
+    if (!config.folders || typeof config.folders !== 'object')
+        throw new Error('Invalid config: folders must be an object')
+
+    // Optional: set defaults for optional fields
+    config.bundling ??= { outDir: '' }
+    config.minify ??= {}
+    config.replace ??= {}
+
+    return config as MinimazConfig
 }
 
 /**

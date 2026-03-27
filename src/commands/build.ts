@@ -6,9 +6,9 @@ import { minify as minifyJs } from 'terser'
 import { transform, build as jsBuild, Loader } from 'esbuild'
 
 import {
-    loadConfig, log, applyReplacements, getFile, removeDistDir, resolveCurrentPath, // utils
-    MinimazConfig, Bundles, File,                                                    // types
-    getDirElements
+    loadConfig, log, getFile, removeOutDir, resolveCurrentPath, getDirElements, // utils
+    MinimazConfig, Bundles, File                                                // types
+
 } from '../index.js'
 
 /**
@@ -20,11 +20,14 @@ import {
  */
 export async function build(): Promise<void> {
     const config: MinimazConfig = await loadConfig() // Load project config
-    const currentDirPath: string = resolveCurrentPath()
-    const distDirPath: string = path.resolve(currentDirPath, config.outDir)
+    const outDirPath: string = path.resolve(resolveCurrentPath(), config.outDir)
 
-    await removeDistDir(distDirPath)      // Clean dist directory
-    await fs.ensureDir(distDirPath)       // Recreate dist directory
+    await removeOutDir(outDirPath)      // Clean dist directory
+    await fs.ensureDir(outDirPath)       // Recreate dist directory
+
+    // Bundles
+    const bundles: Bundles = { outDir: getBundleOutDir(config, outDirPath), css: [], js: [] }
+    await fs.ensureDir(bundles.outDir)
 
     if (!config.folders || Object.keys(config.folders).length === 0) {
         log('warn', 'No folders defined in config. Nothing to build.')
@@ -33,8 +36,26 @@ export async function build(): Promise<void> {
 
     for (const [from, to] of Object.entries(config.folders)) {
         log('debug', `Building folder: ${from} -> /${to}`)
-        await processFolder(from, to, config, distDirPath)
+        await processFolder(
+            resolveCurrentPath([from]),
+            path.join(outDirPath, to),
+            config,
+            bundles
+        )
     }
+
+    // process externals
+    if (config.styles?.length)
+        await processExternals(outDirPath, config.styles, bundles, config)
+
+    if (config.scripts?.length)
+        await processExternals(outDirPath, config.scripts, bundles, config)
+
+    // Write bundles if enabled
+    if (config.bundling?.css)
+        await writeCssBundle(bundles.css, !!config.minify?.css, bundles.outDir)
+    if (config.bundling?.js)
+        await writeJsBundle(bundles.js, !!config.minify?.js, bundles.outDir)
 
     log('success', `Build completed. Output saved in /${config.outDir}`)
 }
@@ -49,33 +70,23 @@ export async function build(): Promise<void> {
  * @param srcPathRel - Source folder relative path
  * @param destName - Destination folder name inside dist
  * @param config - Minimaz configuration
- * @param distDir - Absolute dist directory path
+ * @param outDir - Absolute dist directory path
  */
 async function processFolder(
-    srcName: string,
-    destName: string,
+    from: string,
+    to: string,
     config: MinimazConfig,
-    distDir: string
+    bundles: Bundles
 ): Promise<void> {
-    const fullSrc: string = resolveCurrentPath([srcName])
-    const fullDest: string = path.join(distDir, destName)
 
-    if (!(await fs.pathExists(fullSrc))) {
-        log('warn', `Folder not found: ${srcName}`)
+    if (!(await fs.pathExists(from))) {
+        log('warn', `Folder not found: ${from}`)
         return
     }
 
-    const bundles: Bundles = { css: [], js: [] }
+    await walkFolder(from, to, config, bundles)
 
-    await walkFolder(fullSrc, fullDest, config, bundles)
-
-    // Merge CSS/JS bundles only for the root source folder
-    if (srcName === process.env.CLI_WORKDIR) {
-        log('debug', 'Working on the root dir, adding external script, styles and bundles')
-        await mergeRootAssets(bundles, config, distDir)
-    }
-
-    log('success', `Processed folder: ${srcName} -> /${destName}`)
+    log('success', `Processed folder: ${from} -> /${to}`)
 }
 
 /**
@@ -88,29 +99,29 @@ async function processFolder(
  * @param jsChunks - Accumulator for JS content
  */
 async function walkFolder(
-    src: string,
-    dest: string,
+    from: string,
+    to: string,
     config: MinimazConfig,
     bundles: Bundles
 ): Promise<void> {
-    await fs.ensureDir(dest)
+    await fs.ensureDir(to)
 
-    for (const item of await getDirElements(src)) {
-        const srcPath: string = path.join(src, item)
-        const destPath: string = path.join(dest, item)
-        const stat: fs.Stats = await fs.stat(srcPath)
+    for (const item of await getDirElements(from)) {
+        const fromPath: string = path.join(from, item)
+        const toPath: string = path.join(to, item)
+        const stat: fs.Stats = await fs.stat(fromPath)
 
         log('debug', `Found ${stat.isDirectory() ? 'DIRECTORY' : 'FILE'}: ${item}`)
 
         if (stat.isDirectory()) {
-            await walkFolder(srcPath, destPath, config, bundles)
+            await walkFolder(fromPath, toPath, config, bundles)
             continue
         }
-        const fileContent: string = await getFile(srcPath, config.replace)
+        const fileContent: string = await getFile(fromPath, config.replace)
         if (fileContent.length > 0) {
-            const fileExt: string = path.extname(srcPath).toLowerCase();
+            const fileExt: string = path.extname(fromPath).toLowerCase();
             await processFile(
-                { src: srcPath, dest: destPath, content: fileContent, ext: fileExt },
+                { src: fromPath, dest: toPath, content: fileContent, ext: fileExt },
                 config,
                 bundles
             )
@@ -153,7 +164,7 @@ async function processFile(
         }
 
         default:
-            await copyToDist(file)
+            await fs.copy(file.src, file.dest)
     }
 }
 
@@ -330,72 +341,57 @@ async function processTS(
 }
 
 /**
- * Merges and writes root-level CSS and JS bundles.
+ * Processes external CSS/JS resources.
  *
- * @param cssChunks - Collected CSS content
- * @param jsChunks - Collected JS content
- * @param config - Minimaz configuration
- * @param distDir - Absolute dist directory path
- */
-async function mergeRootAssets(
-    bundles: Bundles,
-    config: MinimazConfig,
-    distDir: string
-): Promise<void> {
-    const bundleDir = getBundleOutDir(config, distDir)
-    await fs.ensureDir(bundleDir)
-
-    // Write bundles if enabled
-    if (config.bundling?.css) await writeCssBundle(bundles.css, config, bundleDir)
-    if (config.bundling?.js) await writeJsBundle(bundles.js, config, bundleDir)
-}
-
-/*
-async function handleExternal(config: MinimazConfig, bundles: Bundles): Promise<void> {
-  // External assets
-
-
-  await appendExternalAssets(config.styles, bundles.css, config, 'css', !!config.bundling?.css, bundleDir)
-  await appendExternalAssets(config.scripts, bundles.js, config, 'js', !!config.bundling?.js, bundleDir)
-}
-  */
-/**
- * Appends external CSS or JS files to the given chunk accumulator.
+ * - If path is a folder → processes it recursively (like a normal folder)
+ * - If path is a file → processes it as a single file
  *
- * @param files - List of file paths
- * @param target - Target accumulator
+ * @param externals - List of external paths (files or folders)
+ * @param bundles - Bundles accumulator
  * @param config - Minimaz configuration
+ * @param outDir - Output directory
  */
 async function processExternals(
+    outDirPath: string,
     externals: string[],
-    target: string[],
     bundles: Bundles,
     config: MinimazConfig
 ): Promise<void> {
     log('info', 'Processing externals...')
 
-    /* this should take the path in the external,
-    process it with processFolder if it's a folder
-    or processFile if it's a file
-    */
-
     for (const external of externals) {
-
-    }
-
-    for (const f of externals) {
-        const fullPath: string = resolveCurrentPath([f])
+        const fullPath = resolveCurrentPath([external])
 
         if (!(await fs.pathExists(fullPath))) {
-            log('warn', `File not found: ${f} `)
+            log('warn', `External not found: ${external}`)
             continue
         }
 
-        const ext: string = path.extname(fullPath).toLowerCase();
+        const stat = await fs.stat(fullPath)
+
+        // If it's a directory → process like a normal folder
+        if (stat.isDirectory()) {
+            log('debug', `Processing external folder: ${external}`)
+            await walkFolder(fullPath, outDirPath, config, bundles)
+            continue
+        }
+
+        // If it's a file → process like a normal file
+        log('debug', `Processing external file: ${external}`)
+
+        const ext: string = path.extname(fullPath).toLowerCase()
         const content: string = await getFile(fullPath, config.replace)
 
-
-        await processFile({ src: fullPath, dest: f, content: content, ext: ext }, config, bundles)
+        await processFile(
+            {
+                src: fullPath,
+                dest: path.join(bundles.outDir, path.basename(fullPath)),
+                content,
+                ext
+            },
+            config,
+            bundles
+        )
     }
 }
 
@@ -404,22 +400,22 @@ async function processExternals(
  *
  * @param chunks - CSS chunks
  * @param config - Minimaz configuration
- * @param distDir - Absolute dist directory path
+ * @param outDir - Absolute dist directory path
  */
 async function writeCssBundle(
     chunks: string[],
-    config: MinimazConfig,
-    distDir: string
+    minify: boolean,
+    outDir: string
 ): Promise<void> {
     if (!chunks.length) return
     let css: string = chunks.join('')
-    if (config.minify?.css) {
+    if (minify) {
         const output = new CleanCSS().minify(css)
         if (output.warnings.length)
             output.warnings.forEach(w => log('warn', w))
         css = output.styles
     }
-    await fs.outputFile(path.join(distDir, 'style.css'), css)
+    await fs.outputFile(path.join(outDir, 'style.css'), css)
 }
 
 /**
@@ -427,12 +423,12 @@ async function writeCssBundle(
  *
  * @param chunks - JS/TS chunks collected from the build
  * @param config - Minimaz configuration
- * @param distDir - Absolute dist directory path
+ * @param outDir - Absolute dist directory path
  */
 async function writeJsBundle(
     chunks: string[],
-    config: MinimazConfig,
-    distDir: string
+    minify: boolean,
+    outDir: string
 ): Promise<void> {
     if (!chunks.length) return
 
@@ -440,19 +436,19 @@ async function writeJsBundle(
         const result = await jsBuild({
             stdin: {
                 contents: chunks.join('\n'),
-                resolveDir: distDir,
+                resolveDir: outDir,
                 loader: 'js',
                 sourcefile: 'bundle.js'
             },
             bundle: true,
             format: 'esm',
-            minify: !!config.minify?.js,
+            minify: minify,
             sourcemap: false,
             write: false
         })
 
-        await fs.outputFile(path.join(distDir, 'script.js'), result.outputFiles[0].text)
-        log('success', `JS bundle written to /${distDir}/script.js`)
+        await fs.outputFile(path.join(outDir, 'script.js'), result.outputFiles[0].text)
+        log('success', `JS bundle written to /${outDir}/script.js`)
     } catch (err) {
         log('warn', `ESBuild JS bundle failed: ${err}`)
     }
@@ -461,10 +457,11 @@ async function writeJsBundle(
 async function copyToDist(
     file: File
 ): Promise<void> {
+    log('debug', `Creating ${file.dest}`)
     await fs.outputFile(file.dest, file.content)
 }
 
-function getBundleOutDir(config: MinimazConfig, distDir: string) {
-    // If outDir is empty string or undefined, return the distDir itself
-    return config.bundling?.outDir ? path.join(distDir, config.bundling.outDir) : distDir
+function getBundleOutDir(config: MinimazConfig, outDir: string) {
+    // If outDir is empty string or undefined, return the outDir itself
+    return config.bundling?.outDir ? path.join(outDir, config.bundling.outDir) : outDir
 }

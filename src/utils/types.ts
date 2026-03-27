@@ -23,7 +23,7 @@ export type MinimazConfig = {
             enabled?: boolean
             outFile?: string
         }
-        outDir?: string
+        outDir: string
     }
     minify?: {
         html?: boolean
@@ -32,7 +32,7 @@ export type MinimazConfig = {
         ts?: boolean
     }
     replace?: Record<string, string>
-    folders?: {
+    folders: {
         [key: string]: string
     }
     styles?: string[]
@@ -72,6 +72,7 @@ export type initCommandOptions = {
 
 // ----- Bundles Types -----
 export type Bundles = {
+    outDir: string
     css: string[],
     js: string[]
 }
