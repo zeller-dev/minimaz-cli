@@ -25,6 +25,7 @@
     <meta name="theme-color" content="#0d0d0d">
 
     <link rel="icon" type="image/x-icon" href="../public/favicon.ico">
+    <link rel="shortcut icon" href="../public/favicon.ico">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="styles/bootstrap-icons.css">
 </head>
@@ -35,10 +36,10 @@
     <!-- HEADER                                  -->
     <!-- ======================================== -->
     <header>
-        <img src="../public/assets/logo.webp" alt="Minimaz Logo"">
-        <h1 class=" sr-only">Minimaz CLI <i class="icon lightning-fill"></i></h1>
+        <img src="../public/assets/logo.webp" alt="Minimaz Logo">
+        <h1 class="sr-only">Minimaz CLI <i class="icon lightning-fill"></i></h1>
         <p id="tagline">Minimal input. Clean output</p>
-        <p class="version">Version: <strong>v0.3.3</strong></p>
+        <p class="version">Version: <strong>v0.4.0</strong></p>
     </header>
 
     <main id="main-content">
@@ -72,7 +73,6 @@
             <div class="grid">
                 <div class="grid-item">Initialize projects from templates</div>
                 <div class="grid-item">Save, list, delete, and update global templates</div>
-                <div class="grid-item">Compile TypeScript before minification</div>
                 <div class="grid-item">Minify HTML, CSS, JS, and compiled TS</div>
                 <div class="grid-item">Optional CSS and JS bundling</div>
                 <div class="grid-item">Include external styles/scripts (relative, absolute, node_modules)</div>
@@ -138,12 +138,16 @@ npx mz v</code></pre>
             </h2>
 
             <pre><code>{
-    "src": "src",
-    "dist": "dist",
-    "public": "public",
+    "outDir": "dist",
     "bundling": {
-        "css": true,
-        "js": true
+        "css": {
+            "enabled": true,
+            "outFile": "styles.css"
+        },
+        "js": {
+            "enabled": true,
+            "outFile": "scripts.js"
+        }
     },
     "minify": {
         "html": true,
@@ -155,14 +159,16 @@ npx mz v</code></pre>
         "../public/": "public/"
     },
     "styles": [
-       "../node_modules/library.css"
+        "style.css",
+        "style-2.css"
     ],
     "scripts": [
-        "../node_modules/library.js"
+        "script.js",
+        "script-2.js"
     ],
     "folders": {
-        "public": "public",
-        "src": ""
+        "src": "",
+        "public": "public"
     }
 }</code></pre>
 
@@ -171,7 +177,7 @@ npx mz v</code></pre>
                 <li><strong>minify.html/css/js/ts</strong> → toggle per file type</li>
                 <li><strong>styles/scripts</strong> → include external files</li>
                 <li><strong>replace</strong> → asset path replacements</li>
-                <li><strong>styles & scripts</strong> → external styles or scrips to add</li>
+                <li><strong>styles & scripts</strong> → external styles or scripts to add</li>
                 <li><strong>folders</strong> → folders to scan</li>
             </ul>
         </section>
@@ -193,11 +199,15 @@ mz b
 minimaz clear
 mz c
 
+# Config
+minimaz config          # Create or update global configuration ~/.minimaz/
+mz config --overwrite   # Overwrites default templates and settings.json
+
 # Init
 minimaz init &lt;project-name&gt;
 minimaz init &lt;project-name&gt; --template &lt;name&gt;
 minimaz init &lt;project-name&gt; --npm
-minimaz init &lt;project-name&gt; --git --gitprovider github
+minimaz init &lt;project-name&gt; --git --gitprovider github --gitremote &lt;url&gt;
 mz i my-site -t template
 
 # Help
@@ -333,19 +343,6 @@ mz v</code></pre>
                 </article>
 
                 <!-- ======================================== -->
-                <!-- TYPESCRIPT SUPPORT                       -->
-                <!-- ======================================== -->
-                <article class="grid-item">
-                    <header>
-                        <h3>Extended TypeScript Support</h3>
-                        <span class="status status-planned">Planned</span>
-                    </header>
-                    <p>
-                        Improved TypeScript handling and optional advanced transpilation.
-                    </p>
-                </article>
-
-                <!-- ======================================== -->
                 <!-- EXTENDED CSS SUPPORT                     -->
                 <!-- ======================================== -->
                 <article class="grid-item">
@@ -372,9 +369,7 @@ mz v</code></pre>
 
             <pre><code>~/.minimaz/templates</code></pre>
 
-            <p>
-                Use templates to initialize consistent projects across environments.
-            </p>
+            <p>Use templates to quickly initialize consistent projects across environments.</p>
         </section>
 
         <!-- ======================================== -->
@@ -401,9 +396,6 @@ mz v</code></pre>
 
     </main>
 
-    <!-- ======================================== -->
-    <!-- FOOTER                                   -->
-    <!-- ======================================== -->
     <!-- ======================================== -->
     <!-- FOOTER                                   -->
     <!-- ======================================== -->

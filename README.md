@@ -35,6 +35,8 @@ npx mz b
 npx mz v
 ```
 
+> During `npm install`, a post-install script runs to finalize setup automatically.
+
 ## 📁 Project Structure
 
 ```txt
@@ -54,34 +56,44 @@ Customize your build using a `minimaz.config.json` file:
 
 ```json
 {
-  "src": "src",
-  "dist": "dist",
-  "public": "public",
-  "bundling": {
-    "css": true,
-    "js": true
-  },
-  "minify": {
-    "html": true,
-    "css": true,
-    "js": true,
-    "ts": true
-  },
-  "replace": {
-    "../public/": "public/"
-  },
-  "folders": {
-    "src": "",
-    "public": "public"
-  },
-  "styles": [
-    "../node_modules/some-package/dist/library.css",
-    "C:/Users/YourUser/Desktop/custom.css"
-  ],
-  "scripts": [
-    "../node_modules/some-package/dist/library.js",
-    "D:/Scripts/custom.js"
-  ]
+    outDir: "dist",
+    bundling: {
+        css: {
+            enabled: true,
+            outFile: "styles.css"
+        },
+        js: {
+            enabled: true,
+            outFile: "scripts.js"
+        },
+        outDir: ""
+    },
+    minify: {
+        "html": true,
+        "css": true,
+        "js": true,
+        "ts": true
+
+    },
+
+    replace: {
+        "../public/": "public/"
+    },
+
+    styles: [
+        "style.css",
+        "style-2.css"
+    ],
+
+    scripts: [
+        "script.js",
+        "script-2.js"
+    ],
+
+    folders: {
+        src: "",
+        public: "public"
+    }
 }
 ```
 
@@ -109,46 +121,54 @@ minimaz clear        # Delete the dist folder
 mz c                 # alias
 
 # -----------------------------
+# Config
+# -----------------------------
+minimaz config          # Create or update global configuration ~/.minimaz/
+mz config --overwrite   # Overwrites default templates and settings.json
+
+# -----------------------------
 # Init
 # -----------------------------
-minimaz init <project-name>                     # Initialize a new project with default template
-mz i <project-name>                             # alias
+minimaz init <project-name> [options]          # Initialize a new project
+mz i <project-name> [options]                  # Alias
 
-minimaz init <project-name> --template <name>   # Use a specific template
-mz i <project-name> -t <name>                  # alias
-
-minimaz init <project-name> --npm              # Initialize npm project
-minimaz init <project-name> --git              # Initialize git repository
-
-# Specify git provider or remote URL
-minimaz init <project-name> --git --gitprovider <provider-or-url>
-mz i <project-name> --git --gitprovider github       # alias example
+Options:
+  -t, --template <name>       # Use a specific template (default: 'default')
+  --npm                       # Initialize npm project (creates package.json and runs npm install)
+  --git                       # Initialize git repository
+  --gitprovider <provider>    # Git provider: 'github', 'gitlab', or URL to existing repo
+  --gitremote <url>           # Specify custom remote URL for git
 
 # -----------------------------
 # Help
 # -----------------------------
 minimaz help                    # Show general help
-mz h                             # alias
+mz h                            # alias
 minimaz help <command>          # Show help for a specific command
-mz h build                       # alias example
+mz h build                      # alias example
 
 # -----------------------------
 # Template management
 # -----------------------------
-minimaz template <template-path>              # Save current folder as a template
-minimaz t <template-path>                     # alias
+minimaz template [options] [<folder-path>]   # Save, list, update, or delete templates
+mz t [options] [<folder-path>]               # Alias
 
-minimaz template --list                       # List available global templates
-minimaz t -l                                  # alias
+Options:
+  -l, --list                # List all global templates (~/.minimaz/templates)
+  -d, --delete <name>       # Delete a global template by name (asks confirmation)
+  -u, --update [name]       # Update templates
+                            # - With a name → updates that template from current folder
+                            # - Without argument → updates all templates from installed package defaults
 
-minimaz template --delete <template-name>     # Delete a saved template
-minimaz t -d <template-name>                  # alias
+Default action (no options):
+  Saves the specified folder (or current folder if none provided) as a new global template.
+  If template already exists, asks for confirmation before overwriting.
 
-minimaz template --update <template-name>     # Update a specific template from current folder
-minimaz t -u <template-name>                  # alias
-
-minimaz template --update                     # Update all templates from node_modules
-minimaz t -u                                  # alias
+Notes:
+  * Global templates are stored in `~/.minimaz/templates`.
+  * Interactive prompts are used to confirm overwrite or deletion.
+  * If specified folder does not exist, you can choose to use the current folder instead.
+  * Errors are thrown if operations fail or are cancelled.
 
 # -----------------------------
 # Version
@@ -170,3 +190,21 @@ Use them to quickly initialize consistent projects across environments.
 ## 📄 License
 
 MIT
+
+```txt
+
+     _     _
+    /)\___/(\
+   /.--. .__.\   _-'''-_
+  /\_(O) (O)_/\ /\ | /  \    ____    ____          ________         __   __
+ _.-._(_c_)_.-./\ \ / / /)  [__  \  /  __]        [  __   _]       [  ] [  ]
+(__(((______)))__--''/ //     ]   \/   [   ______ [_/ /'/    _____  ] [  ] [  _____  ______
+ |__||_||_||_||__||  / )      [ [\  /] ]  [  /  \]   /'/  _ / /__\\ [ ]  [ ] / /__\\[  /  \]
+ |  || || || ||  ||  |/      _] [_\/_] [_  ] [     _/'/__/ ]\ \___  ] [  ] [ \ \___  ] [
+ |__||_||_||_||__||__|      [_____][_____][___]   [________] \___/ [___][___] \___/ [___]
+
+    MrZeller
+        Website: zellerindustries.com
+            Mail: info@zellerindustries.com
+
+```

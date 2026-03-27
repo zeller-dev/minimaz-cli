@@ -1,39 +1,39 @@
 {
-  "name": "minimaz-cli",
-  "version": "0.3.3",
-  "description": "Minimal project initializer and builder CLI",
-  "author": "MrZeller",
-  "license": "MIT",
-  "type": "module",
-  "files": [
-    "src",
-    "LICENSE",
-    "README.md",
-    "package.json"
-  ],
-  "scripts": {
-    "build": "npx mz b",
-    "serve": "npm run build && serve ./dist"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zeller-dev/minimaz-cli.git"
-  },
-  "keywords": [
-    "cli",
-    "minimal",
-    "build",
-    "init",
-    "project",
-    "starter"
-  ],
-  "homepage": "https://github.com/zeller-dev/minimaz-cli#readme",
-  "bugs": {
-    "url": "https://github.com/zeller-dev/minimaz-cli/issues"
-  },
-  "devDependencies": {
-    "bootstrap-icons": "^1.13.1",
-    "minimaz-cli": "^0.3.3",
-    "serve": "^14.2.5"
-  }
+    "name": "minimaz-cli",
+    "version": "0.4.0",
+    "description": "Minimal project initializer and builder CLI",
+    "author": "MrZeller",
+    "license": "MIT",
+    "type": "module",
+    "files": [
+        "src",
+        "LICENSE",
+        "README.md",
+        "package.json"
+    ],
+    "scripts": {
+        "build": "npx mz b",
+        "serve": "npm run build && serve ./dist"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zeller-dev/minimaz-cli.git"
+    },
+    "keywords": [
+        "cli",
+        "minimal",
+        "build",
+        "init",
+        "project",
+        "starter"
+    ],
+    "homepage": "https://github.com/zeller-dev/minimaz-cli#readme",
+    "bugs": {
+        "url": "https://github.com/zeller-dev/minimaz-cli/issues"
+    },
+    "devDependencies": {
+        "bootstrap-icons": "^1.13.1",
+        "minimaz-cli": "^0.3.3",
+        "serve": "^14.2.5"
+    }
 }
