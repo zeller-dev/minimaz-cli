@@ -86,9 +86,14 @@ export async function config(overwrite: boolean): Promise<void> {
     async function createSettings(): Promise<void> {
         const template: Settings = await getSettingsTemplate(globalTemplatesDir)
 
-        if (!(await fs.pathExists(settingsPath))) {
+        // If file doesn't exist or overwrite = true → write template directly
+        if (!(await fs.pathExists(settingsPath)) || overwrite) {
             await createFileFromTemplate(template, [settingsPath])
-            log('success', `Created settings.json at ${settingsPath}`)
+            if (overwrite && await fs.pathExists(settingsPath)) {
+                log('success', `Overwritten settings.json at ${settingsPath}`)
+            } else {
+                log('success', `Created settings.json at ${settingsPath}`)
+            }
             return
         }
 

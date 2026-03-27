@@ -10,7 +10,7 @@ if (process.env.npm_lifecycle_event === 'postinstall') {
     process.exit(0)
 }
 
-// TODO const processDir: string = process.cwd()
+// TODO add path logic
 
 /**
  * Main CLI entrypoint
