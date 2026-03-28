@@ -1,99 +1,321 @@
+/* =========================================================
+   ROOT VARIABLES
+========================================================= */
 :root {
-  --primary-color: #338ca8;
-  --background-color: #222;
-  --foreground-color: #f5f5f5;
-  --code-bg: #333;
-  --code-text: #eeeeff;
-  font-size: 16px;
+    color-scheme: dark;
+
+    /* Base colors */
+    --bg: #222;
+    --fg: #999;
+    --accent: #60b5e6;
+    --accent2: #fdc503;
+    --border: #222;
+    --code-bg: #1a1a1a;
+
+    /* UI components */
+    --card-bg: #141414;
+    --badge-bg: #1e1e1e;
+
+    /* Typography */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "Fira Code", monospace;
+
+    /* Layout */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
 }
 
-* {
-  box-sizing: border-box;
+/* =========================================================
+   GLOBAL RESET
+========================================================= */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-header,
-footer {
-  background-color: var(--code-bg);
-  padding:1rem;
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+    line-height: 1.6;
 }
 
 body {
-  font-family: 'Segoe UI', sans-serif;
-  margin: 0;
-  background: var(--background-color);
-  color: var(--foreground-color);
-  line-height: 1.6;
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    margin: 0;
 }
 
-.container {
-  max-width: 800px;
-  margin: auto;
-  padding: 1rem;
+/* =========================================================
+   STRUCTURAL ELEMENTS
+========================================================= */
+
+section {
+    margin: 3rem auto;
 }
 
-h1,
-h2,
+/* =========================================================
+   HEADER
+========================================================= */
+header {
+    text-align: center;
+    padding-block: var(--space-md);
+    border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+    color: var(--accent);
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+}
+
+main {
+    padding: 0 var(--space-md);
+}
+
+#tagline {
+    color: var(--accent2);
+    font-weight: 500;
+}
+
+/* =========================================================
+   HEADINGS
+========================================================= */
+h2 {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    gap: var(--space-md);
+    color: var(--accent);
+    margin-bottom: var(--space-md);
+}
+
+h2 i {
+    padding: var(--space-md);
+    background-color: var(--accent2);
+    border-radius: 100%;
+    color: var(--bg);
+}
+
+h2 span {
+    padding: var(--space-md) 0;
+    flex-grow: 1;
+    border-bottom: 2px solid var(--accent);
+}
+
 h3 {
-  color: var(--primary-color);
-  margin-top: 2rem;
+    color: var(--accent2);
+}
+
+/* =========================================================
+   TYPOGRAPHY
+========================================================= */
+
+ul {
+    padding-left: 1.2rem;
+    list-style: disc;
 }
 
 p {
-  margin: 1rem 0;
+    margin-bottom: var(--space-md);
 }
 
-code {
-  background: var(--code-bg);
-  color: var(--code-text);
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  font-family: monospace;
+p:last-child {
+    margin-bottom: 0;
+}
+
+/* =========================================================
+   CODE BLOCKS
+========================================================= */
+code,
+pre {
+    font-family: var(--font-mono);
+    background-color: var(--code-bg);
+    color: var(--accent2);
 }
 
 pre {
-  background: var(--code-bg);
-  color: #ddd;
-  padding: 1rem;
-  overflow-x: auto;
-  border-radius: 6px;
-  font-family: monospace;
-  border-left: 4px solid var(--primary-color);
+    padding: var(--space-md);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    border: 1px solid var(--border);
 }
 
+/* =========================================================
+   TABLES
+========================================================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--space-md);
+}
+
+th,
+td {
+    text-align: left;
+    padding: var(--space-sm);
+    border: 1px solid var(--border);
+}
+
+th {
+    background-color: var(--card-bg);
+    color: var(--accent2);
+}
+
+tr:nth-child(even) {
+    background-color: #151515;
+}
+
+/* =========================================================
+   LINKS
+========================================================= */
 a {
-  color: var(--primary-color);
-  text-decoration: none;
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
-.btn {
-  transition: all 0.15s ease-in-out;
-  background-color: var(--primary-color);
-  border: none;
-  color: #fff;
-  padding: 10px 20px;
-  font-size: 1rem;
-  margin: .5rem .2rem;
-  cursor: pointer;
-  border-radius: 5px;
-  display: inline-block;
-  text-align: center;
+a:hover,
+a:focus {
+    color: var(--accent2);
+    text-decoration: underline;
+    outline: none;
 }
 
-.btn:hover {
-  opacity: 0.85;
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+.status {
+    font-size: 0.75rem;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: var(--badge-bg);
+    border: 1px solid var(--border);
 }
 
-.btn.active {
-  background-color: var(--code-bg);
-  color: #fff;
-  pointer-events: none;
+.status-planned {
+    color: var(--accent);
 }
 
-header {
-  font-weight: 600;
+.status-inprogress {
+    color: var(--accent2);
 }
 
-footer p {
-  text-align: center;
-  margin: 0;
+.status-research {
+    color: #b98cff;
+}
+
+.status-idea {
+    color: #999;
+}
+
+.sr-only {
+    display: none;
+}
+
+.max-width {
+    max-width: 900px;
+}
+
+/* =========================================================
+   LOGO
+========================================================= */
+header img {
+    display: block;
+    margin: 0 auto var(--space-sm);
+    max-width: 180px;
+    width: 100%;
+    height: auto;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+/* =========================================================
+   ENHANCED FOOTER
+========================================================= */
+
+.site-footer {
+    margin-top: 4rem;
+    padding: var(--space-lg);
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: #999;
+}
+
+.footer-grid {
+    display: grid;
+    gap: var(--space-lg);
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 700px) {
+    .footer-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.footer-col h3,
+.footer-col h4 {
+    margin-bottom: var(--space-sm);
+    color: var(--accent);
+}
+
+.footer-col h4 {
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--accent);
+}
+
+.footer-col p {
+    margin-bottom: var(--space-sm);
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-col li {
+    margin-top: var(--space-xs);
+}
+
+.footer-col a {
+    color: var(--accent);
+}
+
+.footer-col a:hover {
+    color: var(--accent2);
+}
+
+.footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+    }
 }

@@ -236,11 +236,12 @@ export function executeCommand(
  * - Parent directories are created automatically.
  *
  * @param template - Template content (object or string)
- * @param outputPath - File path to write
+ * @param pathComponents
  */
 export async function createFileFromTemplate(
     template: Record<string, unknown> | string | undefined,
-    pathComponents: string[]
+    pathComponents: string[],
+    overwrite: boolean = true
 ): Promise<void> {
     log('debug', 'Creating file from template...')
     const outputPath: string = path.resolve(...pathComponents)
@@ -257,6 +258,10 @@ export async function createFileFromTemplate(
     }
 
     try {
+        if (!overwrite && await fs.pathExists(outputPath)) {
+            log('info', `File already exists at '${outputPath}', skipping creation.`)
+            return
+        }
         await fs.outputFile(outputPath, content)
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error)

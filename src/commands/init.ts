@@ -33,7 +33,8 @@ export async function init(
     log('debug', 'Initializing minimaz.config.json...')
     await createFileFromTemplate(
         minimazConfigTemplate,
-        [targetDir, 'minimaz.config.json']
+        [targetDir, 'minimaz.config.json'],
+        false
     )
 
     // Check for NPM initialization option (ask if not provided)
@@ -68,13 +69,15 @@ export async function initGit(
     name: string = 'origin'
 ): Promise<void> {
 
-    // Ask for Git provider only if git is enabled
+    // Ask for Git provider only if not explicitly provided
     if (!provider) {
         provider = (await askQuestion(
             'Select a provider or paste a url to connect your existing repo (cli tools needed) [LOCAL/github/gitlab]:',
             'local'
-        )).toLowerCase().trim()
+        ))
     }
+
+    provider = provider.toLowerCase().trim()  // normalize
 
     log('info', 'Initializing Git repository...')
 
@@ -82,17 +85,16 @@ export async function initGit(
     log('debug', 'Running git init...')
     await executeCommand('git', ['init'], targetDir)
 
-    if (provider)
+    // Only link remote if provider is not local
+    if (provider && provider !== 'false' && provider !== 'local') {
         await linkRemoteRepo(projectName, targetDir, provider, name)
-    else
-        log('info', 'Git repository initialized locally')
+    } else {
+        log('info', 'Git repository initialized locally. No remote linked.')
+    }
 
-    // add .gitignore
+    // Add .gitignore
     log('debug', 'Initializing gitignore...')
-    await createFileFromTemplate(
-        gitIgnoreTemplate,
-        [targetDir, '.gitignore']
-    )
+    await createFileFromTemplate(gitIgnoreTemplate, [targetDir, '.gitignore'])
 
     log('success', 'Git repository initialized.')
 }
@@ -118,6 +120,12 @@ async function linkRemoteRepo(
     remote: string,
     remoteName: string = 'origin'
 ): Promise<void> {
+
+    // Case 0: local → do nothing
+    if (remote === 'local') {
+        log('info', 'Using local Git repository only. No remote linked.')
+        return
+    }
     /**
      * Case 1: Existing repository URL (connect only)
      */
