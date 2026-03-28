@@ -33,7 +33,7 @@
     },
     "devDependencies": {
         "bootstrap-icons": "^1.13.1",
-        "minimaz-cli": "^0.3.3",
+        "minimaz-cli": "^0.4.0",
         "serve": "^14.2.5"
     }
 }
