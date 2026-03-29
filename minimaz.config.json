@@ -10,6 +10,12 @@
             "outFile": "script.js"
         }
     },
+    "minify": {
+        "html": true,
+        "css": true,
+        "js": true,
+        "ts": true
+    },
     "replace": {
         "../public/": "/public/",
         "<link rel=\"stylesheet\" href=\"styles/bootstrap-icons.css\">": "",
