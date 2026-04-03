@@ -1,9 +1,10 @@
 import fs from 'fs-extra'
 
 import {
-    log, askQuestion, getGlobalTemplatePath, createFileFromTemplate, resolveCurrentPath, executeCommand, // utils
-    gitIgnoreTemplate, pkgTemplate, minimazConfigTemplate, // constants
-    initCommandOptions // types
+    log, askQuestion, getGlobalTemplatePath, createFileFromTemplate,                     // utils
+    resolveCurrentPath, executeCommand, parseBooleanFlag,                                // utils
+    gitIgnoreTemplate, pkgTemplate, minimazConfigTemplate,                               // constants
+    initCommandOptions                                                                   // types
 } from '../index.js'
 
 /**
@@ -38,15 +39,11 @@ export async function init(
     )
 
     // Check for NPM initialization option (ask if not provided)
-    const useNpm = options.npm !== undefined
-        ? Boolean(options.npm)
-        : (await askQuestion('Init NPM? [Y/n]:', 'y')).toLowerCase().startsWith('y')
+    const useNpm: boolean = parseBooleanFlag(options.npm)
     if (useNpm) await initNpm(targetDir, projectName)
 
     // Check for Git initialization option (ask if not provided)
-    const useGit = options.git !== undefined
-        ? Boolean(options.git)
-        : (await askQuestion('Init Git repository? [Y/n]:', 'y')).toLowerCase().startsWith('y')
+    const useGit: boolean = parseBooleanFlag(options.git)
     if (useGit) await initGit(projectName, targetDir, options.gitprovider)
 
     log(

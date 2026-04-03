@@ -2,9 +2,8 @@ import fs from 'fs-extra'
 import path from 'path'
 
 import {
-    askQuestion, log, getGlobalTemplatesDirPath, getNodeModulesTemplatesPath, resolveCurrentPath, // utils
+    askQuestion, log, getGlobalTemplatesDirPath, getNodeModulesTemplatesPath, resolveCurrentPath, getDirElements,   // utils
     templateCommandOptions, // types
-    getDirElements
 } from '../index.js'
 
 /**

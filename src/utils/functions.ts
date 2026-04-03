@@ -394,3 +394,10 @@ export async function getSettingsTemplate(globalTemplatesDir: string): Promise<S
         npmGlobalPath: await getGlobalNodeModulesPath()
     }
 }
+
+export function parseBooleanFlag(flag?: string | boolean): boolean {
+    if (flag === undefined) return false          // undefined → false
+    if (typeof flag === 'boolean') return flag    // true/false boolean → keep
+    const val = flag.toLowerCase()
+    return val === 'true' || val === ''          // --flag or --flag=true → true
+}

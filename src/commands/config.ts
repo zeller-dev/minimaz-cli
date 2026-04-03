@@ -1,10 +1,10 @@
-import { homedir } from "os"
 import path from "path"
-import { getNodeModulesTemplatesPath, getSettingsTemplate } from "../utils/functions.js"
-import { log } from "../utils/logService.js"
 import fs from 'fs-extra'
-import { createFileFromTemplate } from '../utils/functions.js'
-import { Settings } from "../index.js" // assume this is the proper type
+import { homedir } from "os"
+import {
+    Settings,                                                                       // types
+    createFileFromTemplate, getNodeModulesTemplatesPath, getSettingsTemplate, log   // utils
+} from "../index.js"
 
 export async function config(overwrite: boolean): Promise<void> {
 
@@ -120,9 +120,8 @@ export async function config(overwrite: boolean): Promise<void> {
 
         // Warn about unknown keys
         for (const key of Object.keys(currentSettings) as (keyof typeof currentSettings)[]) {
-            if (!(key in template)) {
+            if (!(key in template))
                 log('warn', `Unknown key '${key}' found in settings.json`)
-            }
         }
 
         if (updated) {
