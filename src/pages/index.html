@@ -10,24 +10,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Minimaz CLI – Minimal Static Site Builder</title>
 
-    <!-- SEO -->
     <meta name="description"
-        content="Minimaz CLI is a minimal, low-dependency static site builder and project initializer. Compile TypeScript, bundle and minify HTML, CSS, and JS with a fast and simple CLI.">
+        content="Minimaz CLI: A minimal, low-dependency static site builder. Fast TypeScript compilation, asset bundling, and minification in a lightweight Node.js CLI.">
     <meta name="keywords"
-        content="minimaz, minimaz-cli, static site builder, project initializer, nodejs cli, html css js, typescript, minimal build tool">
+        content="minimaz, static site builder, nodejs cli, typescript compiler, minimal build tool, web development">
     <meta name="author" content="MrZeller">
     <meta name="robots" content="index, follow">
-    <meta property="og:title" content="Minimaz CLI – Minimal Static Site Builder">
-    <meta property="og:description"
-        content="Initialize projects from templates, compile TypeScript, bundle and minify assets, and build clean static sites with a lightweight CLI.">
-    <meta property="og:url" content="https://github.com/zeller-dev/minimaz-cli">
-    <meta property="og:type" content="website">
     <meta name="theme-color" content="#0d0d0d">
 
-    <link rel="icon" type="image/x-icon" href="../public/favicon.ico">
-    <link rel="shortcut icon" href="../public/favicon.ico">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/zeller-dev/minimaz-cli">
+    <meta property="og:title" content="Minimaz CLI – Minimal Static Site Builder">
+    <meta property="og:description" content="Minimal input. Clean output. Build static sites with zero fuss.">
+    <meta property="og:image" content="../public/assets/og-preview.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Minimaz CLI">
+    <meta name="twitter:description"
+        content="A minimal, low-dependency static site builder for developers who love speed.">
+    <meta name="twitter:image" content="../public/assets/og-preview.png">
+
+    <link rel="canonical" href="https://github.com/zeller-dev/minimaz-cli">
+
+    <link rel="icon" type="image/svg+xml" href="../public/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="../public/favicon-32x32.png">
+    <link rel="apple-touch-icon" href="../public/apple-touch-icon.png">
+
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="styles/bootstrap-icons.css">
+
+    <link rel="preload" href="../public/assets/logo.webp" as="image">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Minimaz CLI",
+        "operatingSystem": "Windows, macOS, Linux",
+        "applicationCategory": "DeveloperApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "description": "A minimal, low-dependency static site builder and project initializer focused on speed and clean output.",
+        "softwareVersion": "v0.4.1",
+        "author": {
+            "@type": "Person",
+            "name": "MrZeller"
+        },
+        "downloadUrl": "https://www.npmjs.com/package/minimaz-cli",
+        "featureList": "TypeScript compilation, HTML/CSS/JS minification, Project templating, Git integration",
+        "license": "https://opensource.org/licenses/MIT"
+    }
+    </script>
 </head>
 
 <body>
@@ -39,7 +74,7 @@
         <img src="../public/assets/logo.webp" alt="Minimaz Logo">
         <h1 class="sr-only">Minimaz CLI <i class="icon lightning-fill"></i></h1>
         <p id="tagline">Minimal input. Clean output</p>
-        <p class="version">Version: <strong>v0.4.0</strong></p>
+        <p class="version">Version: <strong>v0.4.1</strong></p>
     </header>
 
     <main id="main-content">
@@ -394,6 +429,7 @@ mz v</code></pre>
             </ul>
         </section>
 
+        <!-- TODO: add changelog -->
     </main>
 
     <!-- ======================================== -->

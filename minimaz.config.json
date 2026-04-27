@@ -13,18 +13,19 @@
     "minify": {
         "html": true,
         "css": true,
-        "js": true,
-        "ts": true
+        "js": true
     },
     "replace": {
-        "../public/": "/public/",
+        "../public/": "/",
         "<link rel=\"stylesheet\" href=\"styles/bootstrap-icons.css\">": "",
         "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2": "/public/fonts/bootstrap-icons.woff2",
         "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": "/public/fonts/bootstrap-icons.woff"
     },
     "folders": {
-        "public": "public",
-        "src": "",
+        "src/pages": "",
+        "src/scripts": "",
+        "src/styles": "",
+        "src/public": "",
         "node_modules/bootstrap-icons/font/fonts": "public/fonts"
     }
 }

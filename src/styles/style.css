@@ -1,35 +1,4 @@
 /* =========================================================
-   ROOT VARIABLES
-========================================================= */
-:root {
-    color-scheme: dark;
-
-    /* Base colors */
-    --bg: #222;
-    --fg: #999;
-    --accent: #60b5e6;
-    --accent2: #fdc503;
-    --border: #222;
-    --code-bg: #1a1a1a;
-
-    /* UI components */
-    --card-bg: #141414;
-    --badge-bg: #1e1e1e;
-
-    /* Typography */
-    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-mono: "Fira Code", monospace;
-
-    /* Layout */
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-}
-
-/* =========================================================
    GLOBAL RESET
 ========================================================= */
 *,
@@ -240,9 +209,6 @@ header img {
 /* =========================================================
    FOOTER
 ========================================================= */
-/* =========================================================
-   ENHANCED FOOTER
-========================================================= */
 
 .site-footer {
     margin-top: 4rem;
@@ -258,11 +224,6 @@ header img {
     margin-bottom: 2rem;
 }
 
-@media (min-width: 700px) {
-    .footer-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
 
 .footer-col h3,
 .footer-col h4 {
@@ -302,20 +263,4 @@ header img {
     text-align: center;
     font-size: 0.85rem;
     color: #777;
-}
-
-
-/* =========================================================
-   ACCESSIBILITY
-========================================================= */
-@media (prefers-reduced-motion: reduce) {
-    html {
-        scroll-behavior: auto;
-    }
-
-    *,
-    *::before,
-    *::after {
-        transition: none !important;
-    }
 }

@@ -1,6 +1,6 @@
 {
     "name": "minimaz-cli",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "description": "Minimal project initializer and builder CLI",
     "author": "MrZeller",
     "license": "MIT",
@@ -13,7 +13,7 @@
     ],
     "scripts": {
         "build": "npx mz b",
-        "serve": "npm run build && serve ./dist"
+        "start": "npm run build && serve ./dist"
     },
     "repository": {
         "type": "git",
@@ -33,7 +33,7 @@
     },
     "devDependencies": {
         "bootstrap-icons": "^1.13.1",
-        "minimaz-cli": "^0.4.0",
+        "minimaz-cli": "^0.4.1",
         "serve": "^14.2.5"
     }
 }
