@@ -10,7 +10,7 @@ import {
 } from 'child_process'
 
 import {
-    // --- CONSTANTS
+    // --- CONSTANTS ---
     minimazConfigTemplate, colors,
 
     // --- FUNCTIONS ---
@@ -150,7 +150,7 @@ export async function getGlobalNodeModulesPath(): Promise<string> {
         return process.platform === 'win32'
             ? path.join(prefix, 'node_modules', 'minimaz-cli')
             : path.join(prefix, 'lib', 'node_modules', 'minimaz-cli')
-    } catch {
+    } catch (error: any) {
         // Fallback paths for misconfigured or portable environments
         return process.platform === 'win32'
             ? path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'minimaz-cli')

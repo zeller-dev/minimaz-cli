@@ -13,9 +13,13 @@ import {
  * Prints a message to console with prefix based on type.
  * Timestamp is shown only when VERBOSE=true.
  */
-export function log(type: LogType = 'info', message: string): void {
+export function log(
+    type: LogType = 'info',
+    message: string
+): void {
 
-    const isVerbose: boolean = process.env.VERBOSE === 'true'
+    const isVerbose: boolean =
+        process.env.VERBOSE === 'true'
 
     // Only print debug messages in verbose mode
     if (type === 'debug' && !isVerbose) return
@@ -23,7 +27,8 @@ export function log(type: LogType = 'info', message: string): void {
     const ts = isVerbose
         ? colorize(`[${formatTs()}] `, colors.gray)
         : ''
-    const output: string = `${ts}${prefix[type]} ${message}`
+    const output: string =
+        `${ts}${prefix[type]} ${message}`
 
     switch (type) {
         case 'error':

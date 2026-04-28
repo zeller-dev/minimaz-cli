@@ -75,15 +75,22 @@ export type InitCommandOptions = {
     gitprovider?: string
 }
 
-// ----- Bundles Types -----
+// ----- Multiple Bundle Type -----
 export type Bundles = {
     outDir: string
-    css: string[],
-    js: string[]
+    css: Bundle
+    js: Bundle
+}
+
+// ----- Single Bundle Type -----
+export type Bundle = {
+    outFile: string
+    chunks: string[]
 }
 
 // ----- File Handlers Types -----
-export type FileHandler = Record<string, (src: string, dest: string) => Promise<void>>
+export type FileHandler =
+    Record<string, (src: string, dest: string) => Promise<void>>
 
 // ----- File Types -----
 export type File = {

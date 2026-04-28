@@ -6,7 +6,7 @@ import path from 'node:path'
 import {
     // --- FUNCTIONS ---
     getDirElements, getFile, log, resolveCurrentPath
-} from "../index.js"
+} from '../index.js'
 
 /**
  * Validates a file or directory recursively.
@@ -16,6 +16,9 @@ export async function validate(
     targetPath: string
 ): Promise<number> {
     // Resolve path relative to CLI_WORKDIR if it's not absolute
+    if (targetPath === 'undefined')
+        throw new Error('No target path')
+
     const absolutePath: string = path.isAbsolute(targetPath)
         ? targetPath
         : resolveCurrentPath([targetPath])

@@ -21,9 +21,10 @@
         "starter"
     ],
     "scripts": {
-        "dev": "node --loader ts-node/esm bin/cli.ts",
+        "dev": "tsx bin/cli.ts",
         "build": "tsc --noEmit && node builder.js",
-        "postinstall:dev": "node --loader ts-node/esm ./src/utils/postInstall.ts",
+        "build:dev": "tsc --noEmit && cross-env NODE_ENV=development node builder.js",
+        "postinstall:dev": "tsx ./src/utils/postInstall.ts",
         "postinstall:prod": "node dist/src/utils/postInstall.js"
     },
     "bin": {
@@ -40,9 +41,9 @@
     },
     "dependencies": {
         "cross-spawn": "^7.0.6",
+        "esbuild": "^0.25.12",
         "fs-extra": "^11.3.0",
-        "html-minifier-terser": "^7.2.0",
-        "esbuild": "^0.25.12"
+        "html-minifier-terser": "^7.2.0"
     },
     "devDependencies": {
         "@types/clean-css": "^4.2.11",
@@ -50,7 +51,8 @@
         "@types/fs-extra": "^11.0.4",
         "@types/html-minifier-terser": "^7.0.2",
         "@types/node": "^24.7.2",
-        "ts-node": "^10.9.2",
+        "cross-env": "^10.1.0",
+        "tsx": "^4.21.0",
         "typescript": "^5.9.3"
     },
     "postinstall": "node dist/bin/cli.js"

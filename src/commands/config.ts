@@ -4,6 +4,7 @@ import path from 'node:path'
 import {
     homedir
 } from 'node:os'
+
 import {
     // --- FUNCTIONS ---
     createFileFromTemplate, getNodeModulesTemplatesPath, getSettingsTemplate, log,
@@ -24,16 +25,18 @@ export async function config(overwrite: boolean): Promise<void> {
         await createGlobalDir()
 
     // /node_modules/minimaz-cli/templates
-    const defaultTemplatesDir: string = await getNodeModulesTemplatesPath()
+    const defaultTemplatesDir: string =
+        await getNodeModulesTemplatesPath()
     if (!(await fs.pathExists(defaultTemplatesDir))) {
-        log('error', 'Default templates directory not found. Try reinstalling minimaz or open an issue on github')
+        log('error', 'Default templates directory not found.')
         return
     }
 
     // ~/.minimaz/templates directory
-    const globalTemplatesDir: string = path.join(globalDir, 'templates')
+    const globalTemplatesDir: string =
+        path.join(globalDir, 'templates')
     if (await fs.pathExists(globalTemplatesDir))
-        log('info', '~/.minimaz/templates already exists. Skipping...')
+        log('info', '~/.minimaz/templates already exists, skipping.')
     else
         await createGlobalTemplatesDir()
 
@@ -41,7 +44,8 @@ export async function config(overwrite: boolean): Promise<void> {
     await copyDefaultTemplates()
 
     // ~/.minimaz/settings.json
-    const settingsPath: string = path.join(globalDir, 'settings.json')
+    const settingsPath: string =
+        path.join(globalDir, 'settings.json')
     await createSettings()  // always enter settings function to validate/fix
 
 
@@ -56,7 +60,7 @@ export async function config(overwrite: boolean): Promise<void> {
 
     async function createGlobalTemplatesDir(): Promise<void> {
         await fs.ensureDir(globalTemplatesDir)
-        log('success', `Created templates directory at ${globalTemplatesDir}`)
+        log('success', `Templates directory created at ${globalTemplatesDir}`)
     }
 
     async function copyDefaultTemplates() {
@@ -64,51 +68,60 @@ export async function config(overwrite: boolean): Promise<void> {
 
         const defaultTemplates = await fs.readdir(defaultTemplatesDir)
         if (defaultTemplates.length === 0) {
-            log('warn', 'Default templates directory is empty')
+            log('warn', 'No default templates available')
             return
         }
 
-        for (const name of defaultTemplates) {
-            const src = path.join(defaultTemplatesDir, name)
-            const dest = path.join(globalTemplatesDir, name)
+        for (
+            const name
+            of defaultTemplates
+        ) {
+            const src: string =
+                path.join(defaultTemplatesDir, name)
+            const dest: string =
+                path.join(globalTemplatesDir, name)
+            const exist: boolean =
+                await fs.pathExists(dest)
 
-            const exists = await fs.pathExists(dest)
-
-            if (exists && !overwrite) {
+            if (exist && !overwrite) {
                 log('info', `Template '${name}' already exists. Skipping...`)
                 continue
             }
 
             await fs.copy(src, dest, { overwrite })
 
-            if (exists && overwrite) {
-                log('success', `Overwritten template '${name}'.`)
-            } else {
-                log('success', `Copied template '${name}'.`)
-            }
+            if (exist && overwrite)
+                log('success', `Template '${name}' overwritten.`);
+            else
+                log('success', `Template '${name}' copied.`);
+
         }
     }
 
     async function createSettings(): Promise<void> {
-        const template: Settings = await getSettingsTemplate(globalTemplatesDir)
+        const template: Settings =
+            await getSettingsTemplate(globalTemplatesDir)
 
         // If file doesn't exist or overwrite = true → write template directly
         if (!(await fs.pathExists(settingsPath)) || overwrite) {
             await createFileFromTemplate(template, [settingsPath])
-            if (overwrite && await fs.pathExists(settingsPath)) {
+            if (overwrite && await fs.pathExists(settingsPath))
                 log('success', `Overwritten settings.json at ${settingsPath}`)
-            } else {
+            else
                 log('success', `Created settings.json at ${settingsPath}`)
-            }
             return
         }
 
         // File exists → read and validate
         let currentSettings: Partial<Settings>
         try {
-            currentSettings = await fs.readJson(settingsPath)
+            currentSettings =
+                await fs.readJson(settingsPath)
         } catch (err: any) {
-            log('warn', 'Failed to read settings.json. Recreating from template...')
+            log(
+                'warn',
+                'Failed to read settings.json. Recreating from template...'
+            )
             await createFileFromTemplate(template, [settingsPath])
             return
         }
@@ -116,7 +129,10 @@ export async function config(overwrite: boolean): Promise<void> {
         let updated = false
 
         // Ensure all required keys exist
-        for (const key of Object.keys(template) as (keyof Settings)[]) {
+        for (
+            const key
+            of Object.keys(template) as (keyof Settings)[]
+        ) {
             if (!(key in currentSettings)) {
                 currentSettings[key] = template[key]
                 log('warn', `Added missing key '${key}' to settings.json`)
@@ -125,7 +141,10 @@ export async function config(overwrite: boolean): Promise<void> {
         }
 
         // Warn about unknown keys
-        for (const key of Object.keys(currentSettings) as (keyof typeof currentSettings)[]) {
+        for (
+            const key
+            of Object.keys(currentSettings) as (keyof typeof currentSettings)[]
+        ) {
             if (!(key in template))
                 log('warn', `Unknown key '${key}' found in settings.json`)
         }

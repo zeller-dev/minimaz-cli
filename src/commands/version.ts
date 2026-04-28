@@ -4,17 +4,15 @@ import {
 } from "../index.js"
 
 export async function version(): Promise<void> {
-    const pkgPath: string = resolveCurrentPath(['package.json'])
-    const { version } = await readJsonFile(pkgPath)
+    const pkgPath: string =
+        resolveCurrentPath(['package.json'])
+    const { version } =
+        await readJsonFile(pkgPath)
 
     if (typeof version !== 'string')
-        throw new Error('Invalid or missing version in package.json')
+        throw new Error(
+            'Invalid or missing version in package.json'
+        )
 
-    console.log(
-        '==========================================',
-        '\n',
-        `minimaz-cli version: ${version}`,
-        '\n',
-        '==========================================',
-    )
+    console.log(version)
 }

@@ -1,8 +1,8 @@
 import {
-    // COMMANDS
+    // --- COMMANDS ---
     config,
 
-    // --- FUNCTIONS
+    // --- FUNCTIONS ---
     log
 } from '../index.js'
 
@@ -12,8 +12,8 @@ export async function postInstall(): Promise<void> {
     try {
         log('info', 'Running Post Install...')
         await config(false)
-        log('success', 'Postinstall: Global templates setup completed')
+        log('success', 'Postinstall: completed')
     } catch (error: any) {
-        log('error', `Postinstall setup failed: ${error.message}`)
+        log('error', `Postinstall: failed: ${error.message}`)
     }
 }

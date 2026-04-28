@@ -24,12 +24,15 @@ export async function init(
 ): Promise<void> {
 
     // Resolve targetDir and check if it exists
-    const targetDir: string = resolveCurrentPath([projectName])
+    const targetDir: string =
+        resolveCurrentPath([projectName])
+
     if (await fs.pathExists(targetDir))
         throw new Error(`Target directory '${targetDir}' already exists.`)
 
     // Resolve templateDir and check if it exists
-    const templateDir: string = await getGlobalTemplatePath(options.template)
+    const templateDir: string =
+        await getGlobalTemplatePath(options.template)
 
     // Copy template files to target directory
     log('debug', `Copying template from '${templateDir}' to '${targetDir}'`)
@@ -45,11 +48,13 @@ export async function init(
 
     // Check for NPM initialization option (ask if not provided)
     const useNpm: boolean = parseBooleanFlag(options.npm)
-    if (useNpm) await initNpm(targetDir, projectName)
+    if (useNpm)
+        await initNpm(targetDir, projectName)
 
     // Check for Git initialization option (ask if not provided)
     const useGit: boolean = parseBooleanFlag(options.git)
-    if (useGit) await initGit(projectName, targetDir, options.gitprovider)
+    if (useGit)
+        await initGit(projectName, targetDir, options.gitprovider)
 
     log(
         'success',
@@ -76,10 +81,8 @@ export async function initGit(
         provider = (await askQuestion(
             'Select a provider or paste a url to connect your existing repo (cli tools needed) [LOCAL/github/gitlab]:',
             'local'
-        ))
+        )).toLowerCase().trim()
     }
-
-    provider = provider.toLowerCase().trim()  // normalize
 
     log('info', 'Initializing Git repository...')
 
@@ -88,11 +91,13 @@ export async function initGit(
     await executeCommand('git', ['init'], targetDir)
 
     // Only link remote if provider is not local
-    if (provider && provider !== 'false' && provider !== 'local') {
-        await linkRemoteRepo(projectName, targetDir, provider, name)
-    } else {
+    if (
+        provider
+        && provider !== 'false'
+        && provider !== 'local'
+    ) await linkRemoteRepo(projectName, targetDir, provider, name)
+    else
         log('info', 'Git repository initialized locally. No remote linked.')
-    }
 
     // Add .gitignore
     log('debug', 'Initializing gitignore...')
@@ -160,7 +165,7 @@ async function linkRemoteRepo(
     if (remote === 'gitlab') {
         log('info', `Creating GitLab repository '${repoName}'`)
 
-        const gitlabUser = process.env.GITLAB_USER
+        const gitlabUser: string | undefined = process.env.GITLAB_USER
         if (!gitlabUser)
             throw new Error('GITLAB_USER environment variable not set')
 
