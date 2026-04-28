@@ -1,15 +1,23 @@
-import readline from 'readline'
 import fs from 'fs-extra'
 import path from 'path'
+import readline from 'readline'
 import spawn from 'cross-spawn'
-import { homedir } from 'os'
-import { ChildProcess, execSync } from 'child_process'
+import {
+    homedir
+} from 'os'
+import {
+    ChildProcess, execSync
+} from 'child_process'
 
 import {
-    log,                                  // utils
-    Args, MinimazConfig, Settings, // types
-    minimazConfigTemplate, colors         // constants
+    // --- CONSTANTS
+    minimazConfigTemplate, colors,
 
+    // --- FUNCTIONS ---
+    log,
+
+    // --- TYPES ---
+    Args, MinimazConfig, Settings,
 } from '../index.js'
 
 // @TODO add cache

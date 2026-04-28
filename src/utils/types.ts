@@ -1,5 +1,10 @@
 // ----- Log Types -----
-export type LogType = 'error' | 'warn' | 'success' | 'info' | 'debug'
+export type LogType =
+    'error'
+    | 'warn'
+    | 'success'
+    | 'info'
+    | 'debug'
 
 // ----- Command Help Types -----
 export type CommandHelp = {
@@ -55,14 +60,14 @@ export interface Args {
 }
 
 // ----- Template Command Options Types -----
-export type templateCommandOptions = {
+export type TemplateCommandOptions = {
     list?: boolean
     delete?: string
     update?: string
 }
 
 // ----- Init Command Options Types -----
-export type initCommandOptions = {
+export type InitCommandOptions = {
     template: string
     npm?: boolean
     git?: boolean

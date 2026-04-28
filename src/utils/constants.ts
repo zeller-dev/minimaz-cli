@@ -1,6 +1,8 @@
 import {
+    // --- FUNCTIONS ---
     colorize,
-    CommandHelp, LogType, MinimazConfig, PkgTemplate     // types
+    // --- TYPES ---
+    CommandHelp, LogType, MinimazConfig, PkgTemplate
 } from "../index.js"
 
 // ----- Package.json template -----

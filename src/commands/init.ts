@@ -1,10 +1,15 @@
 import fs from 'fs-extra'
 
 import {
-    log, askQuestion, getGlobalTemplatePath, createFileFromTemplate,                     // utils
-    resolveCurrentPath, executeCommand, parseBooleanFlag,                                // utils
-    gitIgnoreTemplate, pkgTemplate, minimazConfigTemplate,                               // constants
-    initCommandOptions                                                                   // types
+    // --- CONSTANTS ---
+    gitIgnoreTemplate, pkgTemplate, minimazConfigTemplate,
+
+    // --- FUNCTIONS  ---
+    log, askQuestion, getGlobalTemplatePath, createFileFromTemplate,
+    resolveCurrentPath, executeCommand, parseBooleanFlag,
+
+    // --- TYPES ---
+    InitCommandOptions
 } from '../index.js'
 
 /**
@@ -15,7 +20,7 @@ import {
  */
 export async function init(
     projectName: string,
-    options: initCommandOptions
+    options: InitCommandOptions
 ): Promise<void> {
 
     // Resolve targetDir and check if it exists

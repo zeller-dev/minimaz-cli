@@ -1,14 +1,20 @@
 import fs from 'fs-extra'
-import path from 'path'
-import CleanCSS from 'clean-css'
-import { minify as minifyHtml } from 'html-minifier-terser'
-import { minify as minifyJs } from 'terser'
-import { transform, build as jsBuild, Loader } from 'esbuild'
+import path from 'node:path'
 
 import {
-    loadConfig, log, getFile, removeOutDir, resolveCurrentPath, getDirElements, // utils
-    MinimazConfig, Bundles, File                                                // types
+    minify as minifyHtml
+} from 'html-minifier-terser'
 
+import {
+    transform, build as esbuild, Loader
+} from 'esbuild'
+
+import {
+    // --- FUNCTIONS ---
+    getDirElements, getFile, loadConfig, log, removeOutDir, resolveCurrentPath,
+
+    // --- TYPES ---
+    Bundles, File, MinimazConfig
 } from '../index.js'
 
 /**
@@ -178,64 +184,43 @@ async function processFile(
  * @param file
  * @param config - Minimaz configuration
  */
-async function processHtml(
-    file: File,
-    config: MinimazConfig
-): Promise<void> {
+async function processHtml(file: File, config: MinimazConfig): Promise<void> {
     const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/gi
+    let result = file.content; // Start with original content
 
-    let lastIndex = 0
-    let result = ''
-    let match: RegExpExecArray | null
+    // 1. Minify Inline Scripts
+    const matches = Array.from(result.matchAll(scriptRegex));
+    for (const match of matches) {
+        const [fullMatch, attrs, code] = match;
+        if (/src=/i.test(attrs) || !code.trim()) continue;
 
-    while ((match = scriptRegex.exec(file.content)) !== null) {
-        const [fullMatch, attrs, code] = match
+        const typeAttr = (attrs.match(/type=["']([^"']+)["']/i)?.[1] || '').toLowerCase();
+        const isModule = /module/i.test(typeAttr);
 
-        result += file.content.slice(lastIndex, match.index)
-        lastIndex = match.index + fullMatch.length
-
-        if (/src=/i.test(attrs)) {
-            result += fullMatch
-            continue
-        }
-
-        const typeAttr = (attrs.match(/type=["']([^"']+)["']/i)?.[1] || '').toLowerCase()
-        const isModule = /module/i.test(typeAttr)
-        const isNoModule = /nomodule/i.test(attrs)
-
-        if (typeAttr === 'application/json') {
+        if (typeAttr === '' || typeAttr === 'text/javascript' || isModule) {
             try {
-                // Minify JSON: parse and stringify compact
-                const minJson = JSON.stringify(JSON.parse(code))
-                result += `<script${attrs}>${minJson}</script>`
+                const { code: minified } = await transform(code, {
+                    minify: true,
+                    format: isModule ? 'esm' : 'iife'
+                });
+                // Replace the specific fullMatch in the result
+                result = result.replace(fullMatch, `<script${attrs}>${minified.trim()}</script>`);
             } catch (err) {
-                log('warn', `Invalid JSON in ${file.src}: ${err}`)
-                result += fullMatch
+                log('warn', `JS minify error in ${file.src}`);
             }
-        } else if (typeAttr === '' || typeAttr === 'text/javascript' || isModule || isNoModule) {
-            try {
-                // Minify inline JS safely
-                const minJs = await minifyJs(code, { format: { semicolons: true }, module: isModule })
-                result += `<script${attrs}>${minJs.code || ''}</script>`
-            } catch (err) {
-                log('warn', `JS minify error in ${file.src}: ${err}`)
-                result += fullMatch
-            }
-        } else {
-            result += fullMatch
         }
     }
 
-    // Append remaining HTML
-    result += file.content.slice(lastIndex)
-
-    // Minify final HTML + inline CSS if configured
+    // 2. Final HTML Minification
     if (config.minify?.html) {
         result = await minifyHtml(result, {
             collapseWhitespace: true,
             removeComments: true,
-            minifyCSS: config.minify.css,
-            minifyJS: false, // already minified above
+            minifyCSS: async (text: string) => {
+                const { code } = await transform(text, { loader: 'css', minify: true });
+                return code;
+            },
+            minifyJS: false, // Already handled manually above
         })
     }
 
@@ -256,17 +241,20 @@ async function processCSS(
     minifying: boolean
 ): Promise<void> {
     if (bundling) {
-        bundle.push(file.content)
+        bundle.push(file.content);
     } else {
-        let out = file.content
+        let out: string = file.content;
         if (minifying) {
-            const min = new CleanCSS().minify(file.content)
-            if (min.warnings.length) min.warnings.forEach(w => log('warn', w))
-            out = min.styles
+            const result = await transform(out, {
+                loader: 'css',
+                minify: true
+            });
+            out = result.code;
         }
-        await fs.outputFile(file.dest, out)
+        await fs.outputFile(file.dest, out);
     }
 }
+
 /**
  * Processes a JavaScript file:
  *
@@ -280,17 +268,21 @@ async function processJS(
     bundling: boolean,
     minifying: boolean
 ): Promise<void> {
-
-    // Detect CommonJS patterns
     if (/require\s*\(|module\.exports|exports\./.test(file.content))
-        log('warn', `CommonJS detected consider converting to ESM`)
+        log('warn', `CommonJS detected in ${file.src}. Consider ESM.`)
+
+    let out = file.content;
+
+    // Use esbuild instead of the missing minifyJs (terser)
+    if (minifying && !bundling) {
+        const result = await transform(out, { minify: true, target: 'es2020' });
+        out = result.code;
+    }
 
     if (bundling) {
-        bundle.push(file.content)
+        bundle.push(out);
     } else {
-        let out = file.content
-        if (minifying) out = (await minifyJs(out)).code ?? ''
-        await fs.outputFile(file.dest, out)
+        await fs.outputFile(file.dest, out);
     }
 }
 
@@ -327,10 +319,10 @@ async function processTS(
         sourcemap: false,
     })
 
-    const jsContent = result.code
+    const jsContent: string = result.code
 
     // Reuse processJS for further handling
-    const jsDest = file.dest.replace(/\.(ts|tsx)$/i, '.js')
+    const jsDest: string = file.dest.replace(/\.(ts|tsx)$/i, '.js')
 
     await processJS(
         { src: file.src, dest: jsDest, content: jsContent, ext: 'js' },
@@ -402,20 +394,16 @@ async function processExternals(
  * @param config - Minimaz configuration
  * @param outDir - Absolute dist directory path
  */
-async function writeCssBundle(
-    chunks: string[],
-    minify: boolean,
-    outDir: string
-): Promise<void> {
-    if (!chunks.length) return
-    let css: string = chunks.join('')
+async function writeCssBundle(chunks: string[], minify: boolean, outDir: string): Promise<void> {
+    if (!chunks.length) return;
+    let css = chunks.join('\n');
+
     if (minify) {
-        const output = new CleanCSS().minify(css)
-        if (output.warnings.length)
-            output.warnings.forEach(w => log('warn', w))
-        css = output.styles
+        const result = await transform(css, { loader: 'css', minify: true });
+        css = result.code;
     }
-    await fs.outputFile(path.join(outDir, 'style.css'), css)
+
+    await fs.outputFile(path.join(outDir, 'style.css'), css);
 }
 
 /**
@@ -425,26 +413,20 @@ async function writeCssBundle(
  * @param config - Minimaz configuration
  * @param outDir - Absolute dist directory path
  */
-async function writeJsBundle(
-    chunks: string[],
-    minify: boolean,
-    outDir: string
-): Promise<void> {
+async function writeJsBundle(chunks: string[], minify: boolean, outDir: string): Promise<void> {
     if (!chunks.length) return
 
     try {
-        const result = await jsBuild({
+        const result = await esbuild({ // Explicitly call .build
             stdin: {
                 contents: chunks.join('\n'),
-                resolveDir: outDir,
+                resolveDir: process.cwd(),
                 loader: 'js',
-                sourcefile: 'bundle.js'
             },
             bundle: true,
             format: 'esm',
             minify: minify,
-            sourcemap: false,
-            write: false
+            write: false,
         })
 
         await fs.outputFile(path.join(outDir, 'script.js'), result.outputFiles[0].text)
@@ -454,14 +436,9 @@ async function writeJsBundle(
     }
 }
 
-async function copyToDist(
-    file: File
-): Promise<void> {
-    log('debug', `Creating ${file.dest}`)
-    await fs.outputFile(file.dest, file.content)
-}
-
 function getBundleOutDir(config: MinimazConfig, outDir: string) {
     // If outDir is empty string or undefined, return the outDir itself
-    return config.bundling?.outDir ? path.join(outDir, config.bundling.outDir) : outDir
+    return config.bundling?.outDir
+        ? path.join(outDir, config.bundling.outDir)
+        : outDir
 }

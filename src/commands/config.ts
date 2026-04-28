@@ -1,10 +1,16 @@
-import path from "path"
 import fs from 'fs-extra'
-import { homedir } from "os"
+import path from 'node:path'
+
 import {
-    Settings,                                                                       // types
-    createFileFromTemplate, getNodeModulesTemplatesPath, getSettingsTemplate, log   // utils
-} from "../index.js"
+    homedir
+} from 'node:os'
+import {
+    // --- FUNCTIONS ---
+    createFileFromTemplate, getNodeModulesTemplatesPath, getSettingsTemplate, log,
+
+    // --- TYPES ---
+    Settings
+} from '../index.js'
 
 export async function config(overwrite: boolean): Promise<void> {
 

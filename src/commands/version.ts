@@ -1,5 +1,6 @@
 import {
-    readJsonFile, resolveCurrentPath   // utils
+    // --- FUNCTIONS ---
+    readJsonFile, resolveCurrentPath
 } from "../index.js"
 
 export async function version(): Promise<void> {

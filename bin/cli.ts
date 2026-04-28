@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 import {
-    build, init, help, template, clear, version, config,          // commands
-    log, parseArgs, initEnv,                                      // utils
-    CommandFn, templateCommandOptions, initCommandOptions, Args   // types
+    // --- COMMANDS ---
+    build, init, help, template, clear, version, config, validate,
+    // --- UTILS ---
+    log, parseArgs, initEnv,
+    // --- TYPES ---
+    CommandFn, TemplateCommandOptions, InitCommandOptions, Args
 } from '../src/index.js'
 
 if (process.env.npm_lifecycle_event === 'postinstall') {
@@ -51,7 +54,7 @@ async function main(): Promise<void> {
         // Config command
         config: async () => config(Boolean(args.overwrite === true || args.overwrite === 'true')),
 
-        // Init command with optional template
+        // Init command
         init: async () => {
             await init(
                 subArg || 'minimaz-project',
@@ -61,18 +64,23 @@ async function main(): Promise<void> {
                     git: args.git,
                     gitremote: args.gitremote,
                     gitprovider: args.gitprovider
-                } as initCommandOptions)
+                } as InitCommandOptions)
         },
 
-        // Template command with list/delete/update options
+        // Template command
         template: async () => {
             await template(
                 {
                     list: args.l || args.list,
                     delete: args.d || args.delete,
                     update: args.u || args.update
-                } as templateCommandOptions),
+                } as TemplateCommandOptions),
                 subArg
+        },
+
+        // Validate command
+        validate: async () => {
+            await validate(String(args.path))
         },
 
         // Version command

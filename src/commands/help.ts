@@ -1,6 +1,8 @@
 import {
-    CommandHelp,      // types
-    commandsHelp      // constants
+    // --- CONSTANTS ---
+    commandsHelp,
+    // --- TYPES ---
+    CommandHelp
 } from "../index.js"
 
 /**

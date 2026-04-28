@@ -1,6 +1,9 @@
 import {
-    log,        // utils,
-    config      // commands
+    // COMMANDS
+    config,
+
+    // --- FUNCTIONS
+    log
 } from '../index.js'
 
 // ----- Setup Default Templates -----

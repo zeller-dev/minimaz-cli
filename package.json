@@ -39,11 +39,9 @@
         "url": "https://github.com/zeller-dev/minimaz-cli/issues"
     },
     "dependencies": {
-        "clean-css": "^5.3.3",
         "cross-spawn": "^7.0.6",
         "fs-extra": "^11.3.0",
         "html-minifier-terser": "^7.2.0",
-        "terser": "^5.44.0",
         "esbuild": "^0.25.12"
     },
     "devDependencies": {

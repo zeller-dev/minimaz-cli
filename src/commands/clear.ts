@@ -1,4 +1,7 @@
-import { removeOutDir } from '../index.js'
+import {
+    // --- FUNCTIONS ---
+    removeOutDir
+} from '../index.js'
 
 /**
  * Clear the dist directory.

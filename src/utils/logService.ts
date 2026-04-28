@@ -1,8 +1,12 @@
 import {
-    colorize,         // functions
-    colors, prefix,   // constants
-    LogType           // types
+    // --- CONSTANTS
+    colors, prefix,
 
+    // --- FUNCTIONS ---
+    colorize,
+
+    // --- TYPES ---
+    LogType
 } from "../index.js"
 
 /**

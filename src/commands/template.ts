@@ -1,9 +1,14 @@
 import fs from 'fs-extra'
-import path from 'path'
+import path from 'node:path'
 
 import {
-    askQuestion, log, getGlobalTemplatesDirPath, getNodeModulesTemplatesPath, resolveCurrentPath, getDirElements,   // utils
-    templateCommandOptions, // types
+    // --- FUNCTIONS ---
+    askQuestion,
+    getDirElements, getGlobalTemplatesDirPath, getNodeModulesTemplatesPath,
+    log, resolveCurrentPath,
+
+    // --- TYPES ---
+    TemplateCommandOptions,
 } from '../index.js'
 
 /**
@@ -12,7 +17,10 @@ import {
  * @param targetPath - Optional path of the folder to save as template
  * @param options - CLI flags (--list, --delete, --update, etc.)
  */
-export async function template(options: templateCommandOptions, targetPath?: string): Promise<void> {
+export async function template(
+    options: TemplateCommandOptions,
+    targetPath?: string
+): Promise<void> {
 
     const templatesDir: string = await getGlobalTemplatesDirPath()
 
@@ -40,7 +48,10 @@ export async function template(options: templateCommandOptions, targetPath?: str
  * @param dir - Global templates directory (~/.minimaz/templates)
  * @param templateName - Name of the template to update
  */
-async function updateSingleTemplate(dir: string, name: string): Promise<void> {
+async function updateSingleTemplate(
+    dir: string,
+    name: string
+): Promise<void> {
     const sourceDir: string = resolveCurrentPath([])
     const targetDir: string = path.join(dir, name)
 
@@ -66,7 +77,9 @@ async function updateSingleTemplate(dir: string, name: string): Promise<void> {
  *
  * @param templatesDir - Global templates directory (~/.minimaz/templates)
  */
-async function updateFromNodeModules(dir: string): Promise<void> {
+async function updateFromNodeModules(
+    dir: string
+): Promise<void> {
     const nodeModulesPath: string = await getNodeModulesTemplatesPath()
     const items: string[] = await getDirElements(nodeModulesPath)
 
@@ -94,7 +107,10 @@ async function updateFromNodeModules(dir: string): Promise<void> {
  * @param dir - Global templates directory
  * @param name - Template name to delete
  */
-async function deleteTemplate(dir: string, name: string): Promise<void> {
+async function deleteTemplate(
+    dir: string,
+    name: string
+): Promise<void> {
     const target: string = path.join(dir, name)
     if (!await fs.pathExists(target)) throw new Error(`Template not found: ${name}`)
 
@@ -117,7 +133,9 @@ async function deleteTemplate(dir: string, name: string): Promise<void> {
  * @param dir - Global templates directory (~/.minimaz/templates)
  * @param targetPath - Optional path to save as a template
  */
-async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
+async function saveTemplate(
+    dir: string, targetPath?: string
+): Promise<void> {
     let source: string = resolveCurrentPath(targetPath ? [targetPath] : [])
 
     if (!await fs.pathExists(source)) {
@@ -150,7 +168,9 @@ async function saveTemplate(dir: string, targetPath?: string): Promise<void> {
  *
  * @param dir - Templates directory path
  */
-async function listTemplates(dir: string): Promise<void> {
+async function listTemplates(
+    dir: string
+): Promise<void> {
     const templates: string[] = await getDirElements(dir)
 
     if (templates.length === 0) {
