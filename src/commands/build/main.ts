@@ -100,7 +100,8 @@ export async function build(): Promise<void> {
             outDirPath,
             config.scripts,
             config,
-            ignoredFiles)
+            ignoredFiles
+        )
     }
 
     log(

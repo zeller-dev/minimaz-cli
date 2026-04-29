@@ -6,6 +6,7 @@ import {
 export async function version(): Promise<void> {
     const pkgPath: string =
         resolveCurrentPath(["package.json"])
+
     const { version } =
         await readJsonFile(pkgPath)
 

@@ -56,7 +56,7 @@ export function parseArgs(rawArgs: string[]): Args {
     const args: Args = { _: [] }
 
     for (let i = 0; i < rawArgs.length; i++) {
-        const arg: string = rawArgs[i].toLowerCase();
+        const arg: string = rawArgs[i].toLowerCase()
 
         // Positional argument
         if (!arg.startsWith("-")) {

@@ -1,12 +1,12 @@
 // Export commands
-export { build } from "./commands/build/main.js"
+export { build } from "./commands/build/index.js"
 export { clear } from "./commands/clear.js"
 export { config } from "./commands/config.js"
 export { help } from "./commands/help.js"
 export { init } from "./commands/init.js"
 export { template } from "./commands/template.js"
 export { version } from "./commands/version.js"
-export { validate } from "./commands/validate.js"
+export { validate } from "./commands/validate/index.js"
 
 // Export utils
 export * from "./utils/constants.js"

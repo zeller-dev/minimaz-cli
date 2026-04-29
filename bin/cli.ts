@@ -105,12 +105,18 @@ async function main(): Promise<void> {
      */
     try {
         if (commands[cmd]) {
-            log('info', `Executing command '${cmd}'...`)
+            log(
+                'info',
+                `Executing command '${cmd}'...`
+            )
             await commands[cmd]()
         }
         else {
             // Unknown command → log error and show general help
-            log('error', `Unknown command '${cmd}'. Use 'minimaz help' to see available commands.`)
+            log(
+                'error',
+                `Unknown command '${cmd}'. Use 'minimaz help' to see available commands.`
+            )
             help()
         }
     } catch (error: any) {
