@@ -4,16 +4,16 @@ import {
 
     // --- FUNCTIONS ---
     log
-} from '../index.js'
+} from "../index.js"
 
 // ----- Setup Default Templates -----
 // Runs after install to ensure global templates exist
 export async function postInstall(): Promise<void> {
     try {
-        log('info', 'Running Post Install...')
+        log("info", "Running Post Install...")
         await config(false)
-        log('success', 'Postinstall: completed')
+        log("success", "Postinstall: completed")
     } catch (error: any) {
-        log('error', `Postinstall: failed: ${error.message}`)
+        log("error", `Postinstall: failed: ${error.message}`)
     }
 }

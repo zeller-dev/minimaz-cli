@@ -1,10 +1,10 @@
 // ----- Log Types -----
 export type LogType =
-    'error'
-    | 'warn'
-    | 'success'
-    | 'info'
-    | 'debug'
+    "error"
+    | "warn"
+    | "success"
+    | "info"
+    | "debug"
 
 // ----- Command Help Types -----
 export type CommandHelp = {
@@ -48,7 +48,7 @@ export type MinimazConfig = {
 export type PkgTemplate = {
     version: string
     license: string
-    type: 'commonjs' | 'module'
+    type: "commonjs" | "module"
     scripts: Record<string, string>
     devDependencies: Record<string, string>
 }

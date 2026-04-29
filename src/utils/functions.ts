@@ -1,13 +1,37 @@
-import fs from 'fs-extra'
-import path from 'path'
-import readline from 'readline'
-import spawn from 'cross-spawn'
+
+import {
+    ChildProcess,
+    execSync
+} from "child_process"
+
+import {
+    spawn
+} from "cross-spawn"
+
+import {
+    outputFile,
+    pathExists,
+    remove
+} from "fs-extra"
+
+import {
+    readdir,
+    readFile
+} from "node:fs/promises"
+
 import {
     homedir
-} from 'os'
+} from "os"
+
 import {
-    ChildProcess, execSync
-} from 'child_process'
+    isAbsolute,
+    join,
+    resolve
+} from "path"
+
+import {
+    createInterface
+} from "readline"
 
 import {
     // --- CONSTANTS ---
@@ -18,7 +42,7 @@ import {
 
     // --- TYPES ---
     Args, MinimazConfig, Settings,
-} from '../index.js'
+} from "../index.js"
 
 // @TODO add cache
 
@@ -35,22 +59,22 @@ export function parseArgs(rawArgs: string[]): Args {
         const arg: string = rawArgs[i].toLowerCase();
 
         // Positional argument
-        if (!arg.startsWith('-')) {
+        if (!arg.startsWith("-")) {
             args._.push(arg)
             continue
         }
 
         // --key=value syntax
-        if (arg.startsWith('--') && arg.includes('=')) {
-            const [key, value]: string[] = arg.slice(2).split('=')
+        if (arg.startsWith("--") && arg.includes("=")) {
+            const [key, value]: string[] = arg.slice(2).split("=")
             args[key] = value
             continue
         }
 
-        const key: string = arg.replace(/^-+/, '')
+        const key: string = arg.replace(/^-+/, "")
         const next: string = rawArgs[i + 1]
 
-        if (next && !next.startsWith('-')) {
+        if (next && !next.startsWith("-")) {
             args[key] = next
             i++
         } else {
@@ -68,10 +92,10 @@ export function parseArgs(rawArgs: string[]): Args {
  */
 export function askQuestion(
     query: string,
-    defaultAnswer = ''
+    defaultAnswer = ""
 ): Promise<string> {
     return new Promise(resolve => {
-        const rl = readline.createInterface({
+        const rl = createInterface({
             input: process.stdin,
             output: process.stdout
         })
@@ -87,7 +111,7 @@ export function askQuestion(
             resolve(answer.trim() || defaultAnswer)
         })
 
-        rl.on('SIGINT', () => {
+        rl.on("SIGINT", () => {
             clearTimeout(timer)
             rl.close()
             process.exit(130)
@@ -107,8 +131,8 @@ export function applyReplacements(
     replacements: Record<string, string> = {}
 ): string {
     return Object.entries(replacements).reduce((acc, [from, to]) => {
-        const escaped: string = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        const pattern: RegExp = new RegExp(escaped, 'gi')
+        const escaped: string = from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        const pattern: RegExp = new RegExp(escaped, "gi")
         return acc.replace(pattern, to)
     }, content)
 }
@@ -125,12 +149,12 @@ export async function getFile(
     replace?: Record<string, string>
 ): Promise<string> {
     try {
-        let file: string = await fs.readFile(srcPath, 'utf8')
+        let file: string = await readFile(srcPath, "utf8")
         if (replace) file = applyReplacements(file, replace)
         return file
     } catch (error: any) {
-        log('error', `Failed to read file ${srcPath}: ${error.message}`)
-        return ''
+        log("error", `Failed to read file ${srcPath}: ${error.message}`)
+        return ""
     }
 }
 
@@ -141,20 +165,20 @@ export async function getFile(
  * @returns Path to the global Minimaz CLI installation
  */
 export async function getGlobalNodeModulesPath(): Promise<string> {
-    log('debug', `Getting global node modules path...`)
+    log("debug", `Getting global node modules ..`)
 
     try {
-        const prefix: string = execSync('npm config get prefix', { encoding: 'utf8' }).trim()
-        if (!prefix) throw new Error('Empty npm prefix')
+        const prefix: string = execSync("npm config get prefix", { encoding: "utf8" }).trim()
+        if (!prefix) throw new Error("Empty npm prefix")
 
-        return process.platform === 'win32'
-            ? path.join(prefix, 'node_modules', 'minimaz-cli')
-            : path.join(prefix, 'lib', 'node_modules', 'minimaz-cli')
+        return process.platform === "win32"
+            ? join(prefix, "node_modules", "minimaz-cli")
+            : join(prefix, "lib", "node_modules", "minimaz-cli")
     } catch (error: any) {
         // Fallback paths for misconfigured or portable environments
-        return process.platform === 'win32'
-            ? path.join(process.env.APPDATA || '', 'npm', 'node_modules', 'minimaz-cli')
-            : '/usr/local/lib/node_modules/minimaz-cli'
+        return process.platform === "win32"
+            ? join(process.env.APPDATA || "", "npm", "node_modules", "minimaz-cli")
+            : "/usr/local/lib/node_modules/minimaz-cli"
     }
 }
 
@@ -163,22 +187,22 @@ export async function getGlobalNodeModulesPath(): Promise<string> {
  * Throws an error if the directory does not exist.
  */
 export async function getGlobalDirPath(): Promise<string> {
-    log('debug', `Checking existence of global Minimaz directory...`)
-    const dir: string = path.join(homedir(), '.minimaz')
-    const exists: boolean = await fs.pathExists(dir)
+    log("debug", `Checking existence of global Minimaz directory...`)
+    const dir: string = join(homedir(), ".minimaz")
+    const exists: boolean = await pathExists(dir)
     if (!exists)
-        throw new Error(`Global Minimaz folder does not exist.\nRun 'minimaz config' to generate it.`)
+        throw new Error(`Global Minimaz folder does not exist.\nRun "minimaz config" to generate it.`)
 
     return dir
 }
 
 /**
- * Returns the global templates directory's path.
+ * Returns the global templates directory"s
  */
 export async function getGlobalTemplatesDirPath(): Promise<string> {
-    log('debug', 'Getting global templates directory path...')
-    const dir: string = path.join(await getGlobalDirPath(), 'templates')
-    const exists: boolean = await fs.pathExists(dir)
+    log("debug", "Getting global templates directory ..")
+    const dir: string = join(await getGlobalDirPath(), "templates")
+    const exists: boolean = await pathExists(dir)
     if (!exists)
         throw new Error(`Template directory not found in global directory`)
 
@@ -186,24 +210,24 @@ export async function getGlobalTemplatesDirPath(): Promise<string> {
 }
 
 export async function getGlobalTemplatePath(template: string): Promise<string> {
-    log('debug', `Getting template '${template}'directory path...`)
-    const dir: string = path.join(await getGlobalTemplatesDirPath(), template)
-    const exists: boolean = await fs.pathExists(dir)
+    log("debug", `Getting template "${template}"directory ..`)
+    const dir: string = join(await getGlobalTemplatesDirPath(), template)
+    const exists: boolean = await pathExists(dir)
     if (!exists)
-        throw new Error(`Template '${template}' not found.`)
+        throw new Error(`Template "${template}" not found.`)
 
     return dir
 }
 
 /**
- * Returns the node modules templates directory's path
+ * Returns the node modules templates directory"s path
  */
 export async function getNodeModulesTemplatesPath(): Promise<string> {
-    log('debug', 'Getting default templates directory path...')
-    const dir: string = path.join(await getGlobalNodeModulesPath(), 'templates')
-    const exists: boolean = await fs.pathExists(dir)
+    log("debug", "Getting default templates directory ..")
+    const dir: string = join(await getGlobalNodeModulesPath(), "templates")
+    const exists: boolean = await pathExists(dir)
     if (!exists)
-        throw new Error('Default template folder not found')
+        throw new Error("Default template folder not found")
 
     return dir
 }
@@ -211,8 +235,8 @@ export async function getNodeModulesTemplatesPath(): Promise<string> {
 /**
  * Executes a shell command in a cross-platform safe way.
  *
- * @param command - Command name (e.g. 'npm')
- * @param args - Command arguments (e.g. ['install'])
+ * @param command - Command name (e.g. "npm")
+ * @param args - Command arguments (e.g. ["install"])
  * @param targetDir - Working directory
  */
 export function executeCommand(
@@ -220,16 +244,16 @@ export function executeCommand(
     args: string[],
     target: string
 ): Promise<void> {
-    log('debug', `Running: ${command} ${args.join(' ')}`)
+    log("debug", `Running: ${command} ${args.join(" ")}`)
 
     return new Promise((resolve, reject) => {
         const child: ChildProcess = spawn(command, args, {
             cwd: target,
-            stdio: 'inherit'
+            stdio: "inherit"
         })
 
-        child.on('error', reject)
-        child.on('close', code =>
+        child.on("error", reject)
+        child.on("close", code =>
             code === 0
                 ? resolve()
                 : reject(new Error(`${command} exited with code ${code}`))
@@ -251,29 +275,29 @@ export async function createFileFromTemplate(
     pathComponents: string[],
     overwrite: boolean = true
 ): Promise<void> {
-    log('debug', 'Creating file from template...')
-    const outputPath: string = path.resolve(...pathComponents)
-    let content = ''
+    log("debug", "Creating file from template...")
+    const outputPath: string = resolve(...pathComponents)
+    let content = ""
 
     if (template !== undefined) {
-        if (typeof template === 'string') {
-            content = template.endsWith('\n') ? template : `${template}\n`
-        } else if (typeof template === 'object' && template !== null) {
+        if (typeof template === "string") {
+            content = template.endsWith("\n") ? template : `${template}\n`
+        } else if (typeof template === "object" && template !== null) {
             content = `${JSON.stringify(template, null, 2)}\n`
         } else {
-            throw new Error('Unsupported template type. Must be string or object.')
+            throw new Error("Unsupported template type. Must be string or object.")
         }
     }
 
     try {
-        if (!overwrite && await fs.pathExists(outputPath)) {
-            log('info', `File already exists at '${outputPath}', skipping creation.`)
+        if (!overwrite && await pathExists(outputPath)) {
+            log("info", `File already exists at "${outputPath}", skipping creation.`)
             return
         }
-        await fs.outputFile(outputPath, content)
+        await outputFile(outputPath, content)
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error)
-        throw new Error(`Failed to create file at '${outputPath}': ${message}`)
+        throw new Error(`Failed to create file at "${outputPath}": ${message}`)
     }
 }
 
@@ -281,48 +305,48 @@ export async function createFileFromTemplate(
  * Removes Dist Directory
  */
 export async function removeOutDir(dir?: string): Promise<void> {
-    log('debug', 'Removing outDir...')
+    log("debug", "Removing outDir...")
     const outDir = dir
-        ? path.isAbsolute(dir) ? dir : resolveCurrentPath([dir])
-        : path.resolve(process.cwd(), (await loadConfig()).outDir ?? 'dist')
+        ? isAbsolute(dir) ? dir : resolveCurrentPath([dir])
+        : resolve(process.cwd(), (await loadConfig()).outDir ?? "dist")
     const rootDir = process.cwd()
 
     if (outDir === rootDir || outDir.length <= rootDir.length)
         throw new Error(`Refusing to delete unsafe directory: ${outDir}`)
 
-    if (!await fs.pathExists(outDir)) {
-        log('debug', `No dist folder found: ${outDir}`)
+    if (!await pathExists(outDir)) {
+        log("debug", `No dist folder found: ${outDir}`)
         return
     }
 
-    await fs.remove(outDir)
-    log('success', `Cleared ${outDir}`)
+    await remove(outDir)
+    log("success", `Cleared ${outDir}`)
 }
 
 /**
  * Returns Minimaz Config
  */
 export async function loadConfig(): Promise<MinimazConfig> {
-    const configPath = resolveCurrentPath(['minimaz.config.json'])
+    const configPath = resolveCurrentPath(["minimaz.config.json"])
     let config: any
 
-    if (await fs.pathExists(configPath)) {
-        config = await fs.readJson(configPath)
-        log('success', 'Loaded config from minimaz.config.json')
+    if (await pathExists(configPath)) {
+        config = JSON.parse(await readFile(configPath, "utf-8"))
+        log("success", "Loaded config from minimaz.config.json")
     } else {
-        log('warn', 'No minimaz.config.json found. Using default config')
+        log("warn", "No minimaz.config.json found. Using default config")
         config = JSON.parse(JSON.stringify(minimazConfigTemplate))
     }
 
     // Validate required fields
-    if (!config.outDir || typeof config.outDir !== 'string')
-        throw new Error('Invalid config: outDir must be a string')
+    if (!config.outDir || typeof config.outDir !== "string")
+        throw new Error("Invalid config: outDir must be a string")
 
-    if (!config.folders || typeof config.folders !== 'object')
-        throw new Error('Invalid config: folders must be an object')
+    if (!config.folders || typeof config.folders !== "object")
+        throw new Error("Invalid config: folders must be an object")
 
     // Optional: set defaults for optional fields
-    config.bundling ??= { outDir: '' }
+    config.bundling ??= { outDir: "" }
     config.minify ??= {}
     config.replace ??= {}
 
@@ -335,41 +359,49 @@ export async function loadConfig(): Promise<MinimazConfig> {
  * @param verbose - set true to enable verbose logging
  */
 export function initEnv(verbose?: boolean): void {
-    log('debug', 'Initializing environments variables...')
+    log("debug", "Initializing environments variables...")
 
     // Verbose
-    process.env.VERBOSE = verbose ? 'true' : 'false'
-    log('debug', `VERBOSE = ${process.env.VERBOSE}`)
+    process.env.VERBOSE = verbose ? "true" : "false"
+    log("debug", `VERBOSE = ${process.env.VERBOSE}`)
 
     // Working Path
     process.env.CLI_WORKDIR = process.cwd()
-    log('debug', `CLI_WORKDIR = ${process.env.CLI_WORKDIR}`)
+    log("debug", `CLI_WORKDIR = ${process.env.CLI_WORKDIR}`)
 }
 
 /**
- * Resolve a path relative to the CLI's current working directory
+ * Resolve a path relative to the CLI"s current working directory
  *
  * @param components optional path segments to append
  */
 export function resolveCurrentPath(components: string[] = []): string {
-    log('debug', 'Resolving current path...')
-    return path.resolve(
+    log("debug", "Resolving current ..")
+    return resolve(
         process.env.CLI_WORKDIR ?? process.cwd(),
         ...components
     )
 }
 
 /**
- * Reads and parses a JSON file.
+ * Reads and parses a JSON file using native Node.js fs/promises.
  *
  * @param file - Path to the JSON file
  */
 export async function readJsonFile(file: string): Promise<any | null> {
-    const exists: boolean = await fs.pathExists(file)
+    const exists: boolean = await pathExists(file)
     if (!exists)
-        throw new Error(`NOT FOUND: '${file}' does not exist`)
+        throw new Error(`NOT FOUND: "${file}" does not exist`)
 
-    return await fs.readJson(file)
+    try {
+        // Read the file as a UTF-8 string
+        const content: string = await readFile(file, "utf8")
+
+        // Parse and return the JSON data
+        return JSON.parse(content)
+    } catch (error: any) {
+        throw new Error(`PARSE ERROR: Failed to parse JSON in "${file}" - ${error.message}`)
+    }
 }
 
 /**
@@ -379,13 +411,13 @@ export async function readJsonFile(file: string): Promise<any | null> {
  * @param dir - Path to the directory to read
  */
 export async function getDirElements(dir: string): Promise<string[]> {
-    log('debug', `Reading elements of ${dir}...`)
-    const exists: boolean = await fs.pathExists(dir)
+    log("debug", `Reading elements of ${dir}...`)
+    const exists: boolean = await pathExists(dir)
     if (!exists) {
-        log('warn', `Directory does not exist: ${dir}`)
+        log("warn", `Directory does not exist: ${dir}`)
         return []
     }
-    return await fs.readdir(dir)
+    return await readdir(dir)
 }
 
 /**
@@ -405,7 +437,7 @@ export async function getSettingsTemplate(globalTemplatesDir: string): Promise<S
 
 export function parseBooleanFlag(flag?: string | boolean): boolean {
     if (flag === undefined) return false          // undefined → false
-    if (typeof flag === 'boolean') return flag    // true/false boolean → keep
+    if (typeof flag === "boolean") return flag    // true/false boolean → keep
     const val = flag.toLowerCase()
-    return val === 'true' || val === ''          // --flag or --flag=true → true
+    return val === "true" || val === ""          // --flag or --flag=true → true
 }

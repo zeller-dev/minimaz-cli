@@ -1,4 +1,7 @@
-import fs from 'fs-extra'
+import {
+    copy,
+    pathExists
+} from "fs-extra"
 
 import {
     // --- CONSTANTS ---
@@ -10,7 +13,7 @@ import {
 
     // --- TYPES ---
     InitCommandOptions
-} from '../index.js'
+} from "../index.js"
 
 /**
  * Initializes a new Minimaz project.
@@ -27,22 +30,22 @@ export async function init(
     const targetDir: string =
         resolveCurrentPath([projectName])
 
-    if (await fs.pathExists(targetDir))
-        throw new Error(`Target directory '${targetDir}' already exists.`)
+    if (await pathExists(targetDir))
+        throw new Error(`Target directory "${targetDir}" already exists.`)
 
     // Resolve templateDir and check if it exists
     const templateDir: string =
         await getGlobalTemplatePath(options.template)
 
     // Copy template files to target directory
-    log('debug', `Copying template from '${templateDir}' to '${targetDir}'`)
-    await fs.copy(templateDir, targetDir)
+    log("debug", `Copying template from "${templateDir}" to "${targetDir}"`)
+    await copy(templateDir, targetDir)
 
     // add minimaz.config.json
-    log('debug', 'Initializing minimaz.config.json...')
+    log("debug", "Initializing minimaz.config.json...")
     await createFileFromTemplate(
         minimazConfigTemplate,
-        [targetDir, 'minimaz.config.json'],
+        [targetDir, "minimaz.config.json"],
         false
     )
 
@@ -57,8 +60,8 @@ export async function init(
         await initGit(projectName, targetDir, options.gitprovider)
 
     log(
-        'success',
-        `Project '${projectName}' created using template '${options.template}'.`
+        "success",
+        `Project "${projectName}" created using template "${options.template}".`
     )
 }
 
@@ -67,43 +70,43 @@ export async function init(
  *
  * @param targetDir - Directory to initialize Git
  * @param remoteUrl - Optional remote URL
- * @param provider - Optional provider ('github' | 'gitlab')
+ * @param provider - Optional provider ("github" | "gitlab")
  */
 export async function initGit(
     projectName: string,
     targetDir: string,
     provider?: string,
-    name: string = 'origin'
+    name: string = "origin"
 ): Promise<void> {
 
     // Ask for Git provider only if not explicitly provided
     if (!provider) {
         provider = (await askQuestion(
-            'Select a provider or paste a url to connect your existing repo (cli tools needed) [LOCAL/github/gitlab]:',
-            'local'
+            "Select a provider or paste a url to connect your existing repo (cli tools needed) [LOCAL/github/gitlab]:",
+            "local"
         )).toLowerCase().trim()
     }
 
-    log('info', 'Initializing Git repository...')
+    log("info", "Initializing Git repository...")
 
     // Initialize local git repository
-    log('debug', 'Running git init...')
-    await executeCommand('git', ['init'], targetDir)
+    log("debug", "Running git init...")
+    await executeCommand("git", ["init"], targetDir)
 
     // Only link remote if provider is not local
     if (
         provider
-        && provider !== 'false'
-        && provider !== 'local'
+        && provider !== "false"
+        && provider !== "local"
     ) await linkRemoteRepo(projectName, targetDir, provider, name)
     else
-        log('info', 'Git repository initialized locally. No remote linked.')
+        log("info", "Git repository initialized locally. No remote linked.")
 
     // Add .gitignore
-    log('debug', 'Initializing gitignore...')
-    await createFileFromTemplate(gitIgnoreTemplate, [targetDir, '.gitignore'])
+    log("debug", "Initializing gitignore...")
+    await createFileFromTemplate(gitIgnoreTemplate, [targetDir, ".gitignore"])
 
-    log('success', 'Git repository initialized.')
+    log("success", "Git repository initialized.")
 }
 
 /**
@@ -118,29 +121,29 @@ export async function initGit(
  *
  * @param repoName   - Repository name
  * @param targetDir  - Local repository directory
- * @param remote     - Provider name ('github' | 'gitlab') or remote URL
+ * @param remote     - Provider name ("github" | "gitlab") or remote URL
  * @param remoteName - Git remote name (default: origin)
  */
 async function linkRemoteRepo(
     repoName: string,
     targetDir: string,
     remote: string,
-    remoteName: string = 'origin'
+    remoteName: string = "origin"
 ): Promise<void> {
 
     // Case 0: local → do nothing
-    if (remote === 'local') {
-        log('info', 'Using local Git repository only. No remote linked.')
+    if (remote === "local") {
+        log("info", "Using local Git repository only. No remote linked.")
         return
     }
     /**
      * Case 1: Existing repository URL (connect only)
      */
-    if (/^https?:\/\//.test(remote) || remote.startsWith('git@')) {
-        log('info', `Connecting existing remote '${remote}'`)
+    if (/^https?:\/\//.test(remote) || remote.startsWith("git@")) {
+        log("info", `Connecting existing remote "${remote}"`)
         await executeCommand(
-            'git',
-            ['remote', 'add', remoteName, remote],
+            "git",
+            ["remote", "add", remoteName, remote],
             targetDir
         )
         return
@@ -149,11 +152,11 @@ async function linkRemoteRepo(
     /**
      * Case 2: GitHub repository creation (via gh CLI)
      */
-    if (remote === 'github') {
-        log('info', `Creating GitHub repository '${repoName}'`)
+    if (remote === "github") {
+        log("info", `Creating GitHub repository "${repoName}"`)
         await executeCommand(
-            'gh',
-            ['repo', 'create', repoName, '--private', '--source=.', '--remote', remoteName],
+            "gh",
+            ["repo", "create", repoName, "--private", "--source=.", "--remote", remoteName],
             targetDir
         )
         return
@@ -162,24 +165,24 @@ async function linkRemoteRepo(
     /**
      * Case 3: GitLab repository creation (via glab CLI)
      */
-    if (remote === 'gitlab') {
-        log('info', `Creating GitLab repository '${repoName}'`)
+    if (remote === "gitlab") {
+        log("info", `Creating GitLab repository "${repoName}"`)
 
         const gitlabUser: string | undefined = process.env.GITLAB_USER
         if (!gitlabUser)
-            throw new Error('GITLAB_USER environment variable not set')
+            throw new Error("GITLAB_USER environment variable not set")
 
         await executeCommand(
-            'glab',
-            ['repo', 'create', repoName, '--source=.'],
+            "glab",
+            ["repo", "create", repoName, "--source=."],
             targetDir
         )
 
         await executeCommand(
-            'git',
+            "git",
             [
-                'remote',
-                'add',
+                "remote",
+                "add",
                 remoteName,
                 `git@gitlab.com:${gitlabUser}/${repoName}.git`
             ],
@@ -188,7 +191,7 @@ async function linkRemoteRepo(
         return
     }
     // Unsupported provider
-    throw new Error(`Unsupported git provider or remote: '${remote}'`)
+    throw new Error(`Unsupported git provider or remote: "${remote}"`)
 }
 
 export async function initNpm(
@@ -196,12 +199,12 @@ export async function initNpm(
     name: string
 ): Promise<void> {
 
-    log('info', 'Initializing NPM...')
+    log("info", "Initializing NPM...")
     await createFileFromTemplate(
         { name: name, ...pkgTemplate },
-        [targetDir, 'package.json']
+        [targetDir, "package.json"]
     )
 
-    log('debug', 'Running npm install...')
-    await executeCommand('npm', ['i'], targetDir)
+    log("debug", "Running npm install...")
+    await executeCommand("npm", ["i"], targetDir)
 }

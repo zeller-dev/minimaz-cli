@@ -13,7 +13,7 @@ if (process.env.npm_lifecycle_event === 'postinstall') {
     process.exit(0)
 }
 
-// TODO add path logic
+// @TODO add path logic
 
 /**
  * Main CLI entrypoint

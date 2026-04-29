@@ -14,27 +14,27 @@ import {
  * Timestamp is shown only when VERBOSE=true.
  */
 export function log(
-    type: LogType = 'info',
+    type: LogType = "info",
     message: string
 ): void {
 
     const isVerbose: boolean =
-        process.env.VERBOSE === 'true'
+        process.env.VERBOSE === "true"
 
     // Only print debug messages in verbose mode
-    if (type === 'debug' && !isVerbose) return
+    if (type === "debug" && !isVerbose) return
 
     const ts = isVerbose
         ? colorize(`[${formatTs()}] `, colors.gray)
-        : ''
+        : ""
     const output: string =
         `${ts}${prefix[type]} ${message}`
 
     switch (type) {
-        case 'error':
+        case "error":
             console.error(output)
             break
-        case 'warn':
+        case "warn":
             console.warn(output)
             break
         default:
@@ -47,7 +47,7 @@ export function log(
  * Formats the current date as YYYY-MM-DD hh:mm:ss
  */
 function formatTs(date: Date = new Date()): string {
-    const pad = (n: number) => n.toString().padStart(2, '0')
+    const pad = (n: number) => n.toString().padStart(2, "0")
     const y = date.getFullYear()
     const m = pad(date.getMonth() + 1)
     const d = pad(date.getDate())
@@ -56,3 +56,5 @@ function formatTs(date: Date = new Date()): string {
     const s = pad(date.getSeconds())
     return `${y}-${m}-${d} ${h}:${min}:${s}`
 }
+
+// @TODO: make this a package

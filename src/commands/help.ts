@@ -22,7 +22,7 @@ export function help(
         }
         console.log(cmd.usage, `\n\t${cmd.description}`)
         if (cmd.options) {
-            console.log('\tOptions:')
+            console.log(`\tOptions:`)
             for (
                 const [opt, desc]
                 of Object.entries(cmd.options)
@@ -30,19 +30,19 @@ export function help(
                 console.log(`\t\t${opt}\t${desc}`)
             }
         }
-        console.log('')
+        console.log(``)
         return
     }
 
     // Otherwise, show general help
-    console.log('Usage:\n')
+    console.log(`Usage:\n`)
     for (
         const cmd
         of Object.values(commandsHelp)
     ) {
         console.log(cmd.usage, `\n\t${cmd.description}`)
         if (cmd.options) {
-            console.log('\tOptions:')
+            console.log(`\tOptions:`)
             for (
                 const [opt, desc]
                 of Object.entries(cmd.options)
@@ -50,6 +50,6 @@ export function help(
                 console.log(`\t\t${opt}\t${desc}`)
             }
         }
-        console.log('')
+        console.log(``)
     }
 }

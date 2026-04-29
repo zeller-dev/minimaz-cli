@@ -192,7 +192,10 @@ async function build() {
     await handleTemplatesFolder()
 
     // --- Files to copy --- //
-    const filesToCopy = ['README.md', 'LICENSE']
+    const filesToCopy = [
+        'LICENSE',
+        'README.md'
+    ]
     log('debug', `Files to copy: ${filesToCopy.join(', ')}`)
     for (const file of filesToCopy) {
         const src = path.join(__dirname, file)

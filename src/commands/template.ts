@@ -1,5 +1,14 @@
-import fs from 'fs-extra'
-import path from 'node:path'
+import {
+    copy,
+    ensureDir,
+    pathExists,
+    remove
+} from "fs-extra"
+
+import {
+    basename,
+    join
+} from "node:path"
 
 import {
     // --- FUNCTIONS ---
@@ -7,7 +16,7 @@ import {
 
     // --- TYPES ---
     TemplateCommandOptions,
-} from '../index.js'
+} from "../index.js"
 
 /**
  * Template command handler. Supports listing, saving, updating, and deleting templates.
@@ -36,7 +45,7 @@ export async function template(
 
     // update template
     if (options.update) {
-        if (typeof options.update === 'string' && options.update.trim())
+        if (typeof options.update === "string" && options.update.trim())
             return await updateSingleTemplate(templatesDir, options.update.trim())
         else
             return await updateFromNodeModules(templatesDir)
@@ -54,23 +63,23 @@ async function updateSingleTemplate(
     name: string
 ): Promise<void> {
     const sourceDir: string = resolveCurrentPath([])
-    const targetDir: string = path.join(dir, name)
+    const targetDir: string = join(dir, name)
 
-    if (!await fs.pathExists(targetDir))
+    if (!await pathExists(targetDir))
         throw new Error(
-            `Template '${name}' not found`
+            `Template "${name}" not found`
         )
 
-    if (!(await askQuestion(`Update '${name}' with current directory? [Y/n]:`, 'y')).startsWith('y')) {
-        log('info', 'Update cancelled.')
+    if (!(await askQuestion(`Update "${name}" with current directory? [Y/n]:`, "y")).startsWith("y")) {
+        log("info", "Update cancelled.")
         return
     }
 
     try {
-        await fs.copy(sourceDir, targetDir, { overwrite: true })
-        log('success', `Template '${name}' updated`)
+        await copy(sourceDir, targetDir, { overwrite: true })
+        log("success", `Template "${name}" updated`)
     } catch (error: any) {
-        throw new Error(`Failed to update '${name}'`)
+        throw new Error(`Failed to update "${name}"`)
     }
 }
 
@@ -88,19 +97,22 @@ async function updateFromNodeModules(
     const items: string[] =
         await getDirElements(nodeModulesPath)
 
-    if (!((await askQuestion('Update local templates overwriting them with defaults? [Y/n]:', 'y')).startsWith('y'))) {
-        log('info', 'Update cancelled.')
+    if (!((await askQuestion("Update local templates overwriting them with defaults? [Y/n]:", "y")).startsWith("y"))) {
+        log("info", "Update cancelled.")
         return
     }
 
     try {
-        for (const i of items) {
-            const src: string = path.join(nodeModulesPath, i)
-            const dest: string = path.join(dir, i)
-            await fs.copy(src, dest, { overwrite: true })
-            log('success', `Updated '${i}'`)
+        for (
+            const i
+            of items
+        ) {
+            const src: string = join(nodeModulesPath, i)
+            const dest: string = join(dir, i)
+            await copy(src, dest, { overwrite: true })
+            log("success", `Updated "${i}"`)
         }
-        log('info', `Templates updated successfully.`)
+        log("info", `Templates updated successfully.`)
     } catch (error: any) {
         throw new Error(`Update failed: ${error.message}`)
     }
@@ -116,18 +128,18 @@ async function deleteTemplate(
     dir: string,
     name: string
 ): Promise<void> {
-    const target: string = path.join(dir, name)
-    if (!await fs.pathExists(target))
+    const target: string = join(dir, name)
+    if (!await pathExists(target))
         throw new Error(`Template not found: ${name}`)
 
-    if (!(await askQuestion(`Confirm delete '${name}'? [Y/n]:`, 'y')).startsWith('y')) {
-        log('info', 'Delete cancelled.')
+    if (!(await askQuestion(`Confirm delete "${name}"? [Y/n]:`, "y")).startsWith("y")) {
+        log("info", "Delete cancelled.")
         return
     }
 
     try {
-        await fs.remove(target)
-        log('success', `Template '${name}' deleted`)
+        await remove(target)
+        log("success", `Template "${name}" deleted`)
     } catch (error: any) {
         throw new Error(`Delete error: ${error.message}`)
     }
@@ -145,26 +157,26 @@ async function saveTemplate(
 ): Promise<void> {
     let source: string = resolveCurrentPath(targetPath ? [targetPath] : [])
 
-    if (!await fs.pathExists(source)) {
-        log('warn', `Not found: ${source}`)
-        if ((await askQuestion('Use current directory instead? [Y/n]:', 'y')).startsWith('y'))
+    if (!await pathExists(source)) {
+        log("warn", `Not found: ${source}`)
+        if ((await askQuestion("Use current directory instead? [Y/n]:", "y")).startsWith("y"))
             source = process.cwd()
         else
-            throw new Error('Operation cancelled.')
+            throw new Error("Operation cancelled.")
 
     }
 
     try {
-        await fs.ensureDir(dir)
-        const dest: string = path.join(dir, path.basename(source))
-        if (await fs.pathExists(dest)) {
-            if (!(await askQuestion(`Template '${path.basename(dest)}' already exists. Overwrite? [y/N]:`, 'n')).startsWith('y')) {
-                log('info', 'Save cancelled.')
+        await ensureDir(dir)
+        const dest: string = join(dir, basename(source))
+        if (await pathExists(dest)) {
+            if (!(await askQuestion(`Template "${basename(dest)}" already exists. Overwrite? [y/N]:`, "n")).startsWith("y")) {
+                log("info", "Save cancelled.")
                 return
             }
         }
-        await fs.copy(source, dest, { overwrite: true })
-        log('success', `Template saved to ${dest}`)
+        await copy(source, dest, { overwrite: true })
+        log("success", `Template saved to ${dest}`)
     } catch (error: any) {
         throw new Error(`Failed to save template: ${error.message}`)
     }
@@ -182,11 +194,11 @@ async function listTemplates(
         await getDirElements(dir)
 
     if (templates.length === 0) {
-        log('info', 'No global templates available.')
+        log("info", "No global templates available.")
         return
     }
 
-    log('info', 'Available global templates:')
+    log("info", "Available global templates:")
     for (let i = 0; i < templates.length; i++) {
         console.log(`${i} - ${templates[i]}`)
     }

@@ -1,12 +1,31 @@
-import * as esbuild from 'esbuild'
-import fs from 'fs-extra'
-import { minify } from 'html-minifier-terser'
-import path from 'node:path'
+import {
+    Loader,
+    transform
+} from "esbuild"
+
+import {
+    pathExists
+} from "fs-extra"
+
+import {
+    minify
+} from "html-minifier-terser"
+
+import {
+    lstat,
+    readFile
+} from "node:fs/promises"
+
+import {
+    extname,
+    isAbsolute,
+    join
+} from "node:path"
 
 import {
     // --- FUNCTIONS ---
     getDirElements, getFile, log, resolveCurrentPath
-} from '../index.js'
+} from "../index.js"
 
 /**
  * Validates a file or directory recursively.
@@ -15,51 +34,51 @@ import {
 export async function validate(
     targetPath: string
 ): Promise<number> {
-    // Resolve path relative to CLI_WORKDIR if it's not absolute
-    if (targetPath === 'undefined')
-        throw new Error('No target path')
+    // Resolve path relative to CLI_WORKDIR if it"s not absolute
+    if (targetPath === "undefined")
+        throw new Error("No target path")
 
-    const absolutePath: string = path.isAbsolute(targetPath)
+    const absolutePath: string = isAbsolute(targetPath)
         ? targetPath
         : resolveCurrentPath([targetPath])
 
-    if (!(await fs.pathExists(absolutePath))) {
-        log('error', `Path does not exist: ${absolutePath}`)
+    if (!(await pathExists(absolutePath))) {
+        log("error", `Path does not exist: ${absolutePath}`)
         return 1
     }
 
-    const stats = await fs.lstat(absolutePath)
+    const stats = await lstat(absolutePath)
 
     // --- Directory Branch ---
     if (stats.isDirectory()) {
         const elements = await getDirElements(absolutePath)
 
         const results = await Promise.all(
-            elements.map(el => validate(path.join(absolutePath, el)))
+            elements.map(el => validate(join(absolutePath, el)))
         )
 
         return results.reduce((acc: number, curr: number) => acc + curr, 0)
     }
 
     // --- File Branch ---
-    const ext = path.extname(absolutePath).toLowerCase()
+    const ext: string = extname(absolutePath).toLowerCase()
 
     // Use your utility getFile() to handle reading
-    const content = await getFile(absolutePath)
-    if (!content && (await fs.readFile(absolutePath, 'utf8')).length > 0) {
-        // If content is empty but file isn't, getFile logged an error already
+    const content: string = await getFile(absolutePath)
+    if (!content && (await readFile(absolutePath, "utf8")).length > 0) {
+        // If content is empty but file isn"t, getFile logged an error already
         return 1
     }
 
-    if (ext === '.html') {
+    if (ext === ".html") {
         return (await validateHTML(absolutePath, content)) ? 0 : 1
     }
 
-    if (['.css', '.js', '.mjs', '.ts', '.mts'].includes(ext)) {
+    if ([".css", ".js", ".mjs", ".ts", ".mts"].includes(ext)) {
         return (await validateWithEsbuild(absolutePath, content, ext)) ? 0 : 1
     }
 
-    log('debug', `Skipping: ${absolutePath}`)
+    log("debug", `Skipping: ${absolutePath}`)
     return 0
 }
 
@@ -71,24 +90,24 @@ async function validateWithEsbuild(
     content: string, ext: string
 ): Promise<boolean> {
     try {
-        const loader = (ext === '.css' ? 'css' : (ext.includes('ts') ? 'ts' : 'js')) as esbuild.Loader
+        const loader = (ext === ".css" ? "css" : (ext.includes("ts") ? "ts" : "js")) as Loader
 
-        await esbuild.transform(content, {
+        await transform(content, {
             loader,
-            format: 'esm',
-            logLevel: 'silent',
+            format: "esm",
+            logLevel: "silent",
         })
 
-        log('success', `${loader.toUpperCase()} Valid: ${filePath}`)
+        log("success", `${loader.toUpperCase()} Valid: ${filePath}`)
         return true
     } catch (error: any) {
-        log('error', `Syntax Error in ${filePath}:`)
+        log("error", `Syntax Error in ${filePath}:`)
 
         // Handle esbuild-specific error formatting
         if (error.errors) {
             error.errors.forEach((err: any) => {
-                const line = err.location?.line ?? '??'
-                log('error', `   -> Line ${line}: ${err.text}`)
+                const line = err.location?.line ?? "??"
+                log("error", `   -> Line ${line}: ${err.text}`)
             })
         }
         return false
@@ -107,10 +126,10 @@ async function validateHTML(
             continueOnParseError: false,
             caseSensitive: true
         })
-        log('success', `HTML Valid: ${filePath}`)
+        log("success", `HTML Valid: ${filePath}`)
         return true
     } catch (error: any) {
-        log('error', `HTML Error [${filePath}]: ${error.message}`)
+        log("error", `HTML Error [${filePath}]: ${error.message}`)
         return false
     }
 }
