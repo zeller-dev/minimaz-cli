@@ -1,7 +1,7 @@
 import {
     // --- FUNCTIONS ---
     readJsonFile, resolveCurrentPath
-} from "../index.js"
+} from "../../index.js"
 
 export async function version(): Promise<void> {
     const pkgPath: string =

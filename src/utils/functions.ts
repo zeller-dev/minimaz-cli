@@ -52,7 +52,9 @@ import {
  * @param rawArgs - Array of raw arguments from CLI
  * @returns Parsed arguments object
  */
-export function parseArgs(rawArgs: string[]): Args {
+export function parseArgs(
+    rawArgs: string[]
+): Args {
     const args: Args = { _: [] }
 
     for (let i = 0; i < rawArgs.length; i++) {
@@ -209,7 +211,9 @@ export async function getGlobalTemplatesDirPath(): Promise<string> {
     return dir
 }
 
-export async function getGlobalTemplatePath(template: string): Promise<string> {
+export async function getGlobalTemplatePath(
+    template: string
+): Promise<string> {
     log("debug", `Getting template "${template}"directory ..`)
     const dir: string = join(await getGlobalTemplatesDirPath(), template)
     const exists: boolean = await pathExists(dir)
@@ -304,7 +308,9 @@ export async function createFileFromTemplate(
 /**
  * Removes Dist Directory
  */
-export async function removeOutDir(dir?: string): Promise<void> {
+export async function removeOutDir(
+    dir?: string
+): Promise<void> {
     log("debug", "Removing outDir...")
     const outDir = dir
         ? isAbsolute(dir) ? dir : resolveCurrentPath([dir])
@@ -358,7 +364,9 @@ export async function loadConfig(): Promise<MinimazConfig> {
  *
  * @param verbose - set true to enable verbose logging
  */
-export function initEnv(verbose?: boolean): void {
+export function initEnv(
+    verbose?: boolean
+): void {
     log("debug", "Initializing environments variables...")
 
     // Verbose
@@ -375,7 +383,9 @@ export function initEnv(verbose?: boolean): void {
  *
  * @param components optional path segments to append
  */
-export function resolveCurrentPath(components: string[] = []): string {
+export function resolveCurrentPath(
+    components: string[] = []
+): string {
     log("debug", "Resolving current ..")
     return resolve(
         process.env.CLI_WORKDIR ?? process.cwd(),
@@ -388,7 +398,9 @@ export function resolveCurrentPath(components: string[] = []): string {
  *
  * @param file - Path to the JSON file
  */
-export async function readJsonFile(file: string): Promise<any | null> {
+export async function readJsonFile(
+    file: string
+): Promise<any | null> {
     const exists: boolean = await pathExists(file)
     if (!exists)
         throw new Error(`NOT FOUND: "${file}" does not exist`)
@@ -410,7 +422,9 @@ export async function readJsonFile(file: string): Promise<any | null> {
  *
  * @param dir - Path to the directory to read
  */
-export async function getDirElements(dir: string): Promise<string[]> {
+export async function getDirElements(
+    dir: string
+): Promise<string[]> {
     log("debug", `Reading elements of ${dir}...`)
     const exists: boolean = await pathExists(dir)
     if (!exists) {
@@ -420,14 +434,11 @@ export async function getDirElements(dir: string): Promise<string[]> {
     return await readdir(dir)
 }
 
-/**
- * Colorises text
- */
-export function colorize(text: string, color: string): string {
-    return `${color}${text}${colors.reset}`
-}
 
-export async function getSettingsTemplate(globalTemplatesDir: string): Promise<Settings> {
+
+export async function getSettingsTemplate(
+    globalTemplatesDir: string
+): Promise<Settings> {
     return {
         createdAt: new Date().toISOString(),
         templatesPath: globalTemplatesDir,

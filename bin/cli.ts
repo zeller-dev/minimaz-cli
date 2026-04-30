@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 import {
     // --- COMMANDS ---
-    build, init, help, template, clear, version, config, validate,
-    // --- UTILS ---
-    log, parseArgs, initEnv,
+
+    build, clear, config, help, init, template, validate, version,
+    // --- FUNCTIONS ---
+    initEnv, log, parseArgs,
+
     // --- TYPES ---
-    CommandFn, TemplateCommandOptions, InitCommandOptions, Args
+    Args, CommandFn, InitCommandOptions, TemplateCommandOptions
 } from '../src/index.js'
 
 if (process.env.npm_lifecycle_event === 'postinstall') {
-    import('../src/utils/postInstall.js').then(({ postInstall }) => postInstall())
+    import(
+        '../src/utils/postInstall.js'
+    ).then(({ postInstall }) => postInstall())
     process.exit(0)
 }
-
-// @TODO add path logic
 
 /**
  * Main CLI entrypoint
@@ -52,7 +54,13 @@ async function main(): Promise<void> {
         clear: () => clear(),
 
         // Config command
-        config: async () => config(Boolean(args.overwrite === true || args.overwrite === 'true')),
+        config: async () =>
+            config(
+                Boolean(
+                    args.overwrite === true
+                    || args.overwrite === 'true'
+                )
+            ),
 
         // Init command
         init: async () => {
@@ -135,3 +143,6 @@ async function main(): Promise<void> {
 
 // Run the CLI
 main()
+
+// @TODO: move and rename bin/cli.ts into src/cli/
+// @TODO add path logic. Example: minimaz build --path=C:\path\to\folder

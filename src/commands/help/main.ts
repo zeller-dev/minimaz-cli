@@ -3,7 +3,7 @@ import {
     commandsHelp,
     // --- TYPES ---
     CommandHelp
-} from "../index.js"
+} from "./index.js"
 
 /**
  * Display help message.

@@ -1,7 +1,7 @@
 import {
     // --- FUNCTIONS ---
     removeOutDir
-} from "../index.js"
+} from "../../index.js"
 
 /**
  * Clear the dist directory.

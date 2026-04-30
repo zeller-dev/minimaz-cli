@@ -43,6 +43,7 @@ export async function runTransform(
 ): Promise<string> {
     if (typeof code !== "string")
         throw new Error(`[${context}] Input must be a string.`)
+
     const input: string = code.trim()
     if (!input) return ""
 
@@ -216,8 +217,12 @@ export async function processExternals(
 ): Promise<void> {
     log("info", "Processing externals...")
 
-    for (const external of externals) {
-        const fullPath: string = resolveCurrentPath([external])
+    for (
+        const external
+        of externals
+    ) {
+        const fullPath: string =
+            resolveCurrentPath([external])
 
         // Skip if already swallowed by an import elsewhere
         if (ignoredFiles.has(fullPath)) continue
@@ -244,6 +249,7 @@ export async function processExternals(
 
         const ext: string =
             extname(fullPath).toLowerCase()
+
         const content: string =
             await getFile(fullPath, config.replace)
 

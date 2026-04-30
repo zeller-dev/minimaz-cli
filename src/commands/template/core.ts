@@ -12,45 +12,9 @@ import {
 
 import {
     // --- FUNCTIONS ---
-    askQuestion, getDirElements, getGlobalTemplatesDirPath, getNodeModulesTemplatesPath, log, resolveCurrentPath,
+    askQuestion, getDirElements, getNodeModulesTemplatesPath, log, resolveCurrentPath,
+} from "../../index.js"
 
-    // --- TYPES ---
-    TemplateCommandOptions,
-} from "../index.js"
-
-/**
- * Template command handler. Supports listing, saving, updating, and deleting templates.
- *
- * @param targetPath - Optional path of the folder to save as template
- * @param options - CLI flags (--list, --delete, --update, etc.)
- */
-export async function template(
-    options: TemplateCommandOptions,
-    targetPath?: string
-): Promise<void> {
-
-    const templatesDir: string =
-        await getGlobalTemplatesDirPath()
-
-    // list templates
-    if (options.list)
-        return await listTemplates(templatesDir)
-
-    // delete template
-    if (options.delete)
-        return await deleteTemplate(templatesDir, options.delete)
-
-    // Default action: save current folder as a template
-    await saveTemplate(templatesDir, targetPath)
-
-    // update template
-    if (options.update) {
-        if (typeof options.update === "string" && options.update.trim())
-            return await updateSingleTemplate(templatesDir, options.update.trim())
-        else
-            return await updateFromNodeModules(templatesDir)
-    }
-}
 
 /**
  * Updates a single template with files from the current working directory.
@@ -58,7 +22,7 @@ export async function template(
  * @param dir - Global templates directory (~/.minimaz/templates)
  * @param templateName - Name of the template to update
  */
-async function updateSingleTemplate(
+export async function updateSingleTemplate(
     dir: string,
     name: string
 ): Promise<void> {
@@ -89,7 +53,7 @@ async function updateSingleTemplate(
  *
  * @param templatesDir - Global templates directory (~/.minimaz/templates)
  */
-async function updateFromNodeModules(
+export async function updateFromNodeModules(
     dir: string
 ): Promise<void> {
     const nodeModulesPath: string =
@@ -124,7 +88,7 @@ async function updateFromNodeModules(
  * @param dir - Global templates directory
  * @param name - Template name to delete
  */
-async function deleteTemplate(
+export async function deleteTemplate(
     dir: string,
     name: string
 ): Promise<void> {
@@ -151,7 +115,7 @@ async function deleteTemplate(
  * @param dir - Global templates directory (~/.minimaz/templates)
  * @param targetPath - Optional path to save as a template
  */
-async function saveTemplate(
+export async function saveTemplate(
     dir: string,
     targetPath?: string
 ): Promise<void> {
@@ -187,7 +151,7 @@ async function saveTemplate(
  *
  * @param dir - Templates directory path
  */
-async function listTemplates(
+export async function listTemplates(
     dir: string
 ): Promise<void> {
     const templates: string[] =

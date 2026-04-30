@@ -1,17 +1,4 @@
-// ----- Log Types -----
-export type LogType =
-    "error"
-    | "warn"
-    | "success"
-    | "info"
-    | "debug"
 
-// ----- Command Help Types -----
-export type CommandHelp = {
-    usage: string
-    description: string
-    options?: Record<string, string>
-}
 
 // ----- Command Fn Types -----
 export type CommandFn = () => Promise<void> | void
@@ -57,22 +44,6 @@ export type PkgTemplate = {
 export interface Args {
     _: string[]
     [key: string]: string | boolean | string[]
-}
-
-// ----- Template Command Options Types -----
-export type TemplateCommandOptions = {
-    list?: boolean
-    delete?: string
-    update?: string
-}
-
-// ----- Init Command Options Types -----
-export type InitCommandOptions = {
-    template: string
-    npm?: boolean
-    git?: boolean
-    gitremote?: string
-    gitprovider?: string
 }
 
 // ----- Multiple Bundle Type -----

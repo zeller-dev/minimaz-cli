@@ -7,7 +7,7 @@ import {
 
     // --- TYPES ---
     LogType
-} from "../index.js"
+} from "./index.js"
 
 /**
  * Prints a message to console with prefix based on type.
@@ -43,18 +43,8 @@ export function log(
     }
 }
 
-/**
- * Formats the current date as YYYY-MM-DD hh:mm:ss
- */
-function formatTs(date: Date = new Date()): string {
-    const pad = (n: number) => n.toString().padStart(2, "0")
-    const y = date.getFullYear()
-    const m = pad(date.getMonth() + 1)
-    const d = pad(date.getDate())
-    const h = pad(date.getHours())
-    const min = pad(date.getMinutes())
-    const s = pad(date.getSeconds())
-    return `${y}-${m}-${d} ${h}:${min}:${s}`
-}
 
+function formatTs() {
+    throw new Error("Function not implemented.")
+}
 // @TODO: make this a package

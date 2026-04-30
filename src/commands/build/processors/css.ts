@@ -70,7 +70,10 @@ async function resolveImports(
     let processedContent = content
     const matches = Array.from(content.matchAll(importRegex))
 
-    for (const match of matches) {
+    for (
+        const match
+        of matches
+    ) {
         const fullLine = match[0]
         const targetPath = match[1]
         const absoluteTarget = resolve(dir, targetPath)
