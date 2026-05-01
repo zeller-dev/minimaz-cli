@@ -13,9 +13,7 @@
     "noEmit": true
   },
   "include": [
-    "**/*.ts",
-    ".dev/template.ts",
-    ".dev/init.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "dist",

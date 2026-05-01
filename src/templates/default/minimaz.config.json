@@ -1,10 +1,14 @@
 {
-    "src": "src",
-    "dist": "dist",
-    "public": "public",
+    "outDir": "./dist",
     "bundling": {
-        "css": true,
-        "js": true
+        "css": {
+            "enabled": true,
+            "outFile": "style.css"
+        },
+        "js": {
+            "enabled": true,
+            "outFile": "script.js"
+        }
     },
     "minify": {
         "html": true,

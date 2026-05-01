@@ -16,26 +16,30 @@ import {
 } from "../../index.js"
 
 import {
-    processExternals, processFolder
+    processExternals,
+    processFolder
 } from "./index.js"
 
 /**
  * Builds the project according to the Minimaz configuration.
  *
- * - Cleans and prepares the dist directory
+ * - Cleans and prepares the outDir directory
  * - Processes configured source folders
  * - Tracks imports via ignoredFiles to ensure a clean output
  */
 export async function build(): Promise<void> {
-    const config: MinimazConfig = await loadConfig()
-    const outDirPath: string = resolve(resolveCurrentPath(), config.outDir)
+    const config: MinimazConfig =
+        await loadConfig()
+    const outDirPath: string =
+        resolve(resolveCurrentPath(), config.outDir)
 
     /**
      * Shared State: The "Blacklist"
      * As transformers find @imports or JS dependencies, they add them here.
      * The folder walker checks this Set to avoid processing partials/deps twice.
      */
-    const ignoredFiles = new Set<string>()
+    const ignoredFiles =
+        new Set<string>()
 
     // 1. Preparation
     await removeOutDir(outDirPath)
@@ -52,8 +56,10 @@ export async function build(): Promise<void> {
             const [from, to]
             of Object.entries(config.folders)
         ) {
-            const srcPath: string = resolveCurrentPath([from])
-            const destPath: string = join(outDirPath, to)
+            const srcPath: string =
+                resolveCurrentPath([from])
+            const destPath: string =
+                join(outDirPath, to)
 
             log(
                 "debug",

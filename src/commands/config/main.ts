@@ -1,7 +1,19 @@
-import { join } from "node:path"
-import { homedir } from "node:os"
-import { pathExists } from "fs-extra"
-import { getNodeModulesTemplatesPath, log } from "../../index.js"
+import {
+    pathExists
+} from "fs-extra"
+
+import {
+    join
+} from "node:path"
+
+import {
+    homedir
+} from "node:os"
+
+import {
+    getNodeModulesTemplatesPath,
+    log
+} from "../../index.js"
 
 // Import logic from core
 import {
@@ -24,7 +36,7 @@ export async function config(
     const defaultTemplatesDir: string = await getNodeModulesTemplatesPath()
     if (!(await pathExists(defaultTemplatesDir))) {
         log("error", "Default templates directory not found.")
-        return // Early exit if we can't find source templates
+        return // Early exit if we can not find source templates
     }
 
     // 3. ~/.minimaz/templates directory

@@ -4,27 +4,12 @@ import {
 } from "esbuild"
 
 import {
-    pathExists
-} from "fs-extra"
-
-import {
     minify
 } from "html-minifier-terser"
 
 import {
-    lstat,
-    readFile
-} from "node:fs/promises"
-
-import {
-    extname,
-    isAbsolute,
-    join
-} from "node:path"
-
-import {
     // --- FUNCTIONS ---
-    getDirElements, getFile, log, resolveCurrentPath
+    log
 } from "../../index.js"
 
 /**

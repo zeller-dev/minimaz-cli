@@ -1,6 +1,17 @@
-import { copy, ensureDir, pathExists } from "fs-extra"
-import { readdir } from "node:fs/promises"
-import { join } from "node:path"
+import {
+    copy,
+    ensureDir,
+    pathExists
+} from "fs-extra"
+
+import {
+    readdir
+} from "node:fs/promises"
+
+import {
+    join
+} from "node:path"
+
 import {
     createFileFromTemplate,
     getSettingsTemplate,

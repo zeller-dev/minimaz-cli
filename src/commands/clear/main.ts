@@ -4,7 +4,7 @@ import {
 } from "../../index.js"
 
 /**
- * Clear the dist directory.
+ * Clear the outDir directory.
  */
 export async function clear(): Promise<void> {
     removeOutDir()

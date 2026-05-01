@@ -1,6 +1,7 @@
 import {
     // --- CONSTANTS ---
     gitIgnoreTemplate, pkgTemplate,
+
     // --- FUNCTIONS  ---
     log, askQuestion, createFileFromTemplate,
     executeCommand,

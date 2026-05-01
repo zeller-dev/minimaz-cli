@@ -8,15 +8,15 @@ import {
 
 export const prefix: Record<LogType, string> = {
     error:
-        colorize('[ --- ERROR ----- ]\t', colors.red),
+        colorize("[ --- ERROR ----- ]\t", colors.red),
     warn:
-        colorize('[ --- WARN ------ ]\t', colors.yellow),
+        colorize("[ --- WARN ------ ]\t", colors.yellow),
     success:
-        colorize('[ --- SUCCESS --- ]\t', colors.green),
+        colorize("[ --- SUCCESS --- ]\t", colors.green),
     info:
-        colorize('[ --- INFO ------ ]\t', colors.blue),
+        colorize("[ --- INFO ------ ]\t", colors.blue),
     debug:
-        colorize('[ --- DEBUG ----- ]\t', colors.gray)
+        colorize("[ --- DEBUG ----- ]\t", colors.gray)
 }
 
 /**

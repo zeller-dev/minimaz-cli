@@ -21,70 +21,31 @@ import {
 
 import {
     homedir
-} from "os"
+} from "node:os"
 
 import {
     isAbsolute,
     join,
     resolve
-} from "path"
+} from "node:path"
 
 import {
     createInterface
-} from "readline"
+} from "node:readline"
 
 import {
     // --- CONSTANTS ---
-    minimazConfigTemplate, colors,
+    minimazConfigTemplate,
 
     // --- FUNCTIONS ---
     log,
 
     // --- TYPES ---
-    Args, MinimazConfig, Settings,
+    MinimazConfig, Settings,
+    defaults,
 } from "../index.js"
 
 // @TODO add cache
-
-/**
- * Parses raw CLI arguments into a structured object.
- *
- * @param rawArgs - Array of raw arguments from CLI
- * @returns Parsed arguments object
- */
-export function parseArgs(
-    rawArgs: string[]
-): Args {
-    const args: Args = { _: [] }
-
-    for (let i = 0; i < rawArgs.length; i++) {
-        const arg: string = rawArgs[i].toLowerCase()
-
-        // Positional argument
-        if (!arg.startsWith("-")) {
-            args._.push(arg)
-            continue
-        }
-
-        // --key=value syntax
-        if (arg.startsWith("--") && arg.includes("=")) {
-            const [key, value]: string[] = arg.slice(2).split("=")
-            args[key] = value
-            continue
-        }
-
-        const key: string = arg.replace(/^-+/, "")
-        const next: string = rawArgs[i + 1]
-
-        if (next && !next.startsWith("-")) {
-            args[key] = next
-            i++
-        } else {
-            args[key] = true
-        }
-    }
-    return args
-}
 
 /**
  * Prompts the user for input via CLI and returns the trimmed answer.
@@ -300,8 +261,13 @@ export async function createFileFromTemplate(
         }
         await outputFile(outputPath, content)
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error)
-        throw new Error(`Failed to create file at "${outputPath}": ${message}`)
+        const message: string =
+            error instanceof Error
+                ? error.message
+                : String(error)
+        throw new Error(
+            `Failed to create file at "${outputPath}": ${message}`
+        )
     }
 }
 
@@ -314,14 +280,16 @@ export async function removeOutDir(
     log("debug", "Removing outDir...")
     const outDir = dir
         ? isAbsolute(dir) ? dir : resolveCurrentPath([dir])
-        : resolve(process.cwd(), (await loadConfig()).outDir ?? "dist")
+        : resolve(
+            process.cwd(), (await loadConfig()).outDir ?? defaults.outDir
+        )
     const rootDir = process.cwd()
 
     if (outDir === rootDir || outDir.length <= rootDir.length)
         throw new Error(`Refusing to delete unsafe directory: ${outDir}`)
 
     if (!await pathExists(outDir)) {
-        log("debug", `No dist folder found: ${outDir}`)
+        log("debug", `No outDir folder found: ${outDir}`)
         return
     }
 

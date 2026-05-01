@@ -1,58 +1,59 @@
 import {
+    defaults,
     CommandHelp
-} from "./types.js";
+} from "../../index.js";
 
 // ----- CLI Commands Help -----
 export const commandsHelp: Record<string, CommandHelp> = {
     build: {
         usage:
-            'minimaz build | b',
+            "minimaz build | b",
         description:
-            'Build project into outDir folder (default: "./dist")'
+            `Build project into outDir folder (default: ${defaults.outDir})`
     },
     clear: {
         usage:
-            'minimaz clear | c',
+            "minimaz clear | c",
         description:
-            'Clear the outDir folder (default: "./dist")'
+            `Clear the outDir folder (default: ${defaults.outDir})`
     },
     help: {
         usage:
-            'minimaz help | h',
+            "minimaz help | h",
         description:
-            'Show this help message'
+            "Show this help message"
     },
     init: {
         usage:
-            'minimaz init | i <project-name>',
+            "minimaz init | i <project-name>",
         description:
-            'Create a new project (default: "minimaz-project")',
+            "Create a new project (default: 'minimaz-project')",
         options: {
-            '--template | -t <template-name>': 'Use a global template (default: "default")'
+            "--template | -t <template-name>": "Use a global template (default: 'default')"
         }
     },
     template: {
         usage:
-            'minimaz template | t [path]',
+            "minimaz template | t [path]",
         description:
-            'Save folder as a template (no path = current folder)',
+            "Save folder as a template (no path = current folder)",
         options: {
-            '--list | -l':
-                'List available global templates',
-            '--delete | -d <template-name>':
-                'Delete a global template'
+            "--list | -l":
+                "List available global templates",
+            "--delete | -d <template-name>":
+                "Delete a global template"
         }
     },
     validate: {
         usage:
-            'minimaz validate',
+            "minimaz validate",
         description:
-            'Validate file'
+            "Validate file"
     },
     version: {
         usage:
-            'minimaz version | v',
+            "minimaz version | v",
         description:
-            'Show Minimaz version'
+            "Show Minimaz version"
     }
 }

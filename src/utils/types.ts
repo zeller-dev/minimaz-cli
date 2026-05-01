@@ -1,5 +1,3 @@
-
-
 // ----- Command Fn Types -----
 export type CommandFn = () => Promise<void> | void
 
@@ -38,12 +36,6 @@ export type PkgTemplate = {
     type: "commonjs" | "module"
     scripts: Record<string, string>
     devDependencies: Record<string, string>
-}
-
-// ----- Args Types -----
-export interface Args {
-    _: string[]
-    [key: string]: string | boolean | string[]
 }
 
 // ----- Multiple Bundle Type -----

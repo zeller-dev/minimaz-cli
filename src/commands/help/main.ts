@@ -1,6 +1,7 @@
 import {
     // --- CONSTANTS ---
     commandsHelp,
+
     // --- TYPES ---
     CommandHelp
 } from "./index.js"
@@ -30,7 +31,7 @@ export function help(
                 console.log(`\t\t${opt}\t${desc}`)
             }
         }
-        console.log(``)
+        console.log("")
         return
     }
 
@@ -50,6 +51,6 @@ export function help(
                 console.log(`\t\t${opt}\t${desc}`)
             }
         }
-        console.log(``)
+        console.log("")
     }
 }

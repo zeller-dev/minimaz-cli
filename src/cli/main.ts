@@ -1,18 +1,23 @@
 #!/usr/bin/env node
 import {
     // --- COMMANDS ---
-
     build, clear, config, help, init, template, validate, version,
+
     // --- FUNCTIONS ---
-    initEnv, log, parseArgs,
+    initEnv, log,
 
     // --- TYPES ---
-    Args, CommandFn, InitCommandOptions, TemplateCommandOptions
-} from '../src/index.js'
+    CommandFn, InitCommandOptions, TemplateCommandOptions
+} from "../index.js"
 
-if (process.env.npm_lifecycle_event === 'postinstall') {
+import {
+    Args,
+    parseArgs
+} from "./index.js"
+
+if (process.env.npm_lifecycle_event === "postinstall") {
     import(
-        '../src/utils/postInstall.js'
+        "../utils/postInstall.js"
     ).then(({ postInstall }) => postInstall())
     process.exit(0)
 }
@@ -23,7 +28,7 @@ if (process.env.npm_lifecycle_event === 'postinstall') {
 async function main(): Promise<void> {
     // Parse raw CLI arguments (remove "node" and script path)
     const args: Args = parseArgs(process.argv.slice(2))
-    const cmd: string = (args._[0] || '')   // primary command
+    const cmd: string = (args._[0] || "")   // primary command
     const subArg: string = args._[1]        // optional argument (e.g., project name)
 
     initEnv(Boolean(args.v))
@@ -35,8 +40,14 @@ async function main(): Promise<void> {
      */
 
     // Show help if requested
-    if (cmd === 'help' || args.h || args.help) {
-        help(subArg || (args.h || args.help ? cmd : undefined))
+    if (cmd === "help" || args.help || args.h) {
+        help(
+            subArg || (
+                args.help || args.h
+                    ? cmd
+                    : undefined
+            )
+        )
         process.exit(0)
     }
 
@@ -56,18 +67,17 @@ async function main(): Promise<void> {
         // Config command
         config: async () =>
             config(
-                Boolean(
-                    args.overwrite === true
-                    || args.overwrite === 'true'
-                )
+                args.overwrite === true
+                || args.overwrite === "true"
+
             ),
 
         // Init command
         init: async () => {
             await init(
-                subArg || 'minimaz-project',
+                subArg || "minimaz-project",
                 {
-                    template: args.template || args.t || 'default',
+                    template: args.template || args.t || "default",
                     npm: args.npm,
                     git: args.git,
                     gitremote: args.gitremote,
@@ -79,9 +89,9 @@ async function main(): Promise<void> {
         template: async () => {
             await template(
                 {
-                    list: args.l || args.list,
-                    delete: args.d || args.delete,
-                    update: args.u || args.update
+                    list: args.list || args.l,
+                    delete: args.delete || args.d,
+                    update: args.update || args.u
                 } as TemplateCommandOptions),
                 subArg
         },
@@ -114,23 +124,23 @@ async function main(): Promise<void> {
     try {
         if (commands[cmd]) {
             log(
-                'info',
-                `Executing command '${cmd}'...`
+                "info",
+                `Executing command "${cmd}"...`
             )
             await commands[cmd]()
         }
         else {
             // Unknown command → log error and show general help
             log(
-                'error',
-                `Unknown command '${cmd}'. Use 'minimaz help' to see available commands.`
+                "error",
+                `Unknown command "${cmd}". Use "minimaz help" to see available commands.`
             )
             help()
         }
     } catch (error: any) {
         // Catch any runtime error and log it
         log(
-            'error',
+            "error",
             error instanceof Error
                 ? process.env.DEBUG
                     ? error.stack ?? error.message

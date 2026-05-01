@@ -49,7 +49,7 @@ export async function validate(
     const stats: Stats = await lstat(absolutePath)
 
     // --- Directory Branch ---
-    // If it's a directory, we crawl it and validate every child element recursively
+    // If it is a directory, we crawl it and validate every child element recursively
     if (stats.isDirectory()) {
         const elements: string[] =
             await getDirElements(absolutePath)
@@ -61,14 +61,18 @@ export async function validate(
             )
 
         // Aggregates nested results (Note: consider updating return type to number if using this)
-        return results.reduce((acc: any, curr: any) => acc + curr, 0)
+        return results.reduce(
+            (acc: any, curr: any) => acc + curr, 0
+        )
     }
 
     // --- File Branch ---
-    const ext: string = extname(absolutePath).toLowerCase()
+    const ext: string =
+        extname(absolutePath).toLowerCase()
 
     // Retrieve file content using internal getFile utility
-    const content: string = await getFile(absolutePath)
+    const content: string =
+        await getFile(absolutePath)
 
     // Integrity check: if getFile returns nothing but the file actually has data, fail fast
     if (!content && (await readFile(absolutePath, "utf8")).length > 0)

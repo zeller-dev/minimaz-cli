@@ -1,23 +1,24 @@
 import {
-    // --- FUNCTIONS ---
-    colorize,
-
     // --- TYPES ---
     MinimazConfig, PkgTemplate
 } from "../index.js"
 
+export const defaults: any = {
+    outDir: "./dist"
+}
+
 // ----- Package.json template -----
 export const pkgTemplate: PkgTemplate = {
-    version: '0.0.1',
-    license: 'ISC',
-    type: 'commonjs',
+    version: "0.0.1",
+    license: "ISC",
+    type: "commonjs",
     scripts: {
-        build: 'npx mz b',
-        start: 'npx mz b && npx serve dist/'
+        build: "npx mz b",
+        start: `npx mz b && npx serve ${defaults.outDir}`
     },
     devDependencies: {
-        'minimaz-cli': 'latest',
-        'serve': 'latest'
+        "minimaz-cli": "latest",
+        "serve": "latest"
     }
 }
 
@@ -32,17 +33,17 @@ dist
 
 // ----- Default minimaz.config.json template -----
 export const minimazConfigTemplate: MinimazConfig = {
-    outDir: 'dist',
+    outDir: defaults.outDir,
     bundling: {
         css: {
             enabled: true,
-            outFile: 'styles.css'
+            outFile: "styles.css"
         },
         js: {
             enabled: true,
-            outFile: 'scripts.js'
+            outFile: "scripts.js"
         },
-        outDir: ''
+        outDir: ""
     },
     minify: {
         html: true,
@@ -50,18 +51,18 @@ export const minimazConfigTemplate: MinimazConfig = {
         js: true
     },
     replace: {
-        '../public/': 'public/'
+        "../public/": "public/"
     },
     styles: [
-        'style.css',
-        'style-2.css'
+        "style.css",
+        "style-2.css"
     ],
     scripts: [
-        'script.js',
-        'script-2.js'
+        "script.js",
+        "script-2.js"
     ],
     folders: {
-        src: '',
-        public: 'public'
+        src: "",
+        public: "public"
     }
 }
