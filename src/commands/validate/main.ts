@@ -44,7 +44,9 @@ export async function validate(
 
     // Verify existence early to avoid lstat errors
     if (!(await pathExists(absolutePath)))
-        throw new Error(`Path does not exist: ${absolutePath}`)
+        throw new Error(
+            `Path does not exist: ${absolutePath}`
+        )
 
     const stats: Stats = await lstat(absolutePath)
 

@@ -1,15 +1,11 @@
 import {
-    ensureDir
-} from "fs-extra"
-
-import {
     join,
     resolve
 } from "node:path"
 
 import {
     // --- FUNCTIONS ---
-    loadConfig, log, removeOutDir, resolveCurrentPath,
+    loadConfig, log, resolveCurrentPath,
 
     // --- TYPES ---
     MinimazConfig
@@ -17,7 +13,8 @@ import {
 
 import {
     processExternals,
-    processFolder
+    processFolder,
+    reCreateOutDir
 } from "./index.js"
 
 /**
@@ -31,7 +28,10 @@ export async function build(): Promise<void> {
     const config: MinimazConfig =
         await loadConfig()
     const outDirPath: string =
-        resolve(resolveCurrentPath(), config.outDir)
+        resolve(resolveCurrentPath(), config.output.dir)
+
+    // 1. Preparation
+    await reCreateOutDir(outDirPath)
 
     /**
      * Shared State: The "Blacklist"
@@ -41,15 +41,8 @@ export async function build(): Promise<void> {
     const ignoredFiles =
         new Set<string>()
 
-    // 1. Preparation
-    await removeOutDir(outDirPath)
-    await ensureDir(outDirPath)
-
     // 2. Folder Processing
-    if (
-        !config.folders
-        || Object.keys(config.folders).length === 0
-    ) {
+    if (config.input.dir) {
         log("warn", "No folders defined in config")
     } else {
         for (
@@ -112,6 +105,6 @@ export async function build(): Promise<void> {
 
     log(
         "success",
-        `Build completed. Output saved in ${config.outDir}`
+        `Build completed. Output saved in ${config.output.dir}`
     )
 }

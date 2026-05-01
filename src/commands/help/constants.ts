@@ -9,13 +9,13 @@ export const commandsHelp: Record<string, CommandHelp> = {
         usage:
             "minimaz build | b",
         description:
-            `Build project into outDir folder (default: ${defaults.outDir})`
+            `Build project into outDir folder (default: ${defaults.outputDir})`
     },
     clear: {
         usage:
             "minimaz clear | c",
         description:
-            `Clear the outDir folder (default: ${defaults.outDir})`
+            `Clear the outDir folder (default: ${defaults.outputDir})`
     },
     help: {
         usage:

@@ -23,10 +23,11 @@ import {
 
 import {
     // --- FUNCTIONS ---
-    getDirElements, getFile, log, resolveCurrentPath,
+    getDirElements, getFile, log, removeOutDir, resolveCurrentPath,
 
     // --- TYPES ---
     File, MinimazConfig
+
 } from "../../index.js"
 
 import {
@@ -130,10 +131,14 @@ export async function walkFolder(
         }
 
         const fileContent: string =
-            await getFile(fromPath, config.replace)
+            await getFile(
+                fromPath,
+                config.output.replace
+            )
 
         if (fileContent.length > 0) {
-            const fileExt: string = extname(fromPath).toLowerCase()
+            const fileExt: string =
+                extname(fromPath).toLowerCase()
 
             await processFile(
                 {
@@ -264,4 +269,9 @@ export async function processExternals(
             ignoredFiles
         )
     }
+}
+
+export async function reCreateOutDir(path: string): Promise<void> {
+    await removeOutDir(path)
+    await ensureDir(path)
 }

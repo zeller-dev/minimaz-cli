@@ -6,14 +6,27 @@ import {
     log
 } from "../index.js"
 
-// ----- Setup Default Templates -----
-// Runs after install to ensure global templates exist
+/**
+ * Post-install hook.
+ *
+ * Ensures default templates/configuration are initialized
+ * after package installation.
+ *
+ * This is typically executed automatically (e.g. via npm/yarn lifecycle).
+ * Safe to run multiple times if `config(false)` is idempotent.
+ *
+ * @returns {Promise<void>}
+ */
 export async function postInstall(): Promise<void> {
     try {
-        log("info", "Running Post Install...")
+        log("info", "Running post-install setup...")
+
+        // Initialize default configuration/templates without forcing overwrite
         await config(false)
-        log("success", "Postinstall: completed")
+
+        log("success", "Post-install setup completed")
     } catch (error: any) {
-        log("error", `Postinstall: failed: ${error.message}`)
+        // Log failure with error context for debugging
+        log("error", `Post-install setup failed: ${error?.message}`)
     }
 }

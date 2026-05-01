@@ -1,17 +1,28 @@
 import {
-    // --- CONSTANTS
+    // --- CONSTANTS ---
     colors, prefix,
 
     // --- FUNCTIONS ---
-    colorize,
+    colorize, formatTs,
 
     // --- TYPES ---
     LogType
+
 } from "./index.js"
 
 /**
- * Prints a message to console with prefix based on type.
- * Timestamp is shown only when VERBOSE=true.
+ * Logs a message to the console with a level-specific prefix.
+ *
+ * Behavior:
+ * - Prepends a colored prefix based on `type`
+ * - Includes a timestamp only when VERBOSE=true
+ * - Suppresses "debug" logs unless VERBOSE=true
+ *
+ * Environment:
+ * - VERBOSE=true → enables debug logs and timestamps
+ *
+ * @param {LogType} [type="info"] - Log level
+ * @param {string} message - Message to print
  */
 export function log(
     type: LogType = "info",
@@ -21,15 +32,18 @@ export function log(
     const isVerbose: boolean =
         process.env.VERBOSE === "true"
 
-    // Only print debug messages in verbose mode
+    // Skip debug logs unless explicitly enabled
     if (type === "debug" && !isVerbose) return
 
+    // Timestamp is optional and treated as secondary metadata
     const ts = isVerbose
         ? colorize(`[${formatTs()}] `, colors.gray)
         : ""
+
     const output: string =
         `${ts}${prefix[type]} ${message}`
 
+    // Route to appropriate console method
     switch (type) {
         case "error":
             console.error(output)
@@ -43,8 +57,8 @@ export function log(
     }
 }
 
-
-function formatTs() {
-    throw new Error("Function not implemented.")
-}
-// @TODO: make this a package
+/**
+ * @TODO:
+ * - Extract logging utilities into a standalone package
+ * - Add log level filtering beyond VERBOSE (e.g. LOG_LEVEL)
+ */

@@ -19,7 +19,7 @@ import {
 /**
  * Updates a single template with files from the current working directory.
  *
- * @param dir - Global templates directory (~/.minimaz/templates)
+ * @param dir - Global templates directory
  * @param templateName - Name of the template to update
  */
 export async function updateSingleTemplate(
@@ -51,7 +51,7 @@ export async function updateSingleTemplate(
  * Updates all templates from the global node_modules/minimaz/src/templates folder.
  * This ensures the local templates are synced with the installed package.
  *
- * @param templatesDir - Global templates directory (~/.minimaz/templates)
+ * @param templatesDir - Global templates directory
  */
 export async function updateFromNodeModules(
     dir: string
@@ -83,7 +83,7 @@ export async function updateFromNodeModules(
 }
 
 /**
- * Deletes a global template by name from ~/.minimaz/templates.
+ * Deletes a global template by name from global templates directory
  *
  * @param dir - Global templates directory
  * @param name - Template name to delete
@@ -112,7 +112,7 @@ export async function deleteTemplate(
 /**
  * Saves a folder (current or specified) as a new global template.
  *
- * @param dir - Global templates directory (~/.minimaz/templates)
+ * @param dir - Global templates directory
  * @param targetPath - Optional path to save as a template
  */
 export async function saveTemplate(

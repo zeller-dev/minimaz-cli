@@ -151,7 +151,10 @@ export async function getGlobalNodeModulesPath(): Promise<string> {
  */
 export async function getGlobalDirPath(): Promise<string> {
     log("debug", `Checking existence of global Minimaz directory...`)
-    const dir: string = join(homedir(), ".minimaz")
+    const dir: string = join(
+        homedir(),
+        defaults.globalDir
+    )
     const exists: boolean = await pathExists(dir)
     if (!exists)
         throw new Error(`Global Minimaz folder does not exist.\nRun "minimaz config" to generate it.`)
@@ -281,7 +284,7 @@ export async function removeOutDir(
     const outDir = dir
         ? isAbsolute(dir) ? dir : resolveCurrentPath([dir])
         : resolve(
-            process.cwd(), (await loadConfig()).outDir ?? defaults.outDir
+            process.cwd(), (await loadConfig()).output.dir ?? defaults.outputDir
         )
     const rootDir = process.cwd()
 
@@ -325,25 +328,6 @@ export async function loadConfig(): Promise<MinimazConfig> {
     config.replace ??= {}
 
     return config as MinimazConfig
-}
-
-/**
- * Initialize environment variables for the CLI.
- *
- * @param verbose - set true to enable verbose logging
- */
-export function initEnv(
-    verbose?: boolean
-): void {
-    log("debug", "Initializing environments variables...")
-
-    // Verbose
-    process.env.VERBOSE = verbose ? "true" : "false"
-    log("debug", `VERBOSE = ${process.env.VERBOSE}`)
-
-    // Working Path
-    process.env.CLI_WORKDIR = process.cwd()
-    log("debug", `CLI_WORKDIR = ${process.env.CLI_WORKDIR}`)
 }
 
 /**
