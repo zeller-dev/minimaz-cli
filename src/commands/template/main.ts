@@ -1,10 +1,11 @@
 import {
     // --- FUNCTIONS ---
     getGlobalTemplatesDirPath,
+} from "../../shared/index.js"
 
-    // --- TYPES ---
+import type {
     TemplateCommandOptions,
-} from "../../index.js"
+} from "./types.js"
 
 import {
     deleteTemplate,
@@ -12,7 +13,7 @@ import {
     saveTemplate,
     updateFromNodeModules,
     updateSingleTemplate
-} from "./index.js"
+} from "./core.js"
 
 /**
  * Template command handler. Supports listing, saving, updating, and deleting templates.

@@ -1,7 +1,11 @@
 import {
-    defaults,
+    defaults
+} from "../../shared/index.js"
+
+import type {
     CommandHelp
-} from "../../index.js";
+} from "./types.js"
+
 
 // ----- CLI Commands Help -----
 export const commandsHelp: Record<string, CommandHelp> = {
@@ -9,13 +13,13 @@ export const commandsHelp: Record<string, CommandHelp> = {
         usage:
             "minimaz build | b",
         description:
-            `Build project into outDir folder (default: ${defaults.outputDir})`
+            `Build project into output.dir folder (default: ${defaults.outputDir})`
     },
     clear: {
         usage:
             "minimaz clear | c",
         description:
-            `Clear the outDir folder (default: ${defaults.outputDir})`
+            `Clear the output.dir folder (default: ${defaults.outputDir})`
     },
     help: {
         usage:
@@ -56,4 +60,4 @@ export const commandsHelp: Record<string, CommandHelp> = {
         description:
             "Show Minimaz version"
     }
-}
+} as const

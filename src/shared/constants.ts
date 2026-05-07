@@ -1,58 +1,20 @@
-import {
-    // --- TYPES ---
-    Defaults, MinimazConfig, PkgTemplate
-} from "../index.js"
+import type {
+    Defaults,
+    MinimazConfig
+} from "./types.js"
 
 /**
  * Default directory configuration used across templates.
  * Centralizing these values ensures consistency between generated files.
  */
 export const defaults: Defaults = {
-    globalDir: ".minimaz",
-    inputDir: "./src",
-    outputDir: "./dist"
-}
-
-/**
- * Template for generated package.json.
- *
- * Designed for quick project bootstrap with:
- * - build command via minimaz CLI
- * - static serving of output directory
- *
- * Note: versions are set to "latest" to favor ease of setup over reproducibility.
- */
-export const pkgTemplate: PkgTemplate = {
-    version: "0.0.1",
-    license: "ISC",
-    type: "commonjs",
-    scripts: {
-        // Builds the project using minimaz CLI
-        build: "npx mz b",
-
-        // Builds and serves output directory locally
-        start: `npx mz b && npx serve ${defaults.outputDir}`
-    },
-    devDependencies: {
-        "minimaz-cli": "latest",
-        "serve": "latest"
-    }
-}
-
-/**
- * Default .gitignore content.
- *
- * Excludes:
- * - dependencies
- * - build output
- * - environment files
- * - editor/system-specific files
- */
-export const gitIgnoreTemplate: string = `node_modules
-dist
-.env
-.vscode
-.DS_Store`
+    globalDir:
+        ".minimaz",
+    inputDir:
+        "./src",
+    outputDir:
+        "./dist"
+} as const satisfies Defaults
 
 /**
  * Default minimaz configuration template.
@@ -87,8 +49,10 @@ export const minimazConfigTemplate: MinimazConfig = {
          * Value: destination path inside output directory
          */
         externals: {
-            "./node_modules/example/fonts": "assets/fonts",
-            "https://example.com/library.js": "js/vendor/vue.js"
+            "./node_modules/example/fonts":
+                "assets/fonts",
+            "https://example.com/library.js":
+                "js/vendor/vue.js"
         },
 
         /**
@@ -125,4 +89,4 @@ export const minimazConfigTemplate: MinimazConfig = {
             minify: true,
         }
     }
-}
+} as const satisfies MinimazConfig

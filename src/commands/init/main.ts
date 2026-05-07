@@ -4,19 +4,24 @@ import {
 } from "fs-extra"
 
 import {
+    createFileFromTemplate,
+    getGlobalTemplatePath,
+    // --- FUNCTIONS  ---
+    log,
     // --- CONSTANTS ---
     minimazConfigTemplate,
-
-    // --- FUNCTIONS  ---
-    log, getGlobalTemplatePath, createFileFromTemplate,
-    resolveCurrentPath, parseBooleanFlag,
-} from "../../index.js"
+    parseBooleanFlag,
+    resolveCurrentPath,
+} from "../../shared/index.js"
 
 import {
     initGit,
-    initNpm,
+    initNpm
+} from "./core.js"
+
+import type {
     InitCommandOptions
-} from "./index.js"
+} from "./types.js"
 
 /**
  * Initializes a new Minimaz project.
@@ -34,18 +39,24 @@ export async function init(
         resolveCurrentPath([projectName])
 
     if (await pathExists(targetDir))
-        throw new Error(`Target directory "${targetDir}" already exists.`)
+        throw new Error(
+            `Target directory "${targetDir}" already exists`
+        )
 
     // Resolve templateDir and check if it exists
     const templateDir: string =
         await getGlobalTemplatePath(options.template)
 
     // Copy template files to target directory
-    log("debug", `Copying template from "${templateDir}" to "${targetDir}"`)
+    log.debug(
+        `Copying template from "${templateDir}" to "${targetDir}"`
+    )
     await copy(templateDir, targetDir)
 
     // add minimaz.config.json
-    log("debug", "Initializing minimaz.config.json...")
+    log.debug(
+        "Initializing minimaz.config.json"
+    )
     await createFileFromTemplate(
         minimazConfigTemplate,
         [targetDir, "minimaz.config.json"],
@@ -53,17 +64,20 @@ export async function init(
     )
 
     // Check for NPM initialization option (ask if not provided)
-    const useNpm: boolean = parseBooleanFlag(options.npm)
+    const useNpm: boolean =
+        parseBooleanFlag(options.npm)
+
     if (useNpm)
         await initNpm(targetDir, projectName)
 
     // Check for Git initialization option (ask if not provided)
-    const useGit: boolean = parseBooleanFlag(options.git)
+    const useGit: boolean =
+        parseBooleanFlag(options.git)
+
     if (useGit)
         await initGit(projectName, targetDir, options.gitprovider)
 
-    log(
-        "success",
-        `Project "${projectName}" created using template "${options.template}".`
+    log.success(
+        `Project "${projectName}" created using template "${options.template}"`
     )
 }

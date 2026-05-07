@@ -1,7 +1,7 @@
 import {
     // --- FUNCTIONS ---
     removeOutDir
-} from "../../index.js"
+} from "../../shared/index.js"
 
 /**
  * Removes the configured output directory.
@@ -13,5 +13,5 @@ import {
  */
 export async function clear(): Promise<void> {
     // Delegates to core cleanup utility
-    removeOutDir()
+    await removeOutDir()
 }

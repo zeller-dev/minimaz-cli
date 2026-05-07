@@ -90,41 +90,6 @@ export interface MinimazConfig {
 }
 
 /**
- * Template structure for generated package.json files.
- *
- * Focused on development-time dependencies and scripts.
- */
-export type PkgTemplate = {
-    version: string
-    license: string
-    type: "commonjs" | "module"
-    scripts: Record<string, string>
-    devDependencies: Record<string, string>
-}
-
-/**
- * Represents grouped bundle outputs for a build.
- *
- * Contains separate bundle definitions for CSS and JS.
- */
-export type Bundles = {
-    outDir: string
-    css: Bundle
-    js: Bundle
-}
-
-/**
- * Represents a single bundle output.
- *
- * - outFile: final emitted file
- * - chunks: source files included in the bundle
- */
-export type Bundle = {
-    outFile: string
-    chunks: string[]
-}
-
-/**
  * Maps file extensions (or identifiers) to processing handlers.
  *
  * Each handler receives:

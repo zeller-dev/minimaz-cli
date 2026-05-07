@@ -1,20 +1,30 @@
-import { pathExists } from "fs-extra"
-import { join } from "node:path"
-import { homedir } from "node:os"
+import {
+    pathExists
+} from "fs-extra"
 
 import {
+    join
+} from "node:path"
+
+import {
+    homedir
+} from "node:os"
+
+import {
+    // --- CONSTANTS ---
     defaults,
+
     // --- FUNCTIONS ---
     getNodeModulesTemplatesPath,
     log
-} from "../../index.js"
+} from "../../shared/index.js"
 
 import {
-    setupGlobalDir,
-    setupGlobalTemplatesDir,
     copyDefaultTemplates,
-    createSettings
-} from "./index.js"
+    createSettings,
+    setupGlobalDir,
+    setupGlobalTemplatesDir
+} from "./core.js"
 
 /**
  * Initializes or updates the global Minimaz configuration.
@@ -34,7 +44,9 @@ import {
 export async function config(
     overwrite: boolean
 ): Promise<void> {
-    log("debug", `Config initialization (overwrite=${overwrite})`)
+    log.debug(
+        `Config initialization (overwrite=${overwrite})`
+    )
 
     /**
      * 1. Global root directory
@@ -48,10 +60,13 @@ export async function config(
      * 2. Default templates source (from installed package)
      * Required for bootstrapping user templates.
      */
-    const defaultTemplatesDir: string = await getNodeModulesTemplatesPath()
+    const defaultTemplatesDir: string =
+        await getNodeModulesTemplatesPath()
 
     if (!(await pathExists(defaultTemplatesDir))) {
-        log("error", "Default templates directory not found.")
+        log.error(
+            "Default templates directory not found"
+        )
         return // Cannot proceed without base templates
     }
 

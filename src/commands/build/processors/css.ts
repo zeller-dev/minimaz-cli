@@ -1,118 +1,176 @@
 import {
-    outputFile,
-    pathExists
+    build
+} from "esbuild"
+
+import {
+    outputFile
 } from "fs-extra"
 
 import {
-    readFile
-} from "node:fs/promises"
-
-import {
-    dirname,
+    normalize,
     resolve
 } from "node:path"
 
 import {
-    Bundle,
+    applyReplacements,
+    log
+} from "../../../shared/index.js"
+
+import type {
     File
-} from "../../../index.js"
+} from "../../../shared/index.js"
 
 import {
-    runTransform
-} from "../index.js"
+    runTransform,
+} from "../core.js"
+
+import type {
+    Bundle
+} from "../types.js"
+
 /**
  * Processes a CSS file.
- * If bundling is enabled, it resolves all imports and adds the result to the bundle.
- * If bundling is disabled, it processes and writes the file to the destination.
+ * Bundles CSS and ensures all bundled content has replacements applied.
  */
 export async function processCSS(
     file: File,
     bundle: Bundle,
+    ignoredFiles: Set<string>,
     bundling: boolean,
     minifying: boolean,
-    ignoredFiles: Set<string>
+    externals: Record<string, string> | undefined,
+    replacements: Record<string, string> | undefined
 ): Promise<void> {
-    // 1. Resolve imports and track them in ignoredFiles
-    const resolvedContent = await resolveImports(file.content, file.src, ignoredFiles)
+    log.debug(
+        `Processing CSS: ${file.src}`
+    )
+
     if (bundling) {
-        // Add the expanded content to the shared bundle chunks
-        bundle.chunks.push(resolvedContent)
-    } else {
-        let out: string = resolvedContent
-        if (minifying)
-            out = await minifyCSS(out, true)
+        /**
+         * We use 'stdin' to pass the file.content which already has replacements.
+         * resolveDir ensures relative @imports still work.
+         */
+        const result = await build({
+            stdin: {
+                contents: file.content,
+                resolveDir: resolve(file.src, ".."),
+                loader: "css",
+                sourcefile: file.src
+            },
+            bundle: true,
+            write: false,
+            metafile: true,
+            minify: minifying,
+            charset: "utf8",
+            legalComments: "none",
+            external: [
+                "*.woff",
+                "*.woff2",
+                "*.ttf",
+                "*.otf",
+                "*.eot",
+                "*.svg",
+                "*.png",
+                "*.jpg",
+                "*.jpeg",
+                "*.gif",
+                "*.webp"
+            ],
+            target: [
+                "chrome80",
+                "safari13",
+                "firefox70",
+                "edge79"
+            ]
+        })
 
-        await outputFile(file.dest, out)
-    }
-}
+        let bundledCode: string =
+            result.outputFiles[0]?.text ?? ""
 
-/**
- * Recursively resolves @import statements in CSS files.
- * Inlines the content of the imported file into the source.
- * * @param content - Raw CSS content
- * @param filePath - Absolute path to the current file
- * @param ignoredFiles - Set to track files to be excluded from the main walker
- * @param visited - Set to track processed files and prevent circular imports
- */
-async function resolveImports(
-    content: string,
-    filePath: string,
-    ignoredFiles: Set<string>,
-    visited: Set<string> = new Set()
-): Promise<string> {
-    const absPath = resolve(filePath)
-    if (visited.has(absPath))
-        return ""
-
-    visited.add(absPath)
-    const dir = dirname(absPath)
-    const importRegex = /@import\s+['"](.+?\.css)['"]\s*;/g
-    let processedContent = content
-    const matches = Array.from(content.matchAll(importRegex))
-
-    for (
-        const match
-        of matches
-    ) {
-        const fullLine = match[0]
-        const targetPath = match[1]
-        const absoluteTarget = resolve(dir, targetPath)
-        if (await pathExists(absoluteTarget)) {
-            // Mark this file to be excluded from the main walking process
-            ignoredFiles.add(absoluteTarget)
-            const importedRaw = await readFile(absoluteTarget, "utf-8")
-            // Recursively resolve imports inside the imported file
-            const resolvedImport = await resolveImports(
-                importedRaw,
-                absoluteTarget,
-                ignoredFiles,
-                visited
+        /**
+         * 1. Post-Bundle Replacement:
+         * Dependencies pulled from disk by esbuild are raw.
+         * We apply replacements here to catch everything in the final chunk.
+         */
+        if (replacements) {
+            bundledCode = applyReplacements(
+                bundledCode,
+                replacements
             )
-            processedContent = processedContent.replace(fullLine, resolvedImport)
-        } else {
-            console.warn(`[CSS Bundle] Import not found: ${targetPath} (searched in ${dir})`)
         }
-    }
 
-    return processedContent
+        /**
+         * 2. CLEANUP:
+         * Strip relative prefixes from external paths to respect original intent.
+         */
+        if (externals) {
+            for (const destination of Object.values(externals)) {
+                if (destination.startsWith("/")) {
+                    const escapedDest: string =
+                        destination.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+                    const regex: RegExp =
+                        new RegExp(`(\\.\\.\\/|\\.\\/)+${escapedDest}`, 'g')
+
+                    bundledCode =
+                        bundledCode.replace(regex, destination)
+                }
+            }
+        }
+
+        // Dependency Discovery
+        if (result.metafile) {
+            const entryPath: string =
+                normalize(resolve(file.src))
+
+            for (const inputPath of Object.keys(result.metafile.inputs)) {
+                const absoluteInputPath: string =
+                    normalize(resolve(inputPath))
+
+                if (absoluteInputPath !== entryPath) {
+                    ignoredFiles.add(absoluteInputPath)
+                }
+            }
+        }
+
+        bundle.chunks.push(bundledCode)
+
+        await outputFile(
+            file.dest,
+            bundledCode
+        )
+    } else {
+        let out: string =
+            file.content
+
+        if (minifying) {
+            out = await minifyCSS(out)
+        }
+
+        await outputFile(
+            file.dest,
+            out
+        )
+    }
 }
 
 /**
  * Minifies CSS (Production & Development)
- * Uses esbuild for high-performance optimization and syntax lowering.
  */
 export async function minifyCSS(
-    code: string,
-    isProd: boolean = true
+    code: string
 ): Promise<string> {
     return runTransform(code, {
         loader: "css",
-        minify: isProd,
+        minify: true,
         charset: "utf8",
-        sourcemap: !isProd ? "inline" : false,
-        legalComments: isProd ? "none" : "inline",
-        target: isProd
-            ? ["chrome80", "safari13", "firefox70", "edge79"]
-            : "esnext",
+        sourcemap: false,
+        legalComments: "none",
+        target: [
+            "chrome80",
+            "safari13",
+            "firefox70",
+            "edge79"
+        ]
     }, "MinifyCSS")
 }

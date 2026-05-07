@@ -1,110 +1,113 @@
 import {
-    join,
-    resolve
-} from "node:path"
-
-import {
     // --- FUNCTIONS ---
-    loadConfig, log, resolveCurrentPath,
+    getDirElements, loadConfig, log, resolveCurrentPath,
+} from "../../shared/index.js"
 
-    // --- TYPES ---
+import type {
     MinimazConfig
-} from "../../index.js"
+} from "../../shared/index.js"
 
 import {
     processExternals,
-    processFolder,
-    reCreateOutDir
-} from "./index.js"
+    reCreateOutDir,
+    runDiscovery,
+    walkFolder
+} from "./core.js"
 
 /**
  * Builds the project according to the Minimaz configuration.
  *
- * - Cleans and prepares the outDir directory
- * - Processes configured source folders
- * - Tracks imports via ignoredFiles to ensure a clean output
+ * Uses a Two-Pass Strategy:
+ * 1. Discovery Pass: Populates the Blacklist by scanning for imports
+ * 2. Processing Pass: Maps, bundles, transforms and writes files
  */
 export async function build(): Promise<void> {
     const config: MinimazConfig =
         await loadConfig()
+
+    const inDirPath: string =
+        resolveCurrentPath([config.input.dir])
+
     const outDirPath: string =
-        resolve(resolveCurrentPath(), config.output.dir)
+        resolveCurrentPath([config.output.dir])
 
     // 1. Preparation
     await reCreateOutDir(outDirPath)
 
     /**
      * Shared State: The "Blacklist"
-     * As transformers find @imports or JS dependencies, they add them here.
-     * The folder walker checks this Set to avoid processing partials/deps twice.
+     * Populated during Discovery Pass to ensure partials/deps
+     * are not processed as standalone entry points.
      */
     const ignoredFiles =
         new Set<string>()
 
-    // 2. Folder Processing
-    if (config.input.dir) {
-        log("warn", "No folders defined in config")
-    } else {
-        for (
-            const [from, to]
-            of Object.entries(config.folders)
-        ) {
-            const srcPath: string =
-                resolveCurrentPath([from])
-            const destPath: string =
-                join(outDirPath, to)
+    /**
+     * 2. Phase 1: Discovery Pass
+     * Scans the input directory to find all internal dependencies.
+     * This ensures the Blacklist is complete before any file is written.
+     */
+    log.info(
+        "Discovery: starting"
+    )
 
-            log(
-                "debug",
-                `Building folder: ${from} -> /${to}`
-            )
+    await runDiscovery(
+        inDirPath,
+        config,
+        ignoredFiles,
+        config.output.replace ?? {}
+    )
 
-            await processFolder(
-                srcPath,
-                destPath,
-                config,
-                ignoredFiles
-            )
-        }
+    const dirElements: string[] =
+        await getDirElements(config.input.dir)
+
+    if (dirElements.length === 0) {
+        log.error(
+            `Directory ${config.input.dir} is empty`
+        )
+        return
     }
 
     /**
-     * 3. External Assets
-     * We process styles first, then scripts.
-     * If an external script imports a file already found in a folder,
-     * it will still be bundled correctly, but not duplicated.
+     * 3. Phase 2: Recursive Processing
+     * We scan the entire input directory for the second time.
+     * The walkFolder function uses the pre-filled ignoredFiles Set.
      */
+    log.info(
+        "Processing: starting"
+    )
 
-    // Process standalone styles (CSS/SCSS)
-    if (config.styles?.length) {
-        log(
-            "debug",
-            `Processing ${config.styles.length} external styles...`
+    await walkFolder(
+        inDirPath,
+        outDirPath,
+        config,
+        ignoredFiles
+    )
+
+    /**
+     * 4. External Assets
+     * Processes resources defined in input.externals.
+     * Supports both local file paths and remote URLs.
+     */
+    const externals: Record<string, string> =
+        config.input.externals || {}
+    const externalKeys: string[] =
+        Object.keys(externals)
+
+    if (externalKeys.length > 0) {
+        log.debug(
+            `Processing ${externalKeys.length} external resources`
         )
+
         await processExternals(
             outDirPath,
-            config.styles,
+            externals,
             config,
             ignoredFiles
         )
     }
 
-    // Process standalone scripts (JS/TS)
-    if (config.scripts?.length) {
-        log(
-            "debug",
-            `Processing ${config.scripts.length} external scripts...`
-        )
-        await processExternals(
-            outDirPath,
-            config.scripts,
-            config,
-            ignoredFiles
-        )
-    }
-
-    log(
-        "success",
+    log.success(
         `Build completed. Output saved in ${config.output.dir}`
     )
 }

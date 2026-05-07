@@ -1,10 +1,11 @@
+import { log } from "../../shared/logger/index.js"
 import {
-    // --- CONSTANTS ---
     commandsHelp,
+} from "./constants.js"
 
-    // --- TYPES ---
+import type {
     CommandHelp
-} from "./index.js"
+} from "./types.js"
 
 /**
  * Display help message.
@@ -16,41 +17,51 @@ export function help(
 ): void {
     // If specific command requested
     if (cmdName) {
-        const cmd: CommandHelp = commandsHelp[cmdName]
+        const cmd: CommandHelp =
+            commandsHelp[cmdName]
         if (!cmd) {
-            console.log(`No help found for: ${cmdName}\n`)
+            log.default(
+                `No help found for: ${cmdName}\n`
+            )
             return
         }
-        console.log(cmd.usage, `\n\t${cmd.description}`)
+        log.default([
+            cmd.usage, `\n\t${cmd.description}`
+        ])
         if (cmd.options) {
-            console.log(`\tOptions:`)
+            log.default(`\tOptions:`)
             for (
                 const [opt, desc]
                 of Object.entries(cmd.options)
             ) {
-                console.log(`\t\t${opt}\t${desc}`)
+                log.default(`\t\t${opt}\t${desc}`)
             }
         }
-        console.log("")
+        log.default("")
         return
     }
 
     // Otherwise, show general help
-    console.log(`Usage:\n`)
+    log.default(`Usage:\n`)
     for (
         const cmd
         of Object.values(commandsHelp)
     ) {
-        console.log(cmd.usage, `\n\t${cmd.description}`)
+        log.default([
+            cmd.usage,
+            `\n\t${cmd.description}`
+        ])
         if (cmd.options) {
-            console.log(`\tOptions:`)
+            log.default(`\tOptions:`)
             for (
                 const [opt, desc]
                 of Object.entries(cmd.options)
             ) {
-                console.log(`\t\t${opt}\t${desc}`)
+                log.default(
+                    `\t\t${opt}\t${desc}`
+                )
             }
         }
-        console.log("")
+        log.default("")
     }
 }

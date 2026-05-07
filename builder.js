@@ -1,15 +1,24 @@
 #!/usr/bin/env node
 import esbuild from "esbuild"
-import fs from "fs-extra"
-import path from "path"
-import { fileURLToPath } from "url"
+
+import {
+    cp, mkdir, readFile, rm, stat, writeFile
+} from 'node:fs/promises'
+
+import {
+    dirname, join
+} from "node:path"
+
+import {
+    fileURLToPath
+} from "node:url"
 
 const destFolderName = "./dist"
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const outDir = path.join(__dirname, destFolderName)
-const pkgPath = path.join(__dirname, "package.json")
+const __dirname = dirname(__filename)
+const outDir = join(__dirname, destFolderName)
+const pkgPath = join(__dirname, "package.json")
 
 /* ======================
     Logging
@@ -45,7 +54,10 @@ function formatTs() {
 }
 
 function log(type = "info", message) {
-    if (type === "debug" && process.env.NODE_ENV !== "development") return
+    if (
+        type === "debug"
+        && process.env.NODE_ENV !== "development"
+    ) return
 
     const PREFIXES = {
         info:
@@ -66,11 +78,15 @@ function log(type = "info", message) {
         debug: console.debug
     }[type] || console.log
 
-    const color = COLORS[type] || COLORS.reset
-    const prefix = `${color}${PREFIXES[type]}${COLORS.reset}`
+    const color =
+        COLORS[type] || COLORS.reset
+    const prefix =
+        `${color}${PREFIXES[type]}${COLORS.reset}`
     const timestamp = formatTs()
 
-    logger(`[${timestamp}] ${prefix} ${message}`)
+    logger(
+        `[${timestamp}] ${prefix} ${message}`
+    )
 }
 
 /* ======================
@@ -79,11 +95,15 @@ function log(type = "info", message) {
 
 async function validatePackageJson(path) {
     log("debug", "Package.json: validating")
-    if (!(await fs.pathExists(path)))
-        throw new Error(`package.json not found at: ${path}`)
+    if (!(await stat(path)))
+        throw new Error(
+            `package.json not found at: ${path}`
+        )
 
     try {
-        const pkg = await fs.readJson(path)
+        const pkg = JSON.parse(
+            await readFile(path, 'utf8')
+        )
         const missingFields = []
         if (!pkg.name)
             missingFields.push("name")
@@ -104,8 +124,11 @@ async function validatePackageJson(path) {
 
         log("debug", "Package.json: valid")
         return pkg
-    } catch (err) {
-        throw new Error(`Validation failed: ${err.message}`)
+    } catch (error) {
+        throw new Error(
+            `Validation failed: ${error.message}`,
+            { cause: error }
+        )
     }
 }
 
@@ -114,19 +137,38 @@ async function validatePackageJson(path) {
 ====================== */
 async function handleDistFolder() {
     log("debug", `Destination folder: Cleaning and re-creating ${destFolderName}`)
-    await fs.remove(outDir)
-    await fs.mkdir(path.join(outDir, "bin"), { recursive: true })
+    await rm(
+        outDir,
+        { recursive: true, force: true }
+    )
+
+    await mkdir(
+        join(outDir, "bin"),
+        { recursive: true }
+    )
 }
 
 async function handleTemplatesFolder() {
-    const templatesSrc = path.join(__dirname, "src", "templates")
-    const templatesDest = path.join(outDir, "templates")
+    const templatesSrc =
+        join(__dirname, "src", "templates")
+    const templatesDest =
+        join(outDir, "templates")
 
-    if (await fs.pathExists(templatesSrc)) {
-        log("debug", `Templates: ./src/templates exists, copying to ${destFolderName}`)
-        await fs.copy(templatesSrc, templatesDest)
+    if (await stat(templatesSrc)) {
+        log(
+            "debug",
+            `Templates: ./src/templates exists, copying to ${destFolderName}`
+        )
+        await cp(
+            templatesSrc,
+            templatesDest,
+            { recursive: true }
+        )
     } else {
-        log("warn", `Templates: ./src/templates does not exist`)
+        log(
+            "warn",
+            `Templates: ./src/templates does not exist`
+        )
     }
 }
 
@@ -141,18 +183,32 @@ async function build() {
     await handleDistFolder()
 
     // --- Package.json --- //
-    const pkg = await validatePackageJson(pkgPath)
+    const pkg =
+        await validatePackageJson(pkgPath)
 
-    log("debug", `External Dependencies: defining`)
+    log(
+        "debug",
+        `External Dependencies: defining`
+    )
+
     const externalDeps = [
-        ...Object.keys(pkg.dependencies ?? {}),
-        "fs", "path", "os", "child_process", "fs-extra"
-    ].filter(Boolean)
-    log("debug", `External Dependencies: ${externalDeps.join(", ")}`)
+        "esbuild",
+        "fsevents",
+        "node:*"
+    ]
 
-    log("debug", "Package.json: creating minimal version")
+    log(
+        "debug",
+        `External Dependencies: ${externalDeps.join(", ")}`
+    )
+
+    log(
+        "debug",
+        "Package.json: creating minimal version"
+    )
     const { bin, ...rest } = pkg
-    const removeDist = p => p.replace(/^dist[\\/]/, "")
+    const removeDist =
+        p => p.replace(/^dist[\\/]/, "")
 
     delete rest.devDependencies
     delete rest.scripts
@@ -166,30 +222,43 @@ async function build() {
         postinstall: pkg.postinstall
             ? removeDist(pkg.postinstall)
             : undefined,
-        dependencies: externalDeps.reduce((acc, dep) => {
-            if (pkg.dependencies && pkg.dependencies[dep])
-                acc[dep] = pkg.dependencies[dep]
-            return acc
-        }, {})
+        dependencies: {
+            "esbuild": pkg.dependencies.esbuild
+        }
     }
 
-    log("debug", "Package.json: writing on file")
-    await fs.writeJson(
-        path.join(outDir, "package.json"),
-        minimalPkg,
-        { spaces: 2 }
+    log(
+        "debug",
+        "Package.json: writing on file"
+    )
+
+    await writeFile(
+        join(outDir, "package.json"),
+        JSON.stringify(minimalPkg, null, 2),
+        'utf8'
     )
 
     // --- EsBuild --- //
-    log("debug", "EsBuild: building")
+    log(
+        "debug",
+        "EsBuild: building"
+    )
+
     await esbuild.build({
-        entryPoints: [path.join(__dirname, "src/cli/index.ts")],
+        entryPoints: [
+            join(
+                __dirname,
+                "src/cli/index.ts"
+            )
+        ],
         bundle: true,
         minify: true,
         platform: "node",
         target: "node18",
         format: "esm",
-        outfile: path.join(outDir, "bin/cli.js"),
+        outfile: join(
+            outDir, "bin/cli.js"
+        ),
         external: externalDeps,
         treeShaking: true,
         sourcemap: false
@@ -199,24 +268,44 @@ async function build() {
     await handleTemplatesFolder()
 
     // --- Files to copy --- //
-    log("debug", "Files to copy: defining")
+    log(
+        "debug",
+        "Files to copy: defining"
+    )
     const filesToCopy = [
         "LICENSE",
         "README.md"
     ]
-    log("debug", `Files to copy: ${filesToCopy.join(", ")}`)
-    for (const file of filesToCopy) {
-        const src = path.join(__dirname, file)
-        const dest = path.join(outDir, file)
-        if (await fs.pathExists(src)) {
-            log("debug", `Files to copy: ${file} exists, copying to ${destFolderName}`)
-            await fs.copy(src, dest)
+    log(
+        "debug",
+        `Files to copy: ${filesToCopy.join(", ")}`
+    )
+    for (
+        const file
+        of filesToCopy
+    ) {
+        const src =
+            join(__dirname, file)
+        const dest =
+            join(outDir, file)
+        if (await stat(src)) {
+            log(
+                "debug",
+                `Files to copy: ${file} exists, copying to ${destFolderName}`
+            )
+            await cp(src, dest)
         } else {
-            log("warn", `Files to copy: ${file} does not exists, skipping copy.`)
+            log(
+                "warn",
+                `Files to copy: ${file} does not exists, skipping copy`
+            )
         }
     }
 
-    log("success", "Build completed successfully!")
+    log(
+        "success",
+        "Build completed successfully!"
+    )
 }
 
 build().catch(err => {

@@ -1,22 +1,29 @@
 #!/usr/bin/env node
+
 import {
-    // --- COMMANDS ---
     build, clear, config, help, init, template, validate, version,
+} from "../commands/index.js"
 
-    // --- FUNCTIONS ---
-    log,
-
-    // --- TYPES ---
-    CommandFn, InitCommandOptions, TemplateCommandOptions
-} from "../index.js"
+import type {
+    InitCommandOptions, TemplateCommandOptions
+} from "../commands/index.js"
 
 import {
-    // --- FUNCTIONS ---
-    parseArgs, initEnv,
+    log
+} from "../shared/index.js"
 
-    // --- TYPES ---
-    Args
+import type {
+    CommandFn
+} from "../shared/index.js"
+
+
+import {
+    initEnv, parseArgs, postInstall
 } from "./index.js"
+
+import type {
+    Args
+} from "./types.js"
 
 /**
  * Post-install hook detection.
@@ -24,10 +31,10 @@ import {
  * If the CLI is executed during npm postinstall,
  * delegate to the postInstall routine and exit immediately.
  */
-if (process.env.npm_lifecycle_event === "postinstall") {
-    import("../utils/postInstall.js")
-        .then(({ postInstall }) => postInstall())
-
+if (
+    process.env.npm_lifecycle_event === "postinstall"
+) {
+    await postInstall()
     process.exit(0)
 }
 
@@ -41,17 +48,24 @@ if (process.env.npm_lifecycle_event === "postinstall") {
  * - Handle errors consistently
  */
 async function main(): Promise<void> {
-    const args: Args = parseArgs(process.argv.slice(2))
+    const args: Args =
+        parseArgs(process.argv.slice(2))
 
-    const cmd: string = args._[0] || ""     // primary command
-    const subArg: string = args._[1]        // optional positional argument
+    const cmd: string =
+        args._[0] || "" // primary command
+    const subArg: string =
+        args._[1]       // optional positional argument
 
-    initEnv(Boolean(args.v))
+    initEnv(args.v as boolean)
 
     // Optional help shortcut (early exit)
     if (cmd === "help" || args.help || args.h) {
         help(
-            subArg || (args.help || args.h ? cmd : undefined)
+            subArg || (
+                args.help || args.h
+                    ? cmd
+                    : undefined
+            )
         )
         process.exit(0)
     }
@@ -76,7 +90,8 @@ async function main(): Promise<void> {
             await init(
                 subArg || "minimaz-project",
                 {
-                    template: args.template || args.t || "default",
+                    template:
+                        args.template || args.t || "default",
                     npm: args.npm,
                     git: args.git,
                     gitremote: args.gitremote,
@@ -114,12 +129,13 @@ async function main(): Promise<void> {
 
     try {
         if (commands[cmd]) {
-            log("info", `Executing command "${cmd}"...`)
+            log.info(
+                `Executing "${cmd}"`
+            )
             await commands[cmd]()
         } else {
-            log(
-                "error",
-                `Unknown command "${cmd}". Use "minimaz help" to see available commands.`
+            log.error(
+                `Unknown command "${cmd}"\nUse "minimaz help" to see available commands`
             )
             help()
         }
@@ -129,7 +145,8 @@ async function main(): Promise<void> {
          * - In DEBUG mode: show full stack trace
          * - Otherwise: show only message
          */
-        const isDebug = process.env.DEBUG === "true"
+        const isDebug: boolean =
+            process.env.DEBUG === "true"
 
         const message =
             error instanceof Error
@@ -138,7 +155,7 @@ async function main(): Promise<void> {
                     : error.message
                 : String(error)
 
-        log("error", message)
+        log.error(message)
         process.exit(1)
     }
 }
@@ -147,11 +164,10 @@ async function main(): Promise<void> {
  * Execute CLI.
  * Top-level async entrypoint wrapper.
  */
-main()
+await main()
 
 /**
  * TODO:
- * - Move CLI entry to src/cli/
  * - Add --path support for external project targets
  * - Improve command validation layer (pre-dispatch schema check)
  */

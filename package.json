@@ -21,10 +21,12 @@
         "starter"
     ],
     "scripts": {
-        "dev": "tsx bin/cli.ts",
-        "build": "tsc --noEmit && node builder.js",
-        "build:dev": "tsc --noEmit && cross-env NODE_ENV=development node builder.js",
-        "postinstall:dev": "tsx ./src/utils/postInstall.ts",
+        "dev": "npx tsx ./src/cli/main.ts",
+        "build": "npx tsc --noEmit && node builder.js",
+        "build:dev": "npx tsc --noEmit && cross-env NODE_ENV=development node builder.js",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "postinstall:dev": "npx tsx ./src/utils/postInstall.ts",
         "postinstall:prod": "node dist/src/utils/postInstall.js"
     },
     "bin": {
@@ -46,13 +48,17 @@
         "html-minifier-terser": "^7.2.0"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@types/cross-spawn": "^6.0.6",
         "@types/fs-extra": "^11.0.4",
         "@types/html-minifier-terser": "^7.0.2",
         "@types/node": "^24.7.2",
         "cross-env": "^10.1.0",
+        "eslint": "^10.3.0",
+        "globals": "^17.6.0",
         "tsx": "^4.21.0",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.59.2"
     },
     "postinstall": "node dist/bin/cli.js"
 }

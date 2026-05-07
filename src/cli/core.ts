@@ -1,5 +1,14 @@
-import { log } from "../index.js"
-import { Args } from "./index.js"
+import {
+    config
+} from "../commands/index.js"
+
+import {
+    log
+} from "../shared/index.js"
+
+import type {
+    Args
+} from "./types.js"
 
 /**
  * Parses raw CLI arguments into a structured key/value object.
@@ -30,14 +39,20 @@ export function parseArgs(
         }
 
         // Support: --key=value inline syntax
-        if (arg.startsWith("--") && arg.includes("=")) {
-            const [key, value]: string[] = arg.slice(2).split("=")
+        if (
+            arg.startsWith("--")
+            && arg.includes("=")
+        ) {
+            const [key, value]: string[] =
+                arg.slice(2).split("=")
             args[key] = value
             continue
         }
 
-        const key: string = arg.replace(/^-+/, "")
-        const next: string = rawArgs[i + 1]
+        const key: string =
+            arg.replace(/^-+/, "")
+        const next: string =
+            rawArgs[i + 1]
 
         // If next token is a value, treat as key-value pair
         if (next && !next.startsWith("-")) {
@@ -62,13 +77,58 @@ export function parseArgs(
  * @param {boolean} [verbose] - Enables verbose logging when true
  */
 export function initEnv(
-    verbose?: boolean
+    verbose?: boolean,
+    path?: string
 ): void {
-    log("debug", "Initializing environment variables...")
 
-    process.env.VERBOSE = verbose ? "true" : "false"
-    log("debug", `VERBOSE = ${process.env.VERBOSE}`)
+    process.env.VERBOSE =
+        verbose
+            ? "true"
+            : "false"
 
-    process.env.CLI_WORKDIR = process.cwd()
-    log("debug", `CLI_WORKDIR = ${process.env.CLI_WORKDIR}`)
+    process.env.CLI_WORKDIR =
+        path ?? process.cwd()
+
+    log.info([
+        "Initializing environment variables",
+        `CLI_WORKDIR = ${process.env.CLI_WORKDIR}`,
+        `VERBOSE = ${process.env.VERBOSE}`,
+    ])
+}
+
+/**
+ * Post-install hook.
+ *
+ * Ensures default templates/configuration are initialized
+ * after package installation.
+ *
+ * This is typically executed automatically (e.g. via npm/yarn lifecycle).
+ * Safe to run multiple times if `config(false)` is idempotent.
+ *
+ * @returns {Promise<void>}
+ */
+export async function postInstall(): Promise<void> {
+    try {
+        log.info(
+            "Post install: running"
+        )
+
+        // Initialize default configuration/templates without forcing overwrite
+        await config(false)
+
+        log.success(
+            "Post install: completed"
+        )
+
+    } catch (error: unknown) {
+        const message =
+            error instanceof Error
+                ? error.message
+                : String(error)
+
+        throw new Error(
+            `Post install: Failed\n${message}`,
+            { cause: error }
+        )
+    }
 }

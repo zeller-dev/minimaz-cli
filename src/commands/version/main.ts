@@ -1,19 +1,19 @@
 import {
     // --- FUNCTIONS ---
-    readJsonFile, resolveCurrentPath
-} from "../../index.js"
+    log, readJsonFile, resolveCurrentPath
+} from "../../shared/index.js"
 
 export async function version(): Promise<void> {
     const pkgPath: string =
         resolveCurrentPath(["package.json"])
 
-    const { version } =
-        await readJsonFile(pkgPath)
+    const data = await readJsonFile<{ version?: unknown }>(pkgPath)
 
-    if (typeof version !== "string")
+    if (typeof data.version !== "string") {
         throw new Error(
             "Invalid or missing version in package.json"
         )
+    }
 
-    console.log(version)
+    log.default(data.version)
 }

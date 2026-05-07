@@ -1,24 +1,24 @@
 import {
-    // --- CONSTANTS ---
-    gitIgnoreTemplate, pkgTemplate,
-
     // --- FUNCTIONS  ---
-    log, askQuestion, createFileFromTemplate,
-    executeCommand,
-} from "../../index.js"
+    askQuestion, createFileFromTemplate,
+    executeCommand, log,
+} from "../../shared/index.js"
+
+import { gitIgnoreTemplate, pkgTemplate } from "./constants.js"
 
 export async function initNpm(
     targetDir: string,
     name: string
 ): Promise<void> {
 
-    log("info", "Initializing NPM...")
+    log.info(
+        "npm: initializing"
+    )
     await createFileFromTemplate(
         { name: name, ...pkgTemplate },
         [targetDir, "package.json"]
     )
 
-    log("debug", "Running npm install...")
     await executeCommand("npm", ["i"], targetDir)
 }
 
@@ -47,14 +47,18 @@ async function linkRemoteRepo(
 
     // Case 0: local → do nothing
     if (remote === "local") {
-        log("info", "Using local Git repository only. No remote linked.")
+        log.info(
+            "Using local Git repository"
+        )
         return
     }
     /**
      * Case 1: Existing repository URL (connect only)
      */
     if (/^https?:\/\//.test(remote) || remote.startsWith("git@")) {
-        log("info", `Connecting existing remote "${remote}"`)
+        log.info(
+            `Connecting existing remote "${remote}"`
+        )
         await executeCommand(
             "git",
             ["remote", "add", remoteName, remote],
@@ -67,7 +71,9 @@ async function linkRemoteRepo(
      * Case 2: GitHub repository creation (via gh CLI)
      */
     if (remote === "github") {
-        log("info", `Creating GitHub repository "${repoName}"`)
+        log.info(
+            `Creating GitHub repository "${repoName}"`
+        )
         await executeCommand(
             "gh",
             ["repo", "create", repoName, "--private", "--source=.", "--remote", remoteName],
@@ -80,11 +86,15 @@ async function linkRemoteRepo(
      * Case 3: GitLab repository creation (via glab CLI)
      */
     if (remote === "gitlab") {
-        log("info", `Creating GitLab repository "${repoName}"`)
+        log.info(
+            `Creating GitLab repository "${repoName}"`
+        )
 
         const gitlabUser: string | undefined = process.env.GITLAB_USER
         if (!gitlabUser)
-            throw new Error("GITLAB_USER environment variable not set")
+            throw new Error(
+                "GITLAB_USER not set"
+            )
 
         await executeCommand(
             "glab",
@@ -105,7 +115,9 @@ async function linkRemoteRepo(
         return
     }
     // Unsupported provider
-    throw new Error(`Unsupported git provider or remote: "${remote}"`)
+    throw new Error(
+        `Unsupported git provider or remote: "${remote}"`
+    )
 }
 
 
@@ -131,24 +143,45 @@ export async function initGit(
         )).toLowerCase().trim()
     }
 
-    log("info", "Initializing Git repository...")
+    log.info(
+        "Initializing Git repository"
+    )
 
     // Initialize local git repository
-    log("debug", "Running git init...")
-    await executeCommand("git", ["init"], targetDir)
+    await executeCommand(
+        "git",
+        ["init"],
+        targetDir
+    )
 
     // Only link remote if provider is not local
     if (
         provider
         && provider !== "false"
         && provider !== "local"
-    ) await linkRemoteRepo(projectName, targetDir, provider, name)
-    else
-        log("info", "Git repository initialized locally. No remote linked.")
+    ) {
+        await linkRemoteRepo(
+            projectName,
+            targetDir,
+            provider,
+            name
+        )
+    } else {
+        log.info(
+            "Git repository initialized locally"
+        )
+    }
 
     // Add .gitignore
-    log("debug", "Initializing gitignore...")
-    await createFileFromTemplate(gitIgnoreTemplate, [targetDir, ".gitignore"])
+    log.debug(
+        "Initializing gitignore"
+    )
+    await createFileFromTemplate(
+        gitIgnoreTemplate,
+        [targetDir, ".gitignore"]
+    )
 
-    log("success", "Git repository initialized.")
+    log.success(
+        "Git repository initialized"
+    )
 }
