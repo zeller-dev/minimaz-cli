@@ -7,12 +7,6 @@
     margin-top: var(--space-lg);
 }
 
-@media (min-width: 700px) {
-    .grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
 .grid-item {
     background-color: var(--card-bg);
     border: 1px solid var(--border);

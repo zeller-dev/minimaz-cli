@@ -1,0 +1,24 @@
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+    }
+}
+
+
+@media (min-width: 700px) {
+    .footer-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://minimaz.zellerindustries.com/sitemap.xml

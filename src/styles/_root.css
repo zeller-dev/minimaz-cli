@@ -1,0 +1,27 @@
+:root {
+    color-scheme: dark;
+
+    /* Base colors */
+    --bg: #222;
+    --fg: #999;
+    --accent: #60b5e6;
+    --accent2: #fdc503;
+    --border: #222;
+    --code-bg: #1a1a1a;
+
+    /* UI components */
+    --card-bg: #141414;
+    --badge-bg: #1e1e1e;
+
+    /* Typography */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "Fira Code", monospace;
+
+    /* Layout */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+}
