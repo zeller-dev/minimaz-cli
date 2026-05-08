@@ -1,24 +1,10 @@
-# Minimaz CLI 🎄
+# Minimaz CLI
 
 **Minimaz** is a minimal, low-dependency static site builder and project initializer focused on speed, simplicity, and clean output.
 
-## 🚀 Features
-
-* 📁 Initialize projects from templates
-* 🧩 Save, list, and delete custom templates
-* 📝 Supports HTML, CSS, JS, and TypeScript (.ts → .js)
-* 🧹 Minifies HTML, CSS, JS, and TS (compiled & minified)
-* ⚙️ Configurable with a `minimaz.config.json` file
-* ➕ Supports concatenation of additional scripts and styles
-* 🪄 Optional path replacements for asset links
-* 🪶 Lightweight and fast — ideal for small static or utility projects
-* 🔥 Usable with `minimaz` or its alias `mz`
-* 💻 NPM integration and optional Git repository initialization
-* ⏱ Interactive prompts with 60s timeout
-
 ## 📦 Installation
 
-Run directly with `npx` without global install:
+Run directly with `npx` or as global module:
 
 ```bash
 npx minimaz init my-site
@@ -27,27 +13,25 @@ npx minimaz build
 npx minimaz version
 ```
 
-Or using the alias:
+Or  as global module:
 
 ```bash
-npx mz i my-site
-npx mz b
-npx mz v
+minimaz init my-site
+cd my-site
+minimaz version
+minimaz build
 ```
 
 > During `npm install`, a post-install script runs to finalize setup automatically.
 
-## 📁 Project Structure
+## 📁 Default Project Structure
 
 ```txt
 my-site/
-├── dist/              # Output folder (generated)
-├── public/            # Static assets (images, fonts, etc.)
-├── src/               # HTML, CSS, JS, TS files
+├── dist/               # Output folder (generated)
+├── src/                # HTML, CSS, JS, TS files
 ├── minimaz.config.json
-├── package.json       # Optional, created if npm init is used
-├── .gitignore         # Default gitignore copied from template
-└── ...
+└── ...                 # Other optional files (es. package.json or .gitignore)
 ```
 
 ## ⚙️ Configuration
@@ -56,52 +40,38 @@ Customize your build using a `minimaz.config.json` file:
 
 ```json
 {
-    outDir: "dist",
-    bundling: {
-        css: {
-            enabled: true,
-            outFile: "styles.css"
+    "input": {
+        "dir": "./src",
+        "mapping": {
+            "pages": "",
+            "public": "",
         },
-        js: {
-            enabled: true,
-            outFile: "scripts.js"
+        "externals": {
+            "node_modules/bootstrap-icons/font/fonts": "public/fonts"
         },
-        outDir: ""
+        "exclude": []
     },
-    minify: {
-        "html": true,
-        "css": true,
-        "js": true,
-        "ts": true
-
-    },
-
-    replace: {
-        "../public/": "public/"
-    },
-
-    styles: [
-        "style.css",
-        "style-2.css"
-    ],
-
-    scripts: [
-        "script.js",
-        "script-2.js"
-    ],
-
-    folders: {
-        src: "",
-        public: "public"
+    "output": {
+        "dir": "./dist",
+        "replace": {
+            "../public/": "/public/",
+        },
+        "css": {
+            "bundling": true,
+            "minify": true
+        },
+        "js": {
+            "bundling": true,
+            "minify": true
+        },
+        "html": {
+            "minify": true
+        }
     }
 }
 ```
 
-* styles (optional): array of .css files to include in the build, can be inside src, node_modules, or any absolute/relative path on your system.
-* scripts (optional): array of .js files to include in the build, can also point outside src.
-* If omitted, fallback defaults are style.css and script.js.
-* `bundling.css` / `bundling.js`: controls whether listed CSS/JS files are concatenated into a single `style.css` / `script.js`.
-* `minify.html`, `minify.css`, `minify.js`, `minify.ts`: enable minification for the corresponding file types. TypeScript files are compiled to JS before minification.
++ Bundling: Scans your files for import or require statements to create a dependency graph, then merges that code into a single file (or a few files) to reduce network requests.
 
 **Tip**: Using external paths is useful for including library CSS/JS without copying them into your project.
 
@@ -169,6 +139,13 @@ Notes:
   * Interactive prompts are used to confirm overwrite or deletion.
   * If specified folder does not exist, you can choose to use the current folder instead.
   * Errors are thrown if operations fail or are cancelled.
+
+# -----------------------------
+# Validate
+# -----------------------------
+minimaz validate --path=/path/to/file
+
+Validates HTML, CSS, JS, TS, JSON files
 
 # -----------------------------
 # Version
