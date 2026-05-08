@@ -212,7 +212,7 @@ async function build() {
     )
     const { bin, ...rest } = pkg
     const removeDist =
-        p => p.replace(/^dist[\\/]/, "")
+        p => p.replace(/dist[\\/]/, "")
 
     delete rest.devDependencies
     delete rest.scripts
@@ -256,6 +256,9 @@ async function build() {
         format: "esm",
         outfile: join(outDir, "bin/cli.js"),
         external: externalDeps,
+        banner: {
+            js: '#!/usr/bin/env node',
+        },
         treeShaking: true,
         sourcemap: false,
         legalComments: 'none',
