@@ -2,7 +2,8 @@
     "input": {
         "dir": "./src",
         "mapping": {
-            "public": "public"
+            "pages": "",
+            "public": ""
         },
         "externals": {
             "node_modules/bootstrap-icons/font/fonts": "public/fonts"
@@ -18,13 +19,11 @@
             "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": "/public/fonts/bootstrap-icons.woff"
         },
         "css": {
-            "enabled": true,
-            "outFile": "style.css",
+            "bundling": true,
             "minify": true
         },
         "js": {
-            "enabled": true,
-            "outFile": "script.js",
+            "bundling": true,
             "minify": true
         },
         "html": {
