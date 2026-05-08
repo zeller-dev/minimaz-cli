@@ -27,7 +27,6 @@
     <link rel="icon" type="image/x-icon" href="../public/favicon.ico">
     <link rel="shortcut icon" href="../public/favicon.ico">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="styles/bootstrap-icons.css">
 </head>
 
 <body>
@@ -95,18 +94,19 @@
                 <i class="icon download"></i>
                 <span>Installation</span>
             </h2>
-            <p>Run directly using <code>npx</code> (no global install required):</p>
+            <p>Run directly using <code>npx</code> or as a global module:</p>
 
             <pre><code>npx minimaz init my-site
 cd my-site
-npx minimaz build
-npx minimaz version</code></pre>
+npx minimaz build</code></pre>
 
-            <p>Using alias:</p>
+            <p>Global installation:</p>
+            <pre><code>npm install -g minimaz-cli
+minimaz init my-site</code></pre>
 
-            <pre><code>npx mz i my-site
-npx mz b
-npx mz v</code></pre>
+            <blockquote>
+                During <code>npm install</code>, a post-install script runs to finalize setup automatically.
+            </blockquote>
         </section>
 
         <!-- ======================================== -->
@@ -138,52 +138,49 @@ npx mz v</code></pre>
             </h2>
 
             <pre><code>{
-    "outDir": "dist",
-    "bundling": {
+    "input": {
+        "dir": "./src",
+        "mapping": {
+            "pages": "",
+            "public": ""
+        },
+        "externals": {
+            "node_modules/bootstrap-icons/font/fonts": "public/fonts"
+        },
+        "exclude": []
+    },
+    "output": {
+        "dir": "./dist",
+        "replace": {
+            "../public/": "/public/"
+        },
         "css": {
-            "enabled": true,
-            "outFile": "styles.css"
+            "bundling": true,
+            "minify": true
         },
         "js": {
-            "enabled": true,
-            "outFile": "scripts.js"
+            "bundling": true,
+            "minify": true
+        },
+        "html": {
+            "minify": true
         }
-    },
-    "minify": {
-        "html": true,
-        "css": true,
-        "js": true,
-        "ts": true
-    },
-    "replace": {
-        "../public/": "public/"
-    },
-    "styles": [
-        "style.css",
-        "style-2.css"
-    ],
-    "scripts": [
-        "script.js",
-        "script-2.js"
-    ],
-    "folders": {
-        "src": "",
-        "public": "public"
     }
 }</code></pre>
 
             <ul>
-                <li><strong>bundling.css/js</strong> → concatenate files</li>
-                <li><strong>minify.html/css/js/ts</strong> → toggle per file type</li>
-                <li><strong>styles/scripts</strong> → include external files</li>
-                <li><strong>replace</strong> → asset path replacements</li>
-                <li><strong>styles & scripts</strong> → external styles or scripts to add</li>
-                <li><strong>folders</strong> → folders to scan</li>
+                <li><strong>input.externals</strong> → Include library assets without copying them into <code>src</code>
+                </li>
+                <li><strong>output.replace</strong> → Define asset path replacements for the build</li>
+                <li><strong>bundling</strong> → Scans imports/requires to merge code into single files</li>
             </ul>
         </section>
 
         <!-- ======================================== -->
         <!-- COMMANDS                                -->
+        <!-- ======================================== -->
+        <!-- ======================================== -->
+        <!-- COMMANDS                                 -->
         <!-- ======================================== -->
         <section id="commands" class="max-width">
             <h2>
@@ -191,40 +188,58 @@ npx mz v</code></pre>
                 <span>Commands</span>
             </h2>
 
-            <pre><code># Build
-minimaz build
-mz b
+            <div class="command-group">
+                <h3>Build & Maintenance</h3>
+                <pre><code># Build and minify the project
+minimaz build (mz b)
 
-# Clear
-minimaz clear
-mz c
+# Delete the dist folder
+minimaz clear (mz c)
 
-# Config
-minimaz config          # Create or update global configuration ~/.minimaz/
-mz config --overwrite   # Overwrites default templates and settings.json
+# Validate HTML, CSS, JS, TS, and JSON files
+minimaz validate --path=/path/to/file</code></pre>
+            </div>
 
-# Init
-minimaz init &lt;project-name&gt;
-minimaz init &lt;project-name&gt; --template &lt;name&gt;
-minimaz init &lt;project-name&gt; --npm
-minimaz init &lt;project-name&gt; --git --gitprovider github --gitremote &lt;url&gt;
-mz i my-site -t template
+            <div class="command-group">
+                <h3>Project Initialization</h3>
+                <pre><code># Initialize a new project
+minimaz init &lt;project-name&gt; [options] (mz i)
 
-# Help
-minimaz help
-minimaz help build
-mz h build
+Options:
+  -t, --template &lt;name&gt;    # Use specific template (default: 'default')
+  --npm                    # Init npm (creates package.json & runs install)
+  --git                    # Initialize git repository
+  --gitprovider &lt;provider&gt; # 'github', 'gitlab', or existing repo URL
+  --gitremote &lt;url&gt;        # Specify custom remote URL</code></pre>
+            </div>
 
-# Template management
-minimaz template &lt;path&gt;
-minimaz template --list
-minimaz template --delete &lt;name&gt;
-minimaz template --update &lt;name&gt;
-minimaz template --update
+            <div class="command-group">
+                <h3>Template Management</h3>
+                <p class="small-text">Global templates are stored in <code>~/.minimaz/templates</code></p>
+                <pre><code># Save current folder as a new template
+minimaz template [folder-path] (mz t)
 
-# Version
-minimaz version
-mz v</code></pre>
+# List all global templates
+minimaz template --list (-l)
+
+# Delete a template (asks for confirmation)
+minimaz template --delete &lt;name&gt; (-d)
+
+# Update templates from current folder or defaults
+minimaz template --update [name] (-u)</code></pre>
+            </div>
+
+            <div class="command-group">
+                <h3>System & Help</h3>
+                <pre><code># Setup or overwrite global settings
+minimaz config (mz config --overwrite)
+
+# Show help for a specific command
+minimaz help &lt;command&gt; (mz h build)
+
+# Show Minimaz CLI version
+minimaz version (mz v)</code></pre>
+            </div>
         </section>
 
         <!-- ======================================== -->

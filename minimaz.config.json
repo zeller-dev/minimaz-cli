@@ -1,30 +1,35 @@
 {
-    "outDir": "dist",
-    "bundling": {
+    "input": {
+        "dir": "./src",
+        "mapping": {
+            "pages": "",
+            "public": "public",
+            "scripts": "",
+            "styles": ""
+        },
+        "externals": {
+            "node_modules/bootstrap-icons/font/fonts": "public/fonts"
+        },
+        "exclude": []
+    },
+    "output": {
+        "dir": "./dist",
+        "replace": {
+            "../public/": "/public/",
+            "<link rel=\"stylesheet\" href=\"styles/bootstrap-icons.css\">": "",
+            "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2": "/public/fonts/bootstrap-icons.woff2",
+            "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": "/public/fonts/bootstrap-icons.woff"
+        },
         "css": {
-            "enabled": true,
-            "outFile": "style.css"
+            "bundling": true,
+            "minify": true
         },
         "js": {
-            "enabled": true,
-            "outFile": "script.js"
+            "bundling": true,
+            "minify": true
+        },
+        "html": {
+            "minify": true
         }
-    },
-    "minify": {
-        "html": true,
-        "css": true,
-        "js": true,
-        "ts": true
-    },
-    "replace": {
-        "../public/": "/public/",
-        "<link rel=\"stylesheet\" href=\"styles/bootstrap-icons.css\">": "",
-        "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2": "/public/fonts/bootstrap-icons.woff2",
-        "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": "/public/fonts/bootstrap-icons.woff"
-    },
-    "folders": {
-        "public": "public",
-        "src": "",
-        "node_modules/bootstrap-icons/font/fonts": "public/fonts"
     }
 }
