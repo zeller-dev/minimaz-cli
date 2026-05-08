@@ -3,18 +3,18 @@ import {
 } from "esbuild"
 
 import {
-    outputFile
-} from "fs-extra"
-
-import {
     normalize,
+    outputFile,
     resolve
-} from "node:path"
+} from "../../../shared/fs/index.js"
 
 import {
     applyReplacements,
-    log
 } from "../../../shared/index.js"
+
+import {
+    log,
+} from "../../../shared/logger/index.js"
 
 import type {
     File

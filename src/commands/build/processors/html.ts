@@ -1,14 +1,15 @@
 import {
-    outputFile
-} from "fs-extra"
-
-import {
     minify
 } from "html-minifier-terser"
 
 import {
+    outputFile
+} from "../../../shared/fs/index.js"
+
+import {
     log
-} from "../../../shared/index.js"
+} from "../../../shared/logger/index.js"
+
 
 import type {
     File,

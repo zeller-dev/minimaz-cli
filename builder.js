@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-import esbuild from "esbuild"
+import {
+    build as esBuild
+} from "esbuild"
 
 import {
     cp, mkdir, readFile, rm, stat, writeFile
@@ -15,10 +17,12 @@ import {
 
 const destFolderName = "./dist"
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const outDir = join(__dirname, destFolderName)
-const pkgPath = join(__dirname, "package.json")
+const __dirname =
+    dirname(fileURLToPath(import.meta.url))
+const outDir =
+    join(__dirname, destFolderName)
+const pkgPath =
+    join(__dirname, "package.json")
 
 /* ======================
     Logging
@@ -192,10 +196,10 @@ async function build() {
     )
 
     const externalDeps = [
-        "esbuild",
-        "fsevents",
+        ...Object.keys(pkg.dependencies || {}),
+        ...Object.keys(pkg.devDependencies || {}),
         "node:*"
-    ]
+    ];
 
     log(
         "debug",
@@ -222,9 +226,8 @@ async function build() {
         postinstall: pkg.postinstall
             ? removeDist(pkg.postinstall)
             : undefined,
-        dependencies: {
-            "esbuild": pkg.dependencies.esbuild
-        }
+        dependencies: pkg.dependencies
+
     }
 
     log(
@@ -244,24 +247,21 @@ async function build() {
         "EsBuild: building"
     )
 
-    await esbuild.build({
-        entryPoints: [
-            join(
-                __dirname,
-                "src/cli/index.ts"
-            )
-        ],
+    await esBuild({
+        entryPoints: [join(__dirname, "src/cli/index.ts")],
         bundle: true,
         minify: true,
         platform: "node",
         target: "node18",
         format: "esm",
-        outfile: join(
-            outDir, "bin/cli.js"
-        ),
+        outfile: join(outDir, "bin/cli.js"),
         external: externalDeps,
         treeShaking: true,
-        sourcemap: false
+        sourcemap: false,
+        legalComments: 'none',
+        minifyIdentifiers: true,
+        minifySyntax: true,
+        minifyWhitespace: true,
     })
 
     // --- Templates --- //

@@ -1,5 +1,4 @@
 import {
-    // --- FUNCTIONS ---
     getGlobalTemplatesDirPath,
 } from "../../shared/index.js"
 

@@ -43,7 +43,8 @@ export function formatTs(date: Date = new Date()): string {
    SMALL HELPERS
 ========================= */
 
-export const isVerbose = (): boolean => process.env.VERBOSE === "true"
+export const isVerbose = (): boolean =>
+    process.env.VERBOSE === "true"
 
 export function normalize(
     message: string | string[]
@@ -99,9 +100,7 @@ export function emit(
 ): void {
     const verbose = isVerbose()
 
-    if (
-        forceVerboseOnly && !verbose
-    ) return
+    if (forceVerboseOnly && !verbose) return
 
     const msgs: string[] = normalize(message)
 

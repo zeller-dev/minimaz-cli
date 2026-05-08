@@ -1,18 +1,21 @@
 import {
+    basename,
     copy,
     ensureDir,
+    getDirElements,
+    join,
     pathExists,
-    remove
-} from "fs-extra"
+    remove,
+} from "../../shared/fs/index.js"
 
 import {
-    basename,
-    join
-} from "node:path"
+    log
+} from "../../shared/logger/index.js"
 
 import {
-    // --- FUNCTIONS ---
-    askQuestion, getDirElements, getNodeModulesTemplatesPath, log, resolveCurrentPath,
+    askQuestion,
+    getNodeModulesTemplatesPath,
+    resolveCurrentPath
 } from "../../shared/index.js"
 
 
@@ -47,7 +50,7 @@ export async function updateSingleTemplate(
         await copy(
             sourceDir,
             targetDir,
-            { overwrite: true }
+            true
         )
         log.success(
             `Template "${name}" updated`
@@ -99,7 +102,7 @@ export async function updateFromNodeModules(
             await copy(
                 src,
                 dest,
-                { overwrite: true }
+                true
             )
             log.success(
                 `Updated "${i}"`
@@ -203,7 +206,7 @@ export async function saveTemplate(
         await copy(
             source,
             dest,
-            { overwrite: true }
+            true
         )
 
         log.success(

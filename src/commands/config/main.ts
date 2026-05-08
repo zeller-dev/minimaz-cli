@@ -1,10 +1,7 @@
 import {
+    join,
     pathExists
-} from "fs-extra"
-
-import {
-    join
-} from "node:path"
+} from "../../shared/fs/index.js"
 
 import {
     homedir
@@ -16,8 +13,11 @@ import {
 
     // --- FUNCTIONS ---
     getNodeModulesTemplatesPath,
-    log
 } from "../../shared/index.js"
+
+import {
+    log,
+} from "../../shared/logger/index.js"
 
 import {
     copyDefaultTemplates,

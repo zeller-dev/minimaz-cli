@@ -1,10 +1,17 @@
 import {
-    // --- FUNCTIONS  ---
-    askQuestion, createFileFromTemplate,
-    executeCommand, log,
+    askQuestion,
+    createFileFromTemplate,
+    executeCommand
 } from "../../shared/index.js"
 
-import { gitIgnoreTemplate, pkgTemplate } from "./constants.js"
+import {
+    log
+} from "../../shared/logger/index.js"
+
+import {
+    gitIgnoreTemplate,
+    pkgTemplate
+} from "./constants.js"
 
 export async function initNpm(
     targetDir: string,
@@ -21,7 +28,6 @@ export async function initNpm(
 
     await executeCommand("npm", ["i"], targetDir)
 }
-
 
 /**
  * Creates or connects a remote Git repository.

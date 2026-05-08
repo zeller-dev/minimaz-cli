@@ -1,7 +1,16 @@
 import {
-    // --- FUNCTIONS ---
-    getDirElements, loadConfig, log, resolveCurrentPath,
+    getDirElements
+} from "../../shared//fs/index.js"
+
+import {
+    loadConfig,
+    resolveCurrentPath
 } from "../../shared/index.js"
+
+import {
+    log
+} from "../../shared/logger/index.js"
+
 
 import type {
     MinimazConfig
@@ -42,6 +51,16 @@ export async function build(): Promise<void> {
     const ignoredFiles =
         new Set<string>()
 
+    const dirElements: string[] =
+        await getDirElements(config.input.dir)
+
+    if (dirElements.length === 0) {
+        log.error(
+            `Directory ${config.input.dir} is empty`
+        )
+        return
+    }
+
     /**
      * 2. Phase 1: Discovery Pass
      * Scans the input directory to find all internal dependencies.
@@ -57,16 +76,6 @@ export async function build(): Promise<void> {
         ignoredFiles,
         config.output.replace ?? {}
     )
-
-    const dirElements: string[] =
-        await getDirElements(config.input.dir)
-
-    if (dirElements.length === 0) {
-        log.error(
-            `Directory ${config.input.dir} is empty`
-        )
-        return
-    }
 
     /**
      * 3. Phase 2: Recursive Processing

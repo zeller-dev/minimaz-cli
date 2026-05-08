@@ -1,16 +1,24 @@
 #!/usr/bin/env node
 
 import {
-    build, clear, config, help, init, template, validate, version,
+    build,
+    clear,
+    config,
+    help,
+    init,
+    template,
+    validate,
+    version
 } from "../commands/index.js"
 
 import type {
-    InitCommandOptions, TemplateCommandOptions
+    InitCommandOptions,
+    TemplateCommandOptions
 } from "../commands/index.js"
 
 import {
     log
-} from "../shared/index.js"
+} from "../shared/logger/index.js"
 
 import type {
     CommandFn
@@ -19,7 +27,7 @@ import type {
 
 import {
     initEnv, parseArgs, postInstall
-} from "./index.js"
+} from "./core.js"
 
 import type {
     Args

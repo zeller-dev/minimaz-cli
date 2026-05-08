@@ -1,39 +1,32 @@
 import {
-    pathExists
-} from "fs-extra"
-
-import type {
-    Stats
-} from "fs-extra"
-
-import {
-    lstat,
-    readFile
-} from "node:fs/promises"
-
-import {
-    basename,
-    extname,
-    isAbsolute,
-    join
-} from "node:path"
-
-import {
     esbuildSupportedExtensions
 } from "./constants.js"
+
+import {
+    log
+} from "../../shared/logger/index.js"
+
+import {
+    getFile,
+    resolveCurrentPath
+} from "../../shared/index.js"
 
 import {
     validateConfig,
     validateHTML,
     validateWithEsbuild
-} from "../../shared/index.js"
+} from "../../shared/validate/index.js"
 
 import {
-    // --- FUNCTIONS ---
-    getDirElements, getFile, log, resolveCurrentPath
-} from "../../shared/index.js"
-
-
+    basename,
+    extname,
+    getDirElements,
+    getFileContent,
+    isAbsolute,
+    isDirectory,
+    join,
+    pathExists
+} from "../../shared/fs/index.js"
 
 /**
  * Validates a file or directory recursively.
@@ -60,18 +53,19 @@ export async function validate(
             `Path does not exist: ${absolutePath}`
         )
 
-    const stats: Stats =
-        await lstat(absolutePath)
-
     // --- Directory Branch ---
     // If it is a directory, we crawl it and validate every child element recursively
-    if (stats.isDirectory()) {
+    if (await isDirectory(absolutePath)) {
         const elements: string[] =
             await getDirElements(absolutePath)
 
         // Process all children in parallel for better performance
         await Promise.all(
-            elements.map(el => validate(join(absolutePath, el)))
+            elements.map(
+                el => validate(
+                    join(absolutePath, el)
+                )
+            )
         )
     }
 
@@ -88,7 +82,7 @@ export async function validate(
     // Integrity check: if getFile returns nothing but the file actually has data, fail fast
     if (
         !content
-        && (await readFile(absolutePath, "utf8")).length > 0
+        && (await getFileContent(absolutePath)).length > 0
     ) throw new Error(
         `Failed to read content from non-empty file: ${absolutePath}`
     )

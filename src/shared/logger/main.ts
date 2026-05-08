@@ -24,7 +24,7 @@ export const log = {
     },
 
     success(message: string | string[]) {
-        emit("success", message, true)
+        emit("success", message, false)
     },
 
     verbose(message: string | string[]) {

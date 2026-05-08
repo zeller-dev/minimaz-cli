@@ -1,4 +1,5 @@
 export * from "./constants.js"
+export * from "./fs/index.js"
 export * from "./functions.js"
 export * from "./logger/index.js"
 export * from "./types.js"

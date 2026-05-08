@@ -1,25 +1,19 @@
 import {
     copy,
     ensureDir,
-    pathExists
-} from "fs-extra"
+    getDirElements,
+    join,
+    pathExists, readJsonFile
+} from "../../shared/fs/index.js"
 
 import {
-    readdir
-} from "node:fs/promises"
+    log
+} from "../../shared/logger/index.js"
 
 import {
-    join
-} from "node:path"
-
-import {
-    // --- FUNCTIONS ---
     createFileFromTemplate,
-    // --- CONSTANTS ---
     defaults,
-    getSettingsTemplate,
-    log,
-    readJsonFile
+    getSettingsTemplate
 } from "../../shared/index.js"
 
 import type {
@@ -85,8 +79,8 @@ export async function copyDefaultTemplates(
         "Checking default templates"
     )
 
-    const defaultTemplates =
-        await readdir(defaultTemplatesDir)
+    const defaultTemplates: string[] =
+        await getDirElements(defaultTemplatesDir)
 
     if (defaultTemplates.length === 0) {
         log.warn(
@@ -114,7 +108,7 @@ export async function copyDefaultTemplates(
             continue
         }
 
-        await copy(src, dest, { overwrite })
+        await copy(src, dest, overwrite)
 
         if (exists && overwrite) {
             log.success(

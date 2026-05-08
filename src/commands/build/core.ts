@@ -1,31 +1,31 @@
 import {
+    transform
+} from "esbuild"
+
+import type {
     Message,
-    transform,
     TransformOptions
 } from "esbuild"
 
 import {
     copy,
-    ensureDir,
-    pathExists
-} from "fs-extra"
-
-import {
-    lstat
-} from "node:fs/promises"
-
-import {
     dirname,
+    ensureDir,
     extname,
+    getDirElements,
+    isDirectory,
     join,
     normalize,
+    pathExists,
     resolve
-} from "node:path"
+} from "../../shared/fs/index.js"
 
 import {
-    getDirElements,
+    log
+} from "../../shared/logger/index.js"
+
+import {
     getFile,
-    log,
     removeOutDir,
     resolveCurrentPath,
 } from "../../shared/index.js"
@@ -162,17 +162,22 @@ export async function walkFolder(
             continue
         }
 
-        const stat = await lstat(fromPath)
-
-        if (stat.isDirectory()) {
+        if (await isDirectory(fromPath)) {
             // Recurse into subdirectories with the resolved destination path
-            await walkFolder(fromPath, nextToPath, config, ignoredFiles)
+            await walkFolder(
+                fromPath,
+                nextToPath,
+                config,
+                ignoredFiles
+            )
             continue
         }
 
         // 3. File Processing
         // Ensure the directory exists in dist (crucial for mapped/redirected files)
-        await ensureDir(dirname(nextToPath))
+        await ensureDir(
+            dirname(nextToPath)
+        )
 
         /**
          * getFile utilizes rawFileCache and applies config.output.replace.
@@ -248,7 +253,10 @@ export async function processFile(
             )
             break
         default:
-            await copy(file.src, file.dest)
+            await copy(
+                file.src,
+                file.dest,
+            )
     }
 }
 
@@ -261,25 +269,43 @@ export async function processExternals(
     config: MinimazConfig,
     ignoredFiles: Set<string>
 ): Promise<void> {
-    for (const [source, destination] of Object.entries(externals)) {
+
+    log.debug(
+        `External: Processing`
+    )
+
+    for (
+        const [source, destination]
+        of Object.entries(externals)
+    ) {
         if (source.startsWith("http")) {
-            log.info(`Remote external: ${source} → ${destination}`)
+            log.info(
+                `Remote external: ${source} → ${destination}`
+            )
             continue
         }
 
-        const fullPath = resolveCurrentPath([source])
-        if (ignoredFiles.has(normalize(fullPath))) continue
+        const fullPath =
+            resolveCurrentPath([source])
+
+        if (ignoredFiles.has(normalize(fullPath)))
+            continue
 
         if (!(await pathExists(fullPath))) {
             log.warn(`External not found: ${source}`)
             continue
         }
 
-        const targetPath = join(outDirPath, destination)
-        const stat = await lstat(fullPath)
+        const targetPath: string =
+            join(outDirPath, destination)
 
-        if (stat.isDirectory()) {
-            await walkFolder(fullPath, targetPath, config, ignoredFiles)
+        if (await isDirectory(fullPath)) {
+            await walkFolder(
+                fullPath,
+                targetPath,
+                config,
+                ignoredFiles
+            )
             continue
         }
 
@@ -303,7 +329,9 @@ export async function processExternals(
 /**
  * Recreates output directory.
  */
-export async function reCreateOutDir(path: string): Promise<void> {
+export async function reCreateOutDir(
+    path: string
+): Promise<void> {
     await removeOutDir(path)
     await ensureDir(path)
 }
@@ -311,7 +339,10 @@ export async function reCreateOutDir(path: string): Promise<void> {
 /**
  * Extracts dependency paths from file content using unified regex patterns.
  */
-export function extractImports(content: string, ext: string): string[] {
+export function extractImports(
+    content: string,
+    ext: string
+): string[] {
     const imports: string[] = []
     const jsLikePattern = /import\s+(?:(?:[\w\s{},*]+\s+from\s+)?["'](.+?)["']|["'](.+?)["'])\s*;?/g
 
@@ -395,9 +426,8 @@ export async function runDiscovery(
         if (config.input.exclude?.includes(item)) continue
 
         const fullPath = join(currentDir, item)
-        const stat = await lstat(fullPath)
 
-        if (stat.isDirectory()) {
+        if (await isDirectory(fullPath)) {
             await runDiscovery(
                 fullPath,
                 config,
@@ -415,12 +445,19 @@ export async function runDiscovery(
             )
             const dependencies = extractImports(content, ext)
 
-            for (const dep of dependencies) {
+            for (
+                const dep
+                of dependencies
+            ) {
                 let resolvedDep = resolve(dirname(fullPath), dep)
 
                 if (!extname(resolvedDep)) {
-                    for (const candidateExt of ['.ts', '.js', '.css', '.tsx']) {
-                        if (await pathExists(resolvedDep + candidateExt)) {
+                    for (
+                        const candidateExt
+                        of ['.ts', '.js', '.css', '.tsx']) {
+                        if (
+                            await pathExists(resolvedDep + candidateExt)
+                        ) {
                             resolvedDep += candidateExt
                             break
                         }

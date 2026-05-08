@@ -4,7 +4,7 @@ import {
 
 import {
     log
-} from "../shared/index.js"
+} from "../shared/logger/index.js"
 
 import type {
     Args
@@ -89,7 +89,7 @@ export function initEnv(
     process.env.CLI_WORKDIR =
         path ?? process.cwd()
 
-    log.info([
+    log.debug([
         "Initializing environment variables",
         `CLI_WORKDIR = ${process.env.CLI_WORKDIR}`,
         `VERBOSE = ${process.env.VERBOSE}`,

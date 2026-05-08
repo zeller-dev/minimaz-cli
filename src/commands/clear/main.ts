@@ -1,5 +1,4 @@
 import {
-    // --- FUNCTIONS ---
     removeOutDir
 } from "../../shared/index.js"
 

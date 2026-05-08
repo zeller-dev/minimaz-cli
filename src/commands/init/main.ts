@@ -1,18 +1,20 @@
 import {
-    copy,
-    pathExists
-} from "fs-extra"
-
-import {
+    askQuestion,
     createFileFromTemplate,
     getGlobalTemplatePath,
-    // --- FUNCTIONS  ---
-    log,
-    // --- CONSTANTS ---
     minimazConfigTemplate,
     parseBooleanFlag,
     resolveCurrentPath,
 } from "../../shared/index.js"
+
+import {
+    copy,
+    pathExists
+} from "../../shared/fs/index.js"
+
+import {
+    log
+} from "../../shared/logger/index.js"
 
 import {
     initGit,
@@ -51,7 +53,10 @@ export async function init(
     log.debug(
         `Copying template from "${templateDir}" to "${targetDir}"`
     )
-    await copy(templateDir, targetDir)
+    await copy(
+        templateDir,
+        targetDir
+    )
 
     // add minimaz.config.json
     log.debug(
@@ -66,16 +71,25 @@ export async function init(
     // Check for NPM initialization option (ask if not provided)
     const useNpm: boolean =
         parseBooleanFlag(options.npm)
+        ?? (await askQuestion('Init NPM? [Y/n]:', 'y')).toLowerCase().startsWith('y')
 
     if (useNpm)
-        await initNpm(targetDir, projectName)
+        await initNpm(
+            targetDir,
+            projectName
+        )
 
     // Check for Git initialization option (ask if not provided)
     const useGit: boolean =
         parseBooleanFlag(options.git)
+        ?? (await askQuestion('Init Git repository? [Y/n]:', 'y')).toLowerCase().startsWith('y')
 
     if (useGit)
-        await initGit(projectName, targetDir, options.gitprovider)
+        await initGit(
+            projectName,
+            targetDir,
+            options.gitprovider
+        )
 
     log.success(
         `Project "${projectName}" created using template "${options.template}"`

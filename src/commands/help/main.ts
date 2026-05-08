@@ -1,4 +1,7 @@
-import { log } from "../../shared/logger/index.js"
+import {
+    log
+} from "../../shared/logger/index.js"
+
 import {
     commandsHelp,
 } from "./constants.js"

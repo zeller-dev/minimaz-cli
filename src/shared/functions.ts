@@ -1,55 +1,51 @@
+import {
+    rawFileCache
+} from "./cache/index.js"
 
 import {
-    ChildProcess,
-    execSync
-} from "child_process"
+    defaults,
+} from "./constants.js"
 
 import {
     spawn
 } from "cross-spawn"
 
 import {
+    getFileContent,
+    isAbsolute,
+    join,
+    normalize,
     outputFile,
     pathExists,
-    remove
-} from "fs-extra"
+    remove,
+    resolve
+} from "./fs/index.js"
 
 import {
-    readdir,
-    readFile
-} from "node:fs/promises"
+    log
+} from "./logger/index.js"
+
+import {
+    ChildProcess,
+    execSync
+} from "node:child_process"
 
 import {
     homedir
 } from "node:os"
 
 import {
-    isAbsolute,
-    join,
-    normalize,
-    resolve
-} from "node:path"
-
-import {
     createInterface
 } from "node:readline"
 
-import {
-    // --- CONSTANTS ---
-    defaults,
-
-    // --- FUNCTIONS ---
-    log
-} from "./index.js"
+import type {
+    MinimazConfig,
+    Settings,
+} from "./types.js"
 
 import {
     validateConfig
 } from "./validate/index.js"
-
-import { rawFileCache } from "./cache/index.js"
-import type {
-    MinimazConfig, Settings,
-} from "./types.js"
 
 // @TODO add cache
 
@@ -145,9 +141,8 @@ export async function getFile(
             )
         } else {
             // 2. First time reading: Hit the disk
-            fileContent = await readFile(
-                normalizedPath,
-                "utf8"
+            fileContent = await getFileContent(
+                normalizedPath
             )
 
             // 3. Store the raw version for future calls (Discovery or Processing)
@@ -305,6 +300,7 @@ export async function getNodeModulesTemplatesPath(): Promise<string> {
 
     const exists: boolean =
         await pathExists(dir)
+
     if (!exists)
         throw new Error(
             "Default template folder not found"
@@ -388,7 +384,10 @@ export async function createFileFromTemplate(
     }
 
     try {
-        if (!overwrite && await pathExists(outputPath)) {
+        if (
+            !overwrite
+            && await pathExists(outputPath)
+        ) {
             log.info(
                 `File already exists at "${outputPath}", skipping`
             )
@@ -472,7 +471,7 @@ export async function loadConfig(): Promise<MinimazConfig> {
     try {
         // 1. Read the file content as a raw string
         const rawContent: string =
-            await readFile(configPath, "utf-8")
+            await getFileContent(configPath)
 
         // 2. Perform validation (passing the raw string to the validator)
         // We do this before parsing to catch syntax errors or schema violations
@@ -524,64 +523,6 @@ export function resolveCurrentPath(
     return path
 }
 
-/**
- * Reads and parses a JSON file using native Node.js fs/promises.
- *
- * @param file - Path to the JSON file
- */
-export async function readJsonFile<T>(
-    file: string
-): Promise<T> {
-    const exists: boolean =
-        await pathExists(file)
-
-    if (!exists)
-        throw new Error(
-            `NOT FOUND: "${file}" does not exist`
-        )
-
-    try {
-        const content: string =
-            await readFile(file, "utf8")
-
-        // Castiamo il risultato a T
-        return JSON.parse(content) as T
-    } catch (error: unknown) {
-        const message =
-            error instanceof Error
-                ? error.message
-                : String(error)
-
-        throw new Error(
-            `PARSE ERROR: Failed to parse JSON in "${file}" - ${message}`,
-            { cause: error }
-        )
-    }
-}
-
-/**
- * Reads the contents of a directory and returns an array of file and folder names.
- * Returns an empty array if the directory does not exist.
- *
- * @param dir - Path to the directory to read
- */
-export async function getDirElements(
-    dir: string
-): Promise<string[]> {
-    log.debug(
-        `Reading elements of ${dir}`
-    )
-    const exists: boolean =
-        await pathExists(dir)
-    if (!exists) {
-        log.warn(
-            `Directory does not exist: ${dir}`
-        )
-        return []
-    }
-    return await readdir(dir)
-}
-
 export function getSettingsTemplate(
     globalTemplatesDir: string
 ): Settings {
@@ -592,11 +533,13 @@ export function getSettingsTemplate(
     }
 }
 
-export function parseBooleanFlag(flag?: string | boolean): boolean {
-    if (flag === undefined)
-        return false    // undefined → false
-    if (typeof flag === "boolean")
-        return flag     // true/false boolean → keep
-    const val: string = flag.toLowerCase()
-    return val === "true" || val === "" // --flag or --flag=true → true
+export function parseBooleanFlag(
+    flag?: string | boolean
+): boolean | undefined {
+    if (flag === undefined) return undefined; // CRITICAL: Keep it undefined so we can ask the question later
+    if (typeof flag === "boolean") return flag;
+
+    const val = flag.toLowerCase();
+    if (val === "false" || val === "0" || val === "n") return false;
+    return true; // "true", "", "1", "y", etc.
 }
