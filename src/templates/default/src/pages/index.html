@@ -8,26 +8,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Minimaz</title>
+    <title>Minimaz CLI – Minimal Static Site Builder</title>
 
     <!-- SEO -->
     <meta name="description"
-        content="Minimaz CLI is a minimal, low-dependency static site builder and project initializer. Compile TypeScript, bundle and minify HTML, CSS, and JS with a fast and simple CLI">
+        content="Minimaz CLI is a minimal, low-dependency static site builder and project initializer. Compile TypeScript, bundle and minify HTML, CSS, and JS with a fast and simple CLI.">
     <meta name="keywords"
         content="minimaz, minimaz-cli, static site builder, project initializer, nodejs cli, html css js, typescript, minimal build tool">
     <meta name="author" content="MrZeller">
     <meta name="robots" content="index, follow">
     <meta property="og:title" content="Minimaz CLI – Minimal Static Site Builder">
     <meta property="og:description"
-        content="Initialize projects from templates, compile TypeScript, bundle and minify assets, and build clean static sites with a lightweight CLI">
+        content="Initialize projects from templates, compile TypeScript, bundle and minify assets, and build clean static sites with a lightweight CLI.">
     <meta property="og:url" content="https://github.com/zeller-dev/minimaz-cli">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#0d0d0d">
 
     <link rel="icon" type="image/x-icon" href="../public/favicon.ico">
     <link rel="shortcut icon" href="../public/favicon.ico">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="styles/bootstrap-icons.css">
+    <link rel="stylesheet" href="../style.css">
 </head>
 
 <body>
@@ -37,7 +36,7 @@
     <!-- ======================================== -->
     <header>
         <img src="../public/assets/logo.webp" alt="Minimaz Logo">
-        <h1 class="sr-only">Minimaz CLI <i class="icon lightning-fill"></i></h1>
+        <h1 class="sr-only">Minimaz CLI <i class="bi bi-lightning-fill"></i></h1>
         <p id="tagline">Minimal input. Clean output</p>
         <p class="version">Version: <strong>v0.4.0</strong></p>
     </header>
@@ -49,7 +48,7 @@
         <!-- ======================================== -->
         <section id="about" class="max-width">
             <h2>
-                <i class="icon info-circle"></i>
+                <i class="bi bi-info-circle"></i>
                 <span>About</span>
             </h2>
             <p>
@@ -66,7 +65,7 @@
 
         <section id="features" class="max-width">
             <h2>
-                <i class="icon gear-fill"></i>
+                <i class="bi bi-gear-fill"></i>
                 <span>Features</span>
             </h2>
 
@@ -92,21 +91,22 @@
         <!-- ======================================== -->
         <section id="installation" class="max-width">
             <h2>
-                <i class="icon download"></i>
+                <i class="bi bi-download"></i>
                 <span>Installation</span>
             </h2>
-            <p>Run directly using <code>npx</code> (no global install required):</p>
+            <p>Run directly using <code>npx</code> or as a global module:</p>
 
             <pre><code>npx minimaz init my-site
 cd my-site
-npx minimaz build
-npx minimaz version</code></pre>
+npx minimaz build</code></pre>
 
-            <p>Using alias:</p>
+            <p>Global installation:</p>
+            <pre><code>npm install -g minimaz-cli
+minimaz init my-site</code></pre>
 
-            <pre><code>npx mz i my-site
-npx mz b
-npx mz v</code></pre>
+            <blockquote>
+                During <code>npm install</code>, a post-install script runs to finalize setup automatically.
+            </blockquote>
         </section>
 
         <!-- ======================================== -->
@@ -114,7 +114,7 @@ npx mz v</code></pre>
         <!-- ======================================== -->
         <section id="project-structure" class="max-width">
             <h2>
-                <i class="icon folder2-open"></i>
+                <i class="bi bi-folder2-open"></i>
                 <span>Project Structure</span>
             </h2>
 
@@ -133,98 +133,113 @@ npx mz v</code></pre>
         <!-- ======================================== -->
         <section id="configuration" class="max-width">
             <h2>
-                <i class="icon sliders"></i>
+                <i class="bi bi-sliders"></i>
                 <span>Configuration</span>
             </h2>
 
             <pre><code>{
-    "outDir": "dist",
-    "bundling": {
+    "input": {
+        "dir": "./src",
+        "mapping": {
+            "pages": "",
+            "public": ""
+        },
+        "externals": {
+            "node_modules/bootstrap-icons/font/fonts": "public/fonts"
+        },
+        "exclude": []
+    },
+    "output": {
+        "dir": "./dist",
+        "replace": {
+            "../public/": "/public/"
+        },
         "css": {
-            "enabled": true,
-            "outFile": "styles.css"
+            "bundling": true,
+            "minify": true
         },
         "js": {
-            "enabled": true,
-            "outFile": "scripts.js"
+            "bundling": true,
+            "minify": true
+        },
+        "html": {
+            "minify": true
         }
-    },
-    "minify": {
-        "html": true,
-        "css": true,
-        "js": true,
-        "ts": true
-    },
-    "replace": {
-        "../public/": "public/"
-    },
-    "styles": [
-        "style.css",
-        "style-2.css"
-    ],
-    "scripts": [
-        "script.js",
-        "script-2.js"
-    ],
-    "folders": {
-        "src": "",
-        "public": "public"
     }
 }</code></pre>
 
             <ul>
-                <li><strong>bundling.css/js</strong> → concatenate files</li>
-                <li><strong>minify.html/css/js/ts</strong> → toggle per file type</li>
-                <li><strong>styles/scripts</strong> → include external files</li>
-                <li><strong>replace</strong> → asset path replacements</li>
-                <li><strong>styles & scripts</strong> → external styles or scripts to add</li>
-                <li><strong>folders</strong> → folders to scan</li>
+                <li><strong>input.externals</strong> → Include library assets without copying them into <code>src</code>
+                </li>
+                <li><strong>output.replace</strong> → Define asset path replacements for the build</li>
+                <li><strong>bundling</strong> → Scans imports/requires to merge code into single files</li>
             </ul>
         </section>
 
         <!-- ======================================== -->
         <!-- COMMANDS                                -->
         <!-- ======================================== -->
+        <!-- ======================================== -->
+        <!-- COMMANDS                                 -->
+        <!-- ======================================== -->
         <section id="commands" class="max-width">
             <h2>
-                <i class="icon command"></i>
+                <i class="bi bi-command"></i>
                 <span>Commands</span>
             </h2>
 
-            <pre><code># Build
-minimaz build
-mz b
+            <div class="command-group">
+                <h3>Build & Maintenance</h3>
+                <pre><code># Build and minify the project
+minimaz build (mz b)
 
-# Clear
-minimaz clear
-mz c
+# Delete the dist folder
+minimaz clear (mz c)
 
-# Config
-minimaz config          # Create or update global configuration ~/.minimaz/
-mz config --overwrite   # Overwrites default templates and settings.json
+# Validate HTML, CSS, JS, TS, and JSON files
+minimaz validate --path=/path/to/file</code></pre>
+            </div>
 
-# Init
-minimaz init &lt;project-name&gt;
-minimaz init &lt;project-name&gt; --template &lt;name&gt;
-minimaz init &lt;project-name&gt; --npm
-minimaz init &lt;project-name&gt; --git --gitprovider github --gitremote &lt;url&gt;
-mz i my-site -t template
+            <div class="command-group">
+                <h3>Project Initialization</h3>
+                <pre><code># Initialize a new project
+minimaz init &lt;project-name&gt; [options] (mz i)
 
-# Help
-minimaz help
-minimaz help build
-mz h build
+Options:
+  -t, --template &lt;name&gt;    # Use specific template (default: 'default')
+  --npm                    # Init npm (creates package.json & runs install)
+  --git                    # Initialize git repository
+  --gitprovider &lt;provider&gt; # 'github', 'gitlab', or existing repo URL
+  --gitremote &lt;url&gt;        # Specify custom remote URL</code></pre>
+            </div>
 
-# Template management
-minimaz template &lt;path&gt;
-minimaz template --list
-minimaz template --delete &lt;name&gt;
-minimaz template --update &lt;name&gt;
-minimaz template --update
+            <div class="command-group">
+                <h3>Template Management</h3>
+                <p class="small-text">Global templates are stored in <code>~/.minimaz/templates</code></p>
+                <pre><code># Save current folder as a new template
+minimaz template [folder-path] (mz t)
 
-# Version
-minimaz version
-mz v</code></pre>
+# List all global templates
+minimaz template --list (-l)
+
+# Delete a template (asks for confirmation)
+minimaz template --delete &lt;name&gt; (-d)
+
+# Update templates from current folder or defaults
+minimaz template --update [name] (-u)</code></pre>
+            </div>
+
+            <div class="command-group">
+                <h3>System & Help</h3>
+                <pre><code># Setup or overwrite global settings
+minimaz config (mz config --overwrite)
+
+# Show help for a specific command
+minimaz help &lt;command&gt; (mz h build)
+
+# Show Minimaz CLI version
+minimaz version (mz v)</code></pre>
+            </div>
         </section>
 
         <!-- ======================================== -->
@@ -232,7 +247,7 @@ mz v</code></pre>
         <!-- ======================================== -->
         <section id="future-features" class="max-width">
             <h2>
-                <i class="icon rocket-takeoff"></i>
+                <i class="bi bi-rocket-takeoff"></i>
                 <span>Upcoming & Future Features</span>
             </h2>
 
@@ -363,7 +378,7 @@ mz v</code></pre>
         <!-- ======================================== -->
         <section id="templates" class="max-width">
             <h2>
-                <i class="icon collection-fill"></i>
+                <i class="bi bi-collection-fill"></i>
                 <span>Global Folder</span>
             </h2>
 
@@ -377,7 +392,7 @@ mz v</code></pre>
         <!-- ======================================== -->
         <section id="links" class="max-width">
             <h2>
-                <i class="icon link-45deg"></i>
+                <i class="bi bi-link-45deg"></i>
                 <span>Links</span>
             </h2>
             <ul>
