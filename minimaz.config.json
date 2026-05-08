@@ -3,29 +3,30 @@
         "dir": "./src",
         "mapping": {
             "pages": "",
-            "public": "public",
+            "public": "",
             "scripts": "",
             "styles": ""
         },
         "externals": {
-            "node_modules/bootstrap-icons/font/fonts": "public/fonts"
+            "node_modules/bootstrap-icons/font/fonts": "fonts"
         },
         "exclude": []
     },
     "output": {
         "dir": "./dist",
         "replace": {
-            "../public/": "/public/",
-            "<link rel=\"stylesheet\" href=\"styles/bootstrap-icons.css\">": "",
-            "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2": "/public/fonts/bootstrap-icons.woff2",
-            "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": "/public/fonts/bootstrap-icons.woff"
+            "../public/": "/",
+            "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2": "/fonts/bootstrap-icons.woff2",
+            "../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": "/fonts/bootstrap-icons.woff"
         },
         "css": {
             "bundling": true,
+            "outFile": "style.css",
             "minify": true
         },
         "js": {
             "bundling": true,
+            "outFile": "script.js",
             "minify": true
         },
         "html": {

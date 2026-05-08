@@ -13,7 +13,7 @@
     ],
     "scripts": {
         "build": "npx mz b",
-        "start": "npm run build && serve ./dist"
+        "serve": "npm run build && npx serve ./dist"
     },
     "repository": {
         "type": "git",
@@ -33,7 +33,7 @@
     },
     "devDependencies": {
         "bootstrap-icons": "^1.13.1",
-        "minimaz-cli": "^0.4.1",
+        "minimaz-cli": "^0.5.1",
         "serve": "^14.2.5"
     }
 }
