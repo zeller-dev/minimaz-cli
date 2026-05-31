@@ -1,3 +1,2 @@
 github: zeller-dev
-custom:
-  - https://zellerindustries.gumroad.com/coffee
+custom: ["https://zellerindustries.gumroad.com/coffee"]
