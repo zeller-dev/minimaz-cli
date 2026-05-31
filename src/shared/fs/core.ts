@@ -171,15 +171,20 @@ export async function copy(
     overwrite: boolean = false
 ): Promise<void> {
 
-    await cp(src, dest, {
-        recursive: true,
+    if (overwrite) {
+        log.debug(`${dest} exists, removing...`)
+        await rm(
+            dest,
+            { recursive: true, force: true }
+        )
+    }
 
-        // Allow replacement of existing files when enabled
-        force: overwrite,
-
-        // Prevent accidental silent overwrites by default
-        errorOnExist: !overwrite
-    })
+    log.debug(`[COPY] ${src} to ${dest}...`)
+    await cp(
+        src,
+        dest,
+        { recursive: true, }
+    )
 }
 
 /**

@@ -26,7 +26,9 @@ import type {
 
 
 import {
-    initEnv, parseArgs, postInstall
+    initEnv,
+    parseArgs,
+    postInstall
 } from "./core.js"
 
 import type {

@@ -63,18 +63,23 @@ export async function processCSS(
             minify: minifying,
             charset: "utf8",
             legalComments: "none",
-            external: [
-                "*.woff",
-                "*.woff2",
-                "*.ttf",
-                "*.otf",
-                "*.eot",
-                "*.svg",
-                "*.png",
-                "*.jpg",
-                "*.jpeg",
-                "*.gif",
-                "*.webp"
+            plugins: [
+                {
+                    name: "external-assets",
+
+                    setup(build) {
+                        build.onResolve(
+                            {
+                                filter: /\.(woff2?|ttf|otf|eot|svg|png|jpe?g|gif|webp|avif|ico)(\?.*)?(#.*)?$/i
+                            },
+
+                            args => ({
+                                path: args.path,
+                                external: true
+                            })
+                        )
+                    }
+                }
             ],
             target: [
                 "chrome80",

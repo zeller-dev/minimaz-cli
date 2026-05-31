@@ -43,19 +43,19 @@
     },
     "dependencies": {
         "cross-spawn": "^7.0.6",
-        "esbuild": "^0.25.12",
+        "esbuild": "^0.28.0",
         "html-minifier-terser": "^7.2.0"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
         "@types/cross-spawn": "^6.0.6",
         "@types/html-minifier-terser": "^7.0.2",
-        "@types/node": "^24.7.2",
+        "@types/node": "^25.9.1",
         "cross-env": "^10.1.0",
-        "eslint": "^10.3.0",
+        "eslint": "^10.4.1",
         "globals": "^17.6.0",
         "tsx": "^4.21.0",
-        "typescript": "^5.9.3",
+        "typescript": "^6.0.3",
         "typescript-eslint": "^8.59.2"
     },
     "postinstall": "node dist/bin/cli.js"

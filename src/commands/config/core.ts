@@ -108,17 +108,17 @@ export async function copyDefaultTemplates(
             continue
         }
 
-        await copy(src, dest, overwrite)
+        await copy(
+            src,
+            dest,
+            overwrite
+        )
 
-        if (exists && overwrite) {
-            log.success(
-                `Template "${name}" overwritten`
-            )
-        } else {
-            log.success(
-                `Template "${name}" copied`
-            )
-        }
+        log.success(
+            exists && overwrite
+                ? `Template "${name}" overwritten`
+                : `Template "${name}" copied`
+        )
     }
 }
 

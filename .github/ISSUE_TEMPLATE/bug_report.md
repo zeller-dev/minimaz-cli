@@ -1,38 +1,75 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+about: Report a problem to help us improve the project
+title: "[Bug]: "
+labels: bug
+assignees: ""
+---
+
+## 🐛 Bug Report
+
+### Summary
+
+Brief description of the issue.
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+### Steps to Reproduce
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Provide exact steps so the issue can be reliably reproduced.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+1.
+2.
+3.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+---
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+### Expected Behavior
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+What you expected to happen.
 
-**Additional context**
-Add any other context about the problem here.
+---
+
+### Actual Behavior
+
+What actually happened.
+
+---
+
+### Frequency
+
+How often does this occur?
+
+- [ ] Always
+- [ ] Sometimes
+- [ ] Rarely
+- [ ] Once
+
+---
+
+### Environment
+
+Fill in relevant details only.
+
+- **OS:** (e.g. Windows 11, macOS 14, Ubuntu 22.04)
+- **Browser:** (e.g. Chrome 121, Firefox 122)
+- **Device:** (e.g. Desktop, iPhone 13, Samsung S21)
+- **App/Build version:** (if applicable)
+
+---
+
+### Screenshots / Screen Recordings
+
+Attach if relevant.
+
+---
+
+### Logs / Errors
+
+Paste console logs, stack traces, or network errors here.
+
+---
+
+### Additional Context
+
+Any other relevant information, edge cases, or hypotheses.
